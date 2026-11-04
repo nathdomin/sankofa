@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { WORLD } from './config/physics';
 import { BootScene } from './scenes/BootScene';
 import { GameScene } from './scenes/GameScene';
+import { HudScene } from './scenes/HudScene';
 
 // ?debug na URL mostra as hitboxes do Arcade
 const debug = new URLSearchParams(window.location.search).has('debug');
@@ -24,7 +25,7 @@ const config: Phaser.Types.Core.GameConfig = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [BootScene, GameScene],
+  scene: [BootScene, GameScene, HudScene],
 };
 
 declare global {

@@ -6,9 +6,10 @@ import { Checkpoint } from '../entities/Checkpoint';
 import { Collectible } from '../entities/Collectible';
 import { Enemy } from '../entities/Enemy';
 import { Player } from '../entities/Player';
-import { GAME_EVENTS, gameState } from '../systems/GameState';
+import { gameState } from '../systems/GameState';
 import { buildLevel, type BuiltLevel, type SpawnPoint } from '../systems/LevelBuilder';
 import { addParallax, decorateLevel, type ParallaxUpdater } from '../systems/Scenery';
+import type { HudSceneData } from './HudScene';
 
 export interface GameSceneData {
   levelIndex: number;
@@ -23,7 +24,6 @@ export class GameScene extends Phaser.Scene {
   private finished = false;
   private dying = false;
   private enemies!: Phaser.GameObjects.Group;
-  private hudText!: Phaser.GameObjects.Text;
   private notice!: Phaser.GameObjects.Text;
   private noticeTween: Phaser.Tweens.Tween | null = null;
   private portal!: Phaser.Physics.Arcade.Image;
@@ -99,28 +99,23 @@ export class GameScene extends Phaser.Scene {
     cam.setDeadzone(CAMERA.deadzoneW, CAMERA.deadzoneH);
     cam.fadeIn(CAMERA.fadeMs);
 
-    // textos provisórios até a HudScene
-    const style: Phaser.Types.GameObjects.Text.TextStyle = {
-      fontFamily: 'monospace',
-      fontSize: '18px',
-      color: toCss(PALETTE.cream),
-      stroke: toCss(PALETTE.black),
-      strokeThickness: 4,
-    };
-    this.add.text(16, 12, `${this.config.title} · ${this.config.era}`, style).setScrollFactor(0).setDepth(100);
-    this.hudText = this.add.text(16, 38, '', style).setScrollFactor(0).setDepth(100);
+    // avisos no alto da tela, logo abaixo do HUD
     this.notice = this.add
-      .text(cam.width / 2, 90, '', { ...style, fontSize: '24px', color: toCss(PALETTE.gold) })
+      .text(cam.width / 2, 90, '', {
+        fontFamily: 'monospace',
+        fontSize: '24px',
+        color: toCss(PALETTE.gold),
+        stroke: toCss(PALETTE.black),
+        strokeThickness: 4,
+      })
       .setOrigin(0.5)
       .setScrollFactor(0)
       .setDepth(100)
       .setAlpha(0);
-    this.updateHudText();
-    const events = [GAME_EVENTS.lives, GAME_EVENTS.score, GAME_EVENTS.collected];
-    events.forEach((name) => gameState.on(name, this.updateHudText, this));
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
-      events.forEach((name) => gameState.off(name, this.updateHudText, this));
-    });
+
+    // o HUD roda em paralelo, por cima desta cena
+    this.scene.launch('Hud', { levelIndex: this.levelIndex } satisfies HudSceneData);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.scene.stop('Hud'));
   }
 
   update(time: number, delta: number): void {
@@ -130,14 +125,6 @@ export class GameScene extends Phaser.Scene {
     if (!this.dying && this.player.arcadeBody.top > this.level.heightPx + WORLD.fallMargin) {
       this.die(gameState.loseLife());
     }
-  }
-
-  private updateHudText(): void {
-    const { required, collectible } = this.config;
-    const count = required > 0 ? `${gameState.collected}/${required}` : `${gameState.collected}`;
-    this.hudText.setText(
-      `Vidas: ${gameState.lives}   Pontos: ${gameState.score}   ${collectible.namePlural}: ${count}`,
-    );
   }
 
   /** Mostra um aviso no alto da tela e some depois de um tempo */

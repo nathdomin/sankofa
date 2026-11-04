@@ -46,6 +46,7 @@ O jogador atravessa 3 fases, cada uma ligada a uma personalidade negra brasileir
    │  ├─ colors.ts            # gradientes e utilitários de cor
    │  ├─ playerArt.ts         # poses do player em pixel art
    │  ├─ tileArt.ts           # tiles de chão/bloco por fase
+   │  ├─ hudArt.ts            # faixa decorativa e ícone de vida do HUD
    │  └─ themes/
    │     └─ quilombo.ts       # céu, parallax e enfeites da fase 1
    ├─ config/
@@ -334,7 +335,7 @@ Paleta global em `palette.ts`: dourado `#f2b705`, verde `#1e7a3c`, vermelho `#c0
 - [x] Fase 1 montada com câmera (e já com a arte de cenário do Marco 3)
 - **Pronto quando:** dá para atravessar a fase 1 do início ao portal só pulando
 
-> Estado provisório: vidas, pontos e coletáveis aparecem num texto solto na `GameScene` (vai para a `HudScene`); o portal reinicia a mesma fase (o fluxo Card → próxima fase vem depois); o título da fase também é um texto solto.
+> Estado provisório: o portal reinicia a mesma fase (o fluxo Card → próxima fase vem depois).
 
 ### Marco 2: Sistemas e conteúdo (meta: até 11/11)
 Ordem sugerida (cada passo deixa o jogo jogável):
@@ -344,7 +345,7 @@ Ordem sugerida (cada passo deixa o jogo jogável):
 - [x] Esquiva (sem teste em fase ainda: a fase 1 não tem vãos baixos)
 - [ ] Rolê, se houver tempo (seção 3.1)
 - [x] Coletáveis + portal trancado/aberto
-- [ ] HudScene
+- [x] HudScene (inclui a faixa decorativa de padrão geométrico na borda; falta a faixa no menu)
 - [ ] Menu, Intro, Card, GameOver e Victory com o fluxo completo (já com a fase 1)
 - [ ] Fases 2 e 3 com as mecânicas especiais (NPCs libertados e diário), **sem arte de cenário própria**
 - **Pronto quando:** dá para jogar do menu até os créditos sem travar

@@ -402,7 +402,9 @@ export class Player extends Phaser.GameObjects.Zone {
   private clearAttack(): void {
     this.attackTimers.forEach((t) => t.remove(false));
     this.attackTimers = [];
-    this.attackBody.enable = false;
+    // ao desmontar a cena o Phaser pode destruir a attackZone antes do Player: o corpo já não existe
+    const body = this.attackZone.body as Phaser.Physics.Arcade.Body | null;
+    if (body) body.enable = false;
   }
 
   /** A zona do golpe fica na frente do player, na altura do corpo */

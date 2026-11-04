@@ -4,6 +4,7 @@ import { PALETTE, darken } from '../config/palette';
 import { LEVELS } from '../data/levels';
 import { paintGrid } from '../art/pixel';
 import { PLAYER_COLOR_MAP, PLAYER_POSES, PLAYER_RUN_KEYS, buildPoseGrid, playerTextureKey } from '../art/playerArt';
+import { makeHudTextures } from '../art/hudArt';
 import { makeEdgeTextures, makeTileTextures } from '../art/tileArt';
 import { makeQuilomboArt } from '../art/themes/quilombo';
 
@@ -21,6 +22,7 @@ export class BootScene extends Phaser.Scene {
     LEVELS.forEach((level) => makeTileTextures(draw, level.id, level.palette));
     makeEdgeTextures(draw);
     makeQuilomboArt(draw);
+    makeHudTextures(draw);
     this.makePortalTextures();
     this.makeCollectibleTextures();
     this.makeEnemyTextures();
