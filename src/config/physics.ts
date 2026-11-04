@@ -40,6 +40,9 @@ export const CAPOEIRA = {
   meiaLua: {
     durationMs: 300, activeFromMs: 80, activeToMs: 220, cooldownMs: 450,
     hitbox: { w: 44, h: 30 }, groundSpeedFactor: 0.3, hitStopMs: 60,
+    shakeMs: 80, shakeIntensity: 0.004, score: 100,
+    // rastro dourado em arco: raios das duas faixas, espessura e duração do fade
+    trail: { radii: [26, 34], lineWidth: 4, fadeMs: 200 },
   },
   esquiva: { speedFactor: 0.4, hitbox: { w: 22, h: 22 } },
   role: { speed: 420, durationMs: 250, cooldownMs: 700 },

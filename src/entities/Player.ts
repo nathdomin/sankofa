@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { CAPOEIRA, GAME, PLAYER, WORLD } from '../config/physics';
+import { PALETTE } from '../config/palette';
 
 export type PlayerState = 'idle' | 'run' | 'jump' | 'au' | 'meiaLua' | 'esquiva' | 'role' | 'hurt';
 
@@ -41,6 +42,10 @@ export class Player extends Phaser.GameObjects.Zone {
   private controlsEnabled = true;
   private invincibleUntil = Number.NEGATIVE_INFINITY;
   private hurtTimer: Phaser.Time.TimerEvent | null = null;
+  private attackReadyAt = Number.NEGATIVE_INFINITY;
+  private attackTimers: Phaser.Time.TimerEvent[] = [];
+  /** Área do golpe da meia-lua; o corpo só fica ativo na janela de ataque */
+  readonly attackZone: Phaser.GameObjects.Zone;
 
   /** x, y = posição dos pés */
   constructor(scene: Phaser.Scene, x: number, y: number) {
@@ -54,6 +59,12 @@ export class Player extends Phaser.GameObjects.Zone {
 
     // origem nos pés: a ginga balança o corpo sobre os pés plantados
     this.visual = scene.add.sprite(x, y, 'player-idle').setOrigin(0.5, 1).setDepth(10);
+    const { w, h } = CAPOEIRA.meiaLua.hitbox;
+    this.attackZone = scene.add.zone(x, y, w, h);
+    scene.physics.add.existing(this.attackZone);
+    const zoneBody = this.attackZone.body as Phaser.Physics.Arcade.Body;
+    zoneBody.setAllowGravity(false);
+    zoneBody.enable = false;
     this.keys = this.createKeys();
     this.enterState('idle');
     this.syncVisual();
@@ -117,6 +128,14 @@ export class Player extends Phaser.GameObjects.Zone {
     }
 
     const dir = this.controlsEnabled ? this.inputDir() : 0;
+    // consome o JustDown todo frame para um aperto antigo não disparar o golpe depois
+    const attackPressed = this.controlsEnabled && anyJustDown(this.keys.attack);
+    if (attackPressed && !LOCKED_STATES.has(this.current) && time >= this.attackReadyAt) {
+      this.attackReadyAt = time + CAPOEIRA.meiaLua.cooldownMs;
+      this.setState('meiaLua');
+      // no chão o capoeirista "planta" a mão: perde a maior parte da velocidade
+      if (onGround) this.arcadeBody.velocity.x *= CAPOEIRA.meiaLua.groundSpeedFactor;
+    }
 
     if (!LOCKED_STATES.has(this.current)) {
       if (dir !== 0) this.facing = dir;
@@ -125,6 +144,7 @@ export class Player extends Phaser.GameObjects.Zone {
       this.resolveState(onGround, dir);
     }
 
+    this.followAttackZone();
     this.updateVisual(time, delta);
   }
 
@@ -141,6 +161,8 @@ export class Player extends Phaser.GameObjects.Zone {
   destroy(fromScene?: boolean): void {
     this.stateTween?.stop();
     this.squashTween?.stop();
+    this.clearAttack();
+    this.attackZone.destroy();
     this.visual.destroy();
     super.destroy(fromScene);
   }
@@ -235,6 +257,7 @@ export class Player extends Phaser.GameObjects.Zone {
   private exitState(): void {
     this.hurtTimer?.remove(false);
     this.hurtTimer = null;
+    this.clearAttack();
     this.visual.clearTint();
     this.stateTween?.stop();
     this.stateTween = null;
@@ -270,10 +293,77 @@ export class Player extends Phaser.GameObjects.Zone {
         this.visual.setTint(PLAYER.hurtTint);
         this.hurtTimer = this.scene.time.delayedCall(PLAYER.hurtMs, () => this.setState('idle'));
         break;
-      // meiaLua, esquiva e role entram no Marco 2
+      case 'meiaLua':
+        this.startMeiaLua();
+        break;
+      // esquiva e role entram no Marco 2
       default:
         break;
     }
+  }
+
+  private startMeiaLua(): void {
+    const m = CAPOEIRA.meiaLua;
+    // gira em torno do centro do corpo, no sentido para onde olha (horário para a direita)
+    this.visual.setOrigin(0.5, 0.5);
+    this.stateTween = this.scene.tweens.add({
+      targets: this.visual,
+      angle: 360 * this.facing,
+      duration: m.durationMs,
+      ease: 'Cubic.easeOut',
+    });
+    const at = (ms: number, fn: () => void): Phaser.Time.TimerEvent => this.scene.time.delayedCall(ms, fn);
+    this.attackTimers = [
+      at(m.activeFromMs, () => {
+        this.attackBody.enable = true;
+        this.followAttackZone();
+        this.drawTrail();
+      }),
+      at(m.activeToMs, () => {
+        this.attackBody.enable = false;
+      }),
+      at(m.durationMs, () => this.setState('idle')),
+    ];
+  }
+
+  private get attackBody(): Phaser.Physics.Arcade.Body {
+    return this.attackZone.body as Phaser.Physics.Arcade.Body;
+  }
+
+  /** Cancela timers e fecha a janela de ataque (ao terminar, ser interrompido ou renascer) */
+  private clearAttack(): void {
+    this.attackTimers.forEach((t) => t.remove(false));
+    this.attackTimers = [];
+    this.attackBody.enable = false;
+  }
+
+  /** A zona do golpe fica na frente do player, na altura do corpo */
+  private followAttackZone(): void {
+    if (!this.attackBody.enable) return;
+    const body = this.arcadeBody;
+    const offset = body.halfWidth + CAPOEIRA.meiaLua.hitbox.w / 2;
+    this.attackZone.setPosition(body.center.x + this.facing * offset, body.center.y);
+  }
+
+  /** Rastro dourado em semicírculo à frente do golpe, some em fade */
+  private drawTrail(): void {
+    const { trail } = CAPOEIRA.meiaLua;
+    const g = this.scene.add.graphics().setDepth(11);
+    const { x, y } = this.arcadeBody.center;
+    // semicírculo voltado para o lado em que o player olha
+    const start = this.facing === 1 ? -Math.PI / 2 : Math.PI / 2;
+    trail.radii.forEach((r, i) => {
+      g.lineStyle(trail.lineWidth - i, i === 0 ? PALETTE.gold : PALETTE.cream, 1);
+      g.beginPath();
+      g.arc(x, y, r, start, start + Math.PI, false);
+      g.strokePath();
+    });
+    this.scene.tweens.add({
+      targets: g,
+      alpha: 0,
+      duration: trail.fadeMs,
+      onComplete: () => g.destroy(),
+    });
   }
 
   private startBreathing(): void {
@@ -322,6 +412,8 @@ export class Player extends Phaser.GameObjects.Zone {
         return rising ? 'player-jumpUp' : 'player-fall';
       case 'hurt':
         return 'player-fall';
+      case 'meiaLua':
+        return 'player-au';
       default:
         return blinking ? 'player-idleBlink' : 'player-idle';
     }

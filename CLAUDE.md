@@ -336,8 +336,9 @@ Paleta global em `palette.ts`: dourado `#f2b705`, verde `#1e7a3c`, vermelho `#c0
 ### Marco 2: Sistemas e conteúdo (meta: até 11/11)
 Ordem sugerida (cada passo deixa o jogo jogável):
 - [x] `GameState` (vidas, fase, pontuação) + vidas, invencibilidade, checkpoint e buracos (falta só a GameOverScene, hoje a partida recomeça direto)
-- [x] Inimigos (patrulha, stomp, dano, Esquecimento imune a stomp); o Esquecimento só poderá ser derrotado depois da meia-lua
-- [ ] Meia-lua de compasso (com hit-stop) e esquiva; rolê se houver tempo (seção 3.1)
+- [x] Inimigos (patrulha, stomp, dano, Esquecimento imune a stomp)
+- [x] Meia-lua de compasso (com hit-stop); usa por ora a pose de estrela do aú como placeholder
+- [ ] Esquiva; rolê se houver tempo (seção 3.1)
 - [ ] Coletáveis + portal trancado/aberto
 - [ ] HudScene
 - [ ] Menu, Intro, Card, GameOver e Victory com o fluxo completo (já com a fase 1)

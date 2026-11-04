@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { CAMERA, ENEMY, GAME, WORLD } from '../config/physics';
+import { CAMERA, CAPOEIRA, ENEMY, GAME, WORLD } from '../config/physics';
 import { PALETTE, toCss } from '../config/palette';
 import { LEVELS, type LevelConfig } from '../data/levels';
 import { Checkpoint } from '../entities/Checkpoint';
@@ -51,6 +51,8 @@ export class GameScene extends Phaser.Scene {
     // sem chão no limite inferior: cair no buraco sai do mundo
     this.physics.world.setBounds(0, 0, widthPx, heightPx + WORLD.fallMargin * 4);
     this.physics.world.setBoundsCollision(true, true, false, false);
+    // garante que um hit-stop interrompido por restart não deixe a física pausada
+    this.physics.world.resume();
 
     this.respawnPoint = this.level.playerSpawn;
     this.player = new Player(this, this.respawnPoint.x, this.respawnPoint.y);
@@ -66,6 +68,10 @@ export class GameScene extends Phaser.Scene {
       this.enemies.add(new Enemy(this, spawn.x, spawn.y, spawn.kind, this.level.isSolidAt));
     });
     this.physics.add.collider(this.enemies, this.level.solids);
+    // o golpe vem antes do toque: se os dois acontecem no mesmo frame, o inimigo cai antes de causar dano
+    this.physics.add.overlap(this.player.attackZone, this.enemies, (_zone, enemy) => {
+      if (enemy instanceof Enemy) this.slashEnemy(enemy);
+    });
     this.physics.add.overlap(this.player, this.enemies, (_player, enemy) => {
       if (enemy instanceof Enemy) this.touchEnemy(enemy);
     });
@@ -123,6 +129,19 @@ export class GameScene extends Phaser.Scene {
       if (gameState.loseLife()) this.player.hurt(enemy.x);
       else this.die(false);
     }
+  }
+
+  /** Meia-lua acertou: derrota qualquer inimigo, com hit-stop e tremor de câmera */
+  private slashEnemy(enemy: Enemy): void {
+    if (this.dying || this.finished || enemy.isDefeated) return;
+    const m = CAPOEIRA.meiaLua;
+    enemy.defeat();
+    gameState.addScore(m.score);
+    this.cameras.main.shake(m.shakeMs, m.shakeIntensity);
+
+    if (this.physics.world.isPaused) return;
+    this.physics.world.pause();
+    this.time.delayedCall(m.hitStopMs, () => this.physics.world.resume());
   }
 
   private reachCheckpoint(flag: Checkpoint, point: SpawnPoint): void {
