@@ -223,7 +223,7 @@ export interface LevelConfig {
 
 Cada fase: ~**120–160 tiles de largura** × **17 tiles de altura** (544 px). Curta: 1 a 2 minutos para jogar.
 
-**Curva de dificuldade:** a fase 1 tem que ser fácil (o jogo pode ser jogado por outra pessoa na apresentação). Sem buracos longos no começo e no máximo 3 inimigos.
+**Curva de dificuldade:** a fase 1 era para ser bem fácil (limite de 3 inimigos), mas o usuário achou fácil demais ao testar e **pediu mais desafio**: hoje tem 8 Desinformações, uma ponte quebrada e um buraco extra, mantendo o começo seguro (sem buracos longos nem inimigos nos primeiros 30 tiles) e 2 checkpoints.
 
 **Alcance do player (para desenhar mapas):**
 - Pulo simples sobe ~120 px: vence degraus de até **3 tiles**.
@@ -240,7 +240,7 @@ Cada fase: ~**120–160 tiles de largura** × **17 tiles de altura** (544 px). C
 - **Cenário:** mata, morros e paliçadas de madeira do Quilombo dos Palmares. Fase com bastante subida (plataformas em escada).
 - **Coletável:** símbolo **Sankofa** (amarelo/dourado). `required: 0`, opcional e só para pontuação. Há **10** no mapa, espalhados pelo caminho: arco no início, arcos sobre buracos para mostrar a trajetória do pulo e alguns em plataformas altas como recompensa do aú.
 - **Ensina:** ginga, pular, aú (pulo duplo), derrotar inimigo pulando em cima e com a **meia-lua de compasso**.
-- **Inimigos:** só Desinformação, poucos.
+- **Inimigos:** só Desinformação (8 no mapa; ver curva de dificuldade na seção 5).
 - Paleta: céu laranja-entardecer, chão terroso, vegetação verde.
 
 ### Fase 2: São Paulo · Século XIX · Mentor: Luiz Gama
@@ -371,6 +371,7 @@ Ordem sugerida (cada passo deixa o jogo jogável):
 - [ ] Refazer o level design das **3 fases**, deixando-as mais bonitas e mais desafiadoras. Hoje os mapas são funcionais e simples (fase 2: ruas, quatro telhados e um túnel; fase 3: trechos retos com um viaduto e um prédio). Objetivos:
   - **Mais bonitas:** variedade de alturas e silhuetas, composição pensada em camadas (primeiro plano, plataformas, fundo), marcos visuais por trecho (paliçadas e cabanas, casarões e sacadas, barracos e varais, a biblioteca ao fim), coletáveis posicionados para guiar o olhar; combinar com os temas de cenário das fases 2 e 3
   - **Mais desafiadoras, mas justas:** curva de dificuldade crescente dentro de cada fase e entre as fases (a fase 1 continua fácil para a apresentação), combinações de movimentos (aú + meia-lua, esquiva entre inimigos), plataformas móveis ou sequências de precisão só se couberem no prazo, sem pulos cegos nem mortes injustas
+  - **Andamento:** fase 1 refeita duas vezes (colinas, ponte quebrada, 8 inimigos, 2 checkpoints; aguardando aprovação do usuário); fases 2 e 3 pendentes
   - **Processo:** rodar `node tools/reachability.mjs <fase>` a cada mudança (inclusive `NOAU=1` e `NOCROUCH=1` para saber o que cada movimento exige); manter coletáveis obrigatórios alcançáveis; **o usuário testa e aprova cada fase antes do commit**
 - [ ] Ajuste fino do game feel e da dificuldade
 - [x] Pausa (Esc/P): `PauseScene` por cima da GameScene parada, com "Continuar" e "Menu"
