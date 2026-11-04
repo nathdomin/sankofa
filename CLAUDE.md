@@ -63,6 +63,7 @@ O jogador atravessa 3 fases, cada uma ligada a uma personalidade negra brasileir
    │  ├─ GameScene.ts         # gameplay
    │  ├─ HudScene.ts          # roda em paralelo à GameScene
    │  ├─ CardScene.ts         # carta histórica ao fim da fase
+   │  ├─ PauseScene.ts        # pausa por cima da GameScene
    │  ├─ GameOverScene.ts
    │  └─ VictoryScene.ts      # final + créditos
    ├─ entities/
@@ -75,6 +76,7 @@ O jogador atravessa 3 fases, cada uma ligada a uma personalidade negra brasileir
       ├─ LevelBuilder.ts      # converte mapa ASCII em objetos
       ├─ transitions.ts       # goToScene: troca de cena com fade
       ├─ sceneInput.ts        # teclas de confirmar/navegar nos menus
+      ├─ OptionList.ts        # lista de opções (GameOver, Pausa)
       ├─ Scenery.ts           # parallax, landmarks e vegetação a partir do tema da fase
       └─ GameState.ts         # vidas, fase atual, pontuação (singleton que emite eventos para a HUD)
 ```
@@ -371,7 +373,7 @@ Ordem sugerida (cada passo deixa o jogo jogável):
   - **Mais desafiadoras, mas justas:** curva de dificuldade crescente dentro de cada fase e entre as fases (a fase 1 continua fácil para a apresentação), combinações de movimentos (aú + meia-lua, esquiva entre inimigos), plataformas móveis ou sequências de precisão só se couberem no prazo, sem pulos cegos nem mortes injustas
   - **Processo:** rodar `node tools/reachability.mjs <fase>` a cada mudança (inclusive `NOAU=1` e `NOCROUCH=1` para saber o que cada movimento exige); manter coletáveis obrigatórios alcançáveis; **o usuário testa e aprova cada fase antes do commit**
 - [ ] Ajuste fino do game feel e da dificuldade
-- [ ] Pausa (Esc/P)
+- [x] Pausa (Esc/P): `PauseScene` por cima da GameScene parada, com "Continuar" e "Menu"
 
 ### Marco 4: Som e entrega (meta: até 17/11, **congelamento**)
 - [ ] Efeitos sonoros e mute

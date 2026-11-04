@@ -78,6 +78,13 @@ export const INTRO_TEXTS = {
   hint: 'Enter ou Espaço para continuar',
 } as const;
 
+export const PAUSE_TEXTS = {
+  title: 'Pausado',
+  resume: 'Continuar',
+  menu: 'Menu',
+  hint: 'Esc ou P para continuar',
+} as const;
+
 export const GAME_OVER_TEXTS = {
   title: 'Fim de jogo',
   subtitle: 'Sankofa: volte e busque o que ficou para trás.',

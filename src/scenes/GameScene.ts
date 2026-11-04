@@ -11,6 +11,7 @@ import { Player } from '../entities/Player';
 import { gameState } from '../systems/GameState';
 import { buildLevel, type BuiltLevel, type SpawnPoint } from '../systems/LevelBuilder';
 import { addParallax, decorateLevel, type ParallaxUpdater } from '../systems/Scenery';
+import { onKeys } from '../systems/sceneInput';
 import { goToScene } from '../systems/transitions';
 import type { CardSceneData } from './CardScene';
 import type { GameOverSceneData } from './GameOverScene';
@@ -121,6 +122,9 @@ export class GameScene extends Phaser.Scene {
       .setDepth(100)
       .setAlpha(0);
 
+    // Esc ou P pausa: a PauseScene fica por cima e esta cena para
+    onKeys(this, ['ESC', 'P'], () => this.pauseGame());
+
     // o HUD roda em paralelo, por cima desta cena
     this.scene.launch('Hud', { levelIndex: this.levelIndex } satisfies HudSceneData);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.scene.stop('Hud'));
@@ -133,6 +137,12 @@ export class GameScene extends Phaser.Scene {
     if (!this.dying && this.player.arcadeBody.top > this.level.heightPx + WORLD.fallMargin) {
       this.die(gameState.loseLife());
     }
+  }
+
+  private pauseGame(): void {
+    if (this.dying || this.finished) return;
+    this.scene.launch('Pause');
+    this.scene.pause();
   }
 
   /** Mostra um aviso no alto da tela e some depois de um tempo */
