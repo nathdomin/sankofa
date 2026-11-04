@@ -40,6 +40,7 @@ export class Player extends Phaser.GameObjects.Zone {
   private blinkElapsed = 0;
   private controlsEnabled = true;
   private invincibleUntil = Number.NEGATIVE_INFINITY;
+  private hurtTimer: Phaser.Time.TimerEvent | null = null;
 
   /** x, y = posição dos pés */
   constructor(scene: Phaser.Scene, x: number, y: number) {
@@ -72,6 +73,23 @@ export class Player extends Phaser.GameObjects.Zone {
 
   get isInvincible(): boolean {
     return this.scene.time.now < this.invincibleUntil;
+  }
+
+  /** Dano de um inimigo em `sourceX`: empurra para longe dele e tira o controle por um instante */
+  hurt(sourceX: number): void {
+    if (this.current === 'hurt') return;
+    const away = this.arcadeBody.center.x >= sourceX ? 1 : -1;
+    this.setState('hurt');
+    this.arcadeBody.setVelocity(away * PLAYER.hurtKnockbackX, PLAYER.hurtKnockbackY);
+    this.facing = away === 1 ? -1 : 1; // continua olhando para o inimigo
+    this.setInvincible(GAME.invincibleMs);
+  }
+
+  /** Quique depois de pisar num inimigo */
+  bounce(velocityY: number): void {
+    this.arcadeBody.setVelocityY(velocityY);
+    this.setState('jump');
+    this.squash(PLAYER.jumpStretchY);
   }
 
   /** Invencível (e piscando) pelos próximos `ms` */
@@ -215,6 +233,9 @@ export class Player extends Phaser.GameObjects.Zone {
   }
 
   private exitState(): void {
+    this.hurtTimer?.remove(false);
+    this.hurtTimer = null;
+    this.visual.clearTint();
     this.stateTween?.stop();
     this.stateTween = null;
     this.auSpinning = false;
@@ -245,7 +266,11 @@ export class Player extends Phaser.GameObjects.Zone {
         });
         break;
       }
-      // meiaLua, esquiva, role e hurt entram no Marco 2
+      case 'hurt':
+        this.visual.setTint(PLAYER.hurtTint);
+        this.hurtTimer = this.scene.time.delayedCall(PLAYER.hurtMs, () => this.setState('idle'));
+        break;
+      // meiaLua, esquiva e role entram no Marco 2
       default:
         break;
     }
@@ -295,6 +320,8 @@ export class Player extends Phaser.GameObjects.Zone {
         return rising ? 'player-jumpUp' : 'player-fall';
       case 'jump':
         return rising ? 'player-jumpUp' : 'player-fall';
+      case 'hurt':
+        return 'player-fall';
       default:
         return blinking ? 'player-idleBlink' : 'player-idle';
     }

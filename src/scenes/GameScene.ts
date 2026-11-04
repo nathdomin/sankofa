@@ -1,8 +1,9 @@
 import Phaser from 'phaser';
-import { CAMERA, GAME, WORLD } from '../config/physics';
+import { CAMERA, ENEMY, GAME, WORLD } from '../config/physics';
 import { PALETTE, toCss } from '../config/palette';
 import { LEVELS, type LevelConfig } from '../data/levels';
 import { Checkpoint } from '../entities/Checkpoint';
+import { Enemy } from '../entities/Enemy';
 import { Player } from '../entities/Player';
 import { GAME_EVENTS, gameState } from '../systems/GameState';
 import { buildLevel, type BuiltLevel, type SpawnPoint } from '../systems/LevelBuilder';
@@ -20,6 +21,7 @@ export class GameScene extends Phaser.Scene {
   private respawnPoint!: SpawnPoint;
   private finished = false;
   private dying = false;
+  private enemies!: Phaser.GameObjects.Group;
   private livesText!: Phaser.GameObjects.Text;
   private parallax: ParallaxUpdater = () => undefined;
 
@@ -59,6 +61,15 @@ export class GameScene extends Phaser.Scene {
       this.physics.add.overlap(this.player, flag, () => this.reachCheckpoint(flag, point));
     });
 
+    this.enemies = this.add.group({ runChildUpdate: true });
+    this.level.enemies.forEach((spawn) => {
+      this.enemies.add(new Enemy(this, spawn.x, spawn.y, spawn.kind, this.level.isSolidAt));
+    });
+    this.physics.add.collider(this.enemies, this.level.solids);
+    this.physics.add.overlap(this.player, this.enemies, (_player, enemy) => {
+      if (enemy instanceof Enemy) this.touchEnemy(enemy);
+    });
+
     const { goal } = this.level;
     const portal = this.physics.add.staticImage(goal.x, goal.y, 'portal-open').setOrigin(0.5, 1).refreshBody();
     this.physics.add.overlap(this.player, portal, () => this.reachGoal());
@@ -88,7 +99,7 @@ export class GameScene extends Phaser.Scene {
     this.parallax(this.cameras.main, delta);
 
     if (!this.dying && this.player.arcadeBody.top > this.level.heightPx + WORLD.fallMargin) {
-      this.loseLife();
+      this.die(gameState.loseLife());
     }
   }
 
@@ -96,17 +107,34 @@ export class GameScene extends Phaser.Scene {
     this.livesText.setText(`Vidas: ${lives}`);
   }
 
+  /** Pisão de cima derrota (se o inimigo permitir); qualquer outro toque custa uma vida */
+  private touchEnemy(enemy: Enemy): void {
+    if (this.dying || this.finished || enemy.isDefeated) return;
+    const body = this.player.arcadeBody;
+    const stomp =
+      enemy.canBeStomped && body.velocity.y > 0 && body.bottom <= enemy.arcadeBody.top + ENEMY.stompTolerance;
+
+    if (stomp) {
+      enemy.defeat();
+      this.player.bounce(ENEMY.stompBounce);
+      gameState.addScore(ENEMY.stompScore);
+    } else if (!this.player.isInvincible) {
+      // empurrão no dano; só volta ao checkpoint se foi a última vida
+      if (gameState.loseLife()) this.player.hurt(enemy.x);
+      else this.die(false);
+    }
+  }
+
   private reachCheckpoint(flag: Checkpoint, point: SpawnPoint): void {
     if (!flag.activate()) return;
     this.respawnPoint = point;
   }
 
-  /** Perde uma vida e volta ao último checkpoint; sem vidas, recomeça a partida */
-  private loseLife(): void {
+  /** Fade e volta ao último checkpoint (buraco); sem vidas, recomeça a partida */
+  private die(alive: boolean): void {
     if (this.dying || this.finished) return;
     this.dying = true;
     this.player.setControlsEnabled(false);
-    const alive = gameState.loseLife();
 
     const cam = this.cameras.main;
     cam.fadeOut(GAME.deathFadeMs);

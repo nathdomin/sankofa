@@ -160,7 +160,8 @@ Todos os valores ficam em `src/config/physics.ts` (`WORLD`, `PLAYER`, `CAPOEIRA`
 
 ## 4. Regras gerais
 
-- **3 vidas.** Encostar num inimigo pelo lado ou cair num buraco = perde 1 vida e volta ao último checkpoint (ou ao início da fase).
+- **3 vidas.** Cair num buraco = perde 1 vida e volta ao último checkpoint (ou ao início da fase).
+- Encostar num inimigo pelo lado = perde 1 vida e o player é **empurrado para trás** (estado `hurt`, ~350 ms sem controle, sprite avermelhado), sem voltar ao checkpoint. Só volta ao checkpoint quem cair no buraco.
 - Cair **em cima** de um inimigo Desinformação derrota o inimigo e dá um pequeno quique no player.
 - A **meia-lua de compasso** derrota qualquer inimigo que estiver na hitbox do golpe.
 - Após levar dano: **1 s de invencibilidade** (sprite piscando).
@@ -330,12 +331,12 @@ Paleta global em `palette.ts`: dourado `#f2b705`, verde `#1e7a3c`, vermelho `#c0
 - [x] Fase 1 montada com câmera (e já com a arte de cenário do Marco 3)
 - **Pronto quando:** dá para atravessar a fase 1 do início ao portal só pulando
 
-> Estado provisório: os `E` e `C` do mapa são lidos mas ainda não viram entidades; o portal está sempre aberto e reinicia a mesma fase; o título da fase é um texto solto na `GameScene` (vai para a `HudScene`).
+> Estado provisório: os `C` do mapa são lidos mas ainda não viram entidades; a pontuação ainda não aparece na tela; o portal está sempre aberto e reinicia a mesma fase; o título da fase é um texto solto na `GameScene` (vai para a `HudScene`).
 
 ### Marco 2: Sistemas e conteúdo (meta: até 11/11)
 Ordem sugerida (cada passo deixa o jogo jogável):
 - [x] `GameState` (vidas, fase, pontuação) + vidas, invencibilidade, checkpoint e buracos (falta só a GameOverScene, hoje a partida recomeça direto)
-- [ ] Inimigos (patrulha, stomp, dano, Esquecimento imune a stomp)
+- [x] Inimigos (patrulha, stomp, dano, Esquecimento imune a stomp); o Esquecimento só poderá ser derrotado depois da meia-lua
 - [ ] Meia-lua de compasso (com hit-stop) e esquiva; rolê se houver tempo (seção 3.1)
 - [ ] Coletáveis + portal trancado/aberto
 - [ ] HudScene

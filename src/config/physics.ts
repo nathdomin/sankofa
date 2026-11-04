@@ -21,6 +21,11 @@ export const PLAYER = {
   auSpinMs: 300,
   coyoteMs: 100,
   jumpBufferMs: 120,
+  // dano: empurrão para trás e perda de controle por um instante
+  hurtMs: 350,
+  hurtKnockbackX: 220,
+  hurtKnockbackY: -280,
+  hurtTint: 0xff6666,
   runFrameRate: 16,
   runAnimMinSpeed: 20,
   // squash & stretch do visual
@@ -40,6 +45,18 @@ export const CAPOEIRA = {
   role: { speed: 420, durationMs: 250, cooldownMs: 700 },
   // parado: respiração sutil, o corpo sobe e desce sobre os pés (sem inclinar para os lados)
   ginga: { breathScaleY: 1.03, breathCycleMs: 1600 },
+} as const;
+
+export const ENEMY = {
+  // body: hitbox menor que a textura (a arte tem sombra e pontas); ox/oy = offset a partir do canto da textura
+  desinformacao: { speed: 55, stompable: true, body: { w: 24, h: 18, ox: 2, oy: 6 } },
+  esquecimento: { speed: 95, stompable: false, body: { w: 24, h: 20, ox: 2, oy: 8 } },
+  // quique do player ao pisar num inimigo
+  stompBounce: -380,
+  // quanto o pé do player pode estar abaixo do topo do inimigo para contar como pisão
+  stompTolerance: 16,
+  stompScore: 100,
+  defeatMs: 200,
 } as const;
 
 export const GAME = {
