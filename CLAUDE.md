@@ -65,11 +65,12 @@ O jogador atravessa 3 fases, cada uma ligada a uma personalidade negra brasileir
    │  ├─ Player.ts
    │  ├─ Enemy.ts
    │  ├─ Collectible.ts
+   │  ├─ Checkpoint.ts
    │  └─ Npc.ts
    └─ systems/
       ├─ LevelBuilder.ts      # converte mapa ASCII em objetos
       ├─ Scenery.ts           # parallax, landmarks e vegetação a partir do tema da fase
-      └─ GameState.ts         # vidas, fase atual, pontuação
+      └─ GameState.ts         # vidas, fase atual, pontuação (singleton que emite eventos para a HUD)
 ```
 
 ---
@@ -329,11 +330,11 @@ Paleta global em `palette.ts`: dourado `#f2b705`, verde `#1e7a3c`, vermelho `#c0
 - [x] Fase 1 montada com câmera (e já com a arte de cenário do Marco 3)
 - **Pronto quando:** dá para atravessar a fase 1 do início ao portal só pulando
 
-> Estado provisório deixado pelo Marco 1: os `E`, `C` e `K` do mapa são lidos mas ainda não viram entidades; cair no buraco faz respawn sem perder vida; o portal está sempre aberto e reinicia a mesma fase; o título da fase é um texto solto na `GameScene` (vai para a `HudScene`).
+> Estado provisório: os `E` e `C` do mapa são lidos mas ainda não viram entidades; o portal está sempre aberto e reinicia a mesma fase; o título da fase é um texto solto na `GameScene` (vai para a `HudScene`).
 
 ### Marco 2: Sistemas e conteúdo (meta: até 11/11)
 Ordem sugerida (cada passo deixa o jogo jogável):
-- [ ] `GameState` (vidas, fase, pontuação) + vidas, invencibilidade, checkpoint e buracos
+- [x] `GameState` (vidas, fase, pontuação) + vidas, invencibilidade, checkpoint e buracos (falta só a GameOverScene, hoje a partida recomeça direto)
 - [ ] Inimigos (patrulha, stomp, dano, Esquecimento imune a stomp)
 - [ ] Meia-lua de compasso (com hit-stop) e esquiva; rolê se houver tempo (seção 3.1)
 - [ ] Coletáveis + portal trancado/aberto

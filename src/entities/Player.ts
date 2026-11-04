@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { CAPOEIRA, PLAYER, WORLD } from '../config/physics';
+import { CAPOEIRA, GAME, PLAYER, WORLD } from '../config/physics';
 
 export type PlayerState = 'idle' | 'run' | 'jump' | 'au' | 'meiaLua' | 'esquiva' | 'role' | 'hurt';
 
@@ -39,6 +39,7 @@ export class Player extends Phaser.GameObjects.Zone {
   private auSpinning = false;
   private blinkElapsed = 0;
   private controlsEnabled = true;
+  private invincibleUntil = Number.NEGATIVE_INFINITY;
 
   /** x, y = posição dos pés */
   constructor(scene: Phaser.Scene, x: number, y: number) {
@@ -69,12 +70,22 @@ export class Player extends Phaser.GameObjects.Zone {
     this.controlsEnabled = enabled;
   }
 
+  get isInvincible(): boolean {
+    return this.scene.time.now < this.invincibleUntil;
+  }
+
+  /** Invencível (e piscando) pelos próximos `ms` */
+  setInvincible(ms: number): void {
+    this.invincibleUntil = this.scene.time.now + ms;
+  }
+
   /** Reposiciona com os pés em (x, y) e zera o movimento */
   respawn(x: number, y: number): void {
     this.arcadeBody.reset(x, y - PLAYER.hitbox.h / 2);
     this.lastGroundedAt = Number.NEGATIVE_INFINITY;
     this.jumpBufferedAt = Number.NEGATIVE_INFINITY;
     this.auAvailable = true;
+    this.arcadeBody.setVelocity(0, 0);
     this.setState('idle');
     this.syncVisual();
   }
@@ -96,7 +107,7 @@ export class Player extends Phaser.GameObjects.Zone {
       this.resolveState(onGround, dir);
     }
 
-    this.updateVisual(delta);
+    this.updateVisual(time, delta);
   }
 
   /** Única porta de entrada para trocar de estado */
@@ -254,11 +265,14 @@ export class Player extends Phaser.GameObjects.Zone {
     });
   }
 
-  private updateVisual(delta: number): void {
+  private updateVisual(time: number, delta: number): void {
     this.blinkElapsed = (this.blinkElapsed + delta) % PLAYER.blinkEveryMs;
     const blinking = this.blinkElapsed < PLAYER.blinkMs;
 
     const v = this.visual;
+    // pisca enquanto invencível
+    const ghost = time < this.invincibleUntil && Math.floor(time / GAME.invincibleBlinkMs) % 2 === 0;
+    v.setAlpha(ghost ? GAME.invincibleAlpha : 1);
     if (this.current === 'run') {
       v.play('player-run', true);
       // passada acompanha a velocidade: acelerando, as pernas também aceleram

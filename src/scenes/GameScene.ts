@@ -1,8 +1,10 @@
 import Phaser from 'phaser';
-import { CAMERA, WORLD } from '../config/physics';
+import { CAMERA, GAME, WORLD } from '../config/physics';
 import { PALETTE, toCss } from '../config/palette';
 import { LEVELS, type LevelConfig } from '../data/levels';
+import { Checkpoint } from '../entities/Checkpoint';
 import { Player } from '../entities/Player';
+import { GAME_EVENTS, gameState } from '../systems/GameState';
 import { buildLevel, type BuiltLevel, type SpawnPoint } from '../systems/LevelBuilder';
 import { addParallax, decorateLevel, type ParallaxUpdater } from '../systems/Scenery';
 
@@ -17,6 +19,8 @@ export class GameScene extends Phaser.Scene {
   private player!: Player;
   private respawnPoint!: SpawnPoint;
   private finished = false;
+  private dying = false;
+  private livesText!: Phaser.GameObjects.Text;
   private parallax: ParallaxUpdater = () => undefined;
 
   constructor() {
@@ -29,6 +33,8 @@ export class GameScene extends Phaser.Scene {
     if (!config) throw new Error(`Fase inexistente: ${this.levelIndex}`);
     this.config = config;
     this.finished = false;
+    this.dying = false;
+    gameState.startLevel(this.levelIndex);
   }
 
   create(): void {
@@ -48,6 +54,11 @@ export class GameScene extends Phaser.Scene {
     this.player = new Player(this, this.respawnPoint.x, this.respawnPoint.y);
     this.physics.add.collider(this.player, this.level.solids);
 
+    this.level.checkpoints.forEach((point) => {
+      const flag = new Checkpoint(this, point.x, point.y);
+      this.physics.add.overlap(this.player, flag, () => this.reachCheckpoint(flag, point));
+    });
+
     const { goal } = this.level;
     const portal = this.physics.add.staticImage(goal.x, goal.y, 'portal-open').setOrigin(0.5, 1).refreshBody();
     this.physics.add.overlap(this.player, portal, () => this.reachGoal());
@@ -57,26 +68,62 @@ export class GameScene extends Phaser.Scene {
     cam.setDeadzone(CAMERA.deadzoneW, CAMERA.deadzoneH);
     cam.fadeIn(CAMERA.fadeMs);
 
-    // título provisório até a HudScene (Marco 2)
-    this.add
-      .text(16, 12, `${this.config.title} · ${this.config.era}`, {
-        fontFamily: 'monospace',
-        fontSize: '18px',
-        color: toCss(PALETTE.cream),
-        stroke: toCss(PALETTE.black),
-        strokeThickness: 4,
-      })
-      .setScrollFactor(0)
-      .setDepth(100);
+    // textos provisórios até a HudScene
+    const style: Phaser.Types.GameObjects.Text.TextStyle = {
+      fontFamily: 'monospace',
+      fontSize: '18px',
+      color: toCss(PALETTE.cream),
+      stroke: toCss(PALETTE.black),
+      strokeThickness: 4,
+    };
+    this.add.text(16, 12, `${this.config.title} · ${this.config.era}`, style).setScrollFactor(0).setDepth(100);
+    this.livesText = this.add.text(16, 38, '', style).setScrollFactor(0).setDepth(100);
+    this.updateLivesText(gameState.lives);
+    gameState.on(GAME_EVENTS.lives, this.updateLivesText, this);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => gameState.off(GAME_EVENTS.lives, this.updateLivesText, this));
   }
 
   update(time: number, delta: number): void {
     this.player.update(time, delta);
     this.parallax(this.cameras.main, delta);
 
-    if (this.player.arcadeBody.top > this.level.heightPx + WORLD.fallMargin) {
-      this.player.respawn(this.respawnPoint.x, this.respawnPoint.y);
+    if (!this.dying && this.player.arcadeBody.top > this.level.heightPx + WORLD.fallMargin) {
+      this.loseLife();
     }
+  }
+
+  private updateLivesText(lives: number): void {
+    this.livesText.setText(`Vidas: ${lives}`);
+  }
+
+  private reachCheckpoint(flag: Checkpoint, point: SpawnPoint): void {
+    if (!flag.activate()) return;
+    this.respawnPoint = point;
+  }
+
+  /** Perde uma vida e volta ao último checkpoint; sem vidas, recomeça a partida */
+  private loseLife(): void {
+    if (this.dying || this.finished) return;
+    this.dying = true;
+    this.player.setControlsEnabled(false);
+    const alive = gameState.loseLife();
+
+    const cam = this.cameras.main;
+    cam.fadeOut(GAME.deathFadeMs);
+    cam.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
+      if (!alive) {
+        // provisório: a GameOverScene entra mais adiante no Marco 2
+        gameState.reset();
+        this.scene.restart({ levelIndex: this.levelIndex } satisfies GameSceneData);
+        return;
+      }
+      this.player.respawn(this.respawnPoint.x, this.respawnPoint.y);
+      this.player.setInvincible(GAME.invincibleMs);
+      this.player.setControlsEnabled(true);
+      cam.centerOn(this.player.arcadeBody.center.x, this.player.arcadeBody.center.y);
+      cam.fadeIn(GAME.deathFadeMs);
+      this.dying = false;
+    });
   }
 
   private reachGoal(): void {

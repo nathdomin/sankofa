@@ -42,6 +42,16 @@ export const CAPOEIRA = {
   ginga: { breathScaleY: 1.03, breathCycleMs: 1600 },
 } as const;
 
+export const GAME = {
+  startLives: 3,
+  // invencibilidade depois de levar dano ou renascer, com o sprite piscando
+  invincibleMs: 1000,
+  invincibleBlinkMs: 80,
+  invincibleAlpha: 0.35,
+  // tempo do fade ao morrer, antes de voltar ao checkpoint
+  deathFadeMs: 250,
+} as const;
+
 export const CAMERA = {
   lerpX: 0.12,
   lerpY: 0.12,
