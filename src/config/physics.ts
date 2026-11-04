@@ -1,0 +1,51 @@
+export const TILE_SIZE = 32;
+
+export const WORLD = {
+  gravity: 1300,
+  maxFallSpeed: 700,
+  // margem abaixo do mapa antes de considerar que o player caiu no buraco
+  fallMargin: 64,
+} as const;
+
+export const PLAYER = {
+  // sprite maior que a hitbox para caber rosto e braços abertos; a hitbox não muda
+  sprite: { w: 40, h: 50 },
+  hitbox: { w: 22, h: 40 },
+  runSpeed: 230,
+  acceleration: 1600,
+  deceleration: 2000,
+  maxSpeedX: 1000,
+  jumpVelocity: -560,
+  jumpCutFactor: 0.45,
+  auVelocity: -480,
+  auSpinMs: 300,
+  coyoteMs: 100,
+  jumpBufferMs: 120,
+  runFrameRate: 16,
+  runAnimMinSpeed: 20,
+  // squash & stretch do visual
+  jumpStretchY: 1.15,
+  landSquashY: 0.8,
+  squashMs: 140,
+  blinkEveryMs: 2800,
+  blinkMs: 130,
+} as const;
+
+export const CAPOEIRA = {
+  meiaLua: {
+    durationMs: 300, activeFromMs: 80, activeToMs: 220, cooldownMs: 450,
+    hitbox: { w: 44, h: 30 }, groundSpeedFactor: 0.3, hitStopMs: 60,
+  },
+  esquiva: { speedFactor: 0.4, hitbox: { w: 22, h: 22 } },
+  role: { speed: 420, durationMs: 250, cooldownMs: 700 },
+  // parado: respiração sutil, o corpo sobe e desce sobre os pés (sem inclinar para os lados)
+  ginga: { breathScaleY: 1.03, breathCycleMs: 1600 },
+} as const;
+
+export const CAMERA = {
+  lerpX: 0.12,
+  lerpY: 0.12,
+  deadzoneW: 160,
+  deadzoneH: 120,
+  fadeMs: 300,
+} as const;

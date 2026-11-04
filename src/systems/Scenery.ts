@@ -1,0 +1,270 @@
+import Phaser from 'phaser';
+import { TILE_SIZE } from '../config/physics';
+import type { LevelConfig, Landmark } from '../data/levels';
+import { DECOR_VARIANTS, SUN } from '../art/themes/quilombo';
+
+// Profundidades: fundo < construções < árvores < tiles (0) < enfeites de chão < player (10) < primeiro plano
+export const DEPTH = {
+  sky: -100,
+  sunGlow: -99,
+  birds: -97,
+  clouds: -95,
+  far: -90,
+  hills: -85,
+  mid: -80,
+  motes: -70,
+  near: -60,
+  smoke: -32,
+  landmark: -30,
+  tree: -20,
+  // atrás dos tiles: a base fica escondida pela grama e o objeto parece plantado
+  seated: -10,
+  groundDecor: 3,
+  foreground: 50,
+} as const;
+
+// quanto a base de cada enfeite afunda abaixo do topo do chão
+const SEAT = { tree: 8, bush: 7, rock: 5, small: 3 } as const;
+
+// balanço da vegetação rasteira
+const WIND = { minAngle: 3, maxAngle: 7, minMs: 900, maxMs: 1700 } as const;
+
+// quanto cada camada anda em relação à câmera (1 = junto com o chão)
+const PARALLAX = { clouds: 0.04, birds: 0.08, far: 0.1, hills: 0.2, mid: 0.32, near: 0.5, foreground: 1.3 } as const;
+
+const AMBIENT = {
+  cloudDriftPxPerSec: 6,
+  sunPulseMs: 3200,
+  birdCount: 4,
+  birdSpeed: { min: 18, max: 32 },
+  birdFlapFps: 6,
+  smoke: { lifespan: 3200, frequency: 380 },
+} as const;
+
+export type ParallaxUpdater = (cam: Phaser.Cameras.Scene2D.Camera, delta: number) => void;
+
+interface Bird {
+  sprite: Phaser.GameObjects.Sprite;
+  x: number;
+  y: number;
+  speed: number;
+  phase: number;
+}
+
+/** Céu, camadas em parallax e elementos vivos do fundo (nuvens, sol, pássaros, pólen) */
+export function addParallax(scene: Phaser.Scene, level: LevelConfig): ParallaxUpdater {
+  const { theme } = level;
+  const { width, height } = scene.scale;
+  if (!scene.textures.exists(`sky-${theme}`)) return () => undefined;
+
+  scene.add.image(0, 0, `sky-${theme}`).setOrigin(0).setScrollFactor(0).setDepth(DEPTH.sky);
+
+  // halo do sol pulsando devagar
+  const glow = scene.add.image(SUN.x, SUN.y, `sunglow-${theme}`).setScrollFactor(0).setDepth(DEPTH.sunGlow);
+  scene.tweens.add({
+    targets: glow,
+    alpha: { from: 0.7, to: 1 },
+    scale: { from: 0.95, to: 1.08 },
+    duration: AMBIENT.sunPulseMs,
+    ease: 'Sine.easeInOut',
+    yoyo: true,
+    repeat: -1,
+  });
+
+  const layer = (key: string, depth: number, top?: number): Phaser.GameObjects.TileSprite => {
+    const frame = scene.textures.getFrame(key);
+    return scene.add
+      .tileSprite(0, top ?? height - frame.height, width, frame.height, key)
+      .setOrigin(0)
+      .setScrollFactor(0)
+      .setDepth(depth);
+  };
+  const clouds = layer(`clouds-${theme}`, DEPTH.clouds, 0);
+  const far = layer(`far-${theme}`, DEPTH.far);
+  const hills = layer(`hills-${theme}`, DEPTH.hills);
+  const mid = layer(`mid-${theme}`, DEPTH.mid);
+  const near = layer(`near-${theme}`, DEPTH.near);
+  const fg = layer(`fg-${theme}`, DEPTH.foreground);
+
+  // pólen dourado flutuando na luz do fim de tarde
+  scene.add
+    .particles(0, 0, 'mote', {
+      x: { min: 0, max: width },
+      y: { min: height * 0.35, max: height * 0.9 },
+      lifespan: { min: 4000, max: 7000 },
+      speedX: { min: -10, max: 10 },
+      speedY: { min: -14, max: -4 },
+      scale: { start: 1, end: 0.4 },
+      alpha: { start: 0.9, end: 0 },
+      frequency: 220,
+      blendMode: Phaser.BlendModes.ADD,
+    })
+    .setScrollFactor(0)
+    .setDepth(DEPTH.motes);
+
+  const birds = createBirds(scene, width);
+
+  let cloudDrift = 0;
+  return (cam, delta) => {
+    const dt = delta / 1000;
+    cloudDrift += AMBIENT.cloudDriftPxPerSec * dt;
+    clouds.tilePositionX = cam.scrollX * PARALLAX.clouds + cloudDrift;
+    far.tilePositionX = cam.scrollX * PARALLAX.far;
+    hills.tilePositionX = cam.scrollX * PARALLAX.hills;
+    mid.tilePositionX = cam.scrollX * PARALLAX.mid;
+    near.tilePositionX = cam.scrollX * PARALLAX.near;
+    fg.tilePositionX = cam.scrollX * PARALLAX.foreground;
+
+    const span = width + 40;
+    for (const b of birds) {
+      b.x += b.speed * dt;
+      b.phase += dt * 2;
+      const screenX = Phaser.Math.Wrap(b.x - cam.scrollX * PARALLAX.birds, -20, span - 20);
+      b.sprite.setPosition(screenX, b.y + Math.sin(b.phase) * 3);
+    }
+  };
+}
+
+function createBirds(scene: Phaser.Scene, width: number): Bird[] {
+  if (!scene.anims.exists('bird-flap')) {
+    scene.anims.create({ key: 'bird-flap', frames: [{ key: 'bird-0' }, { key: 'bird-1' }], frameRate: AMBIENT.birdFlapFps, repeat: -1 });
+  }
+  const rng = new Phaser.Math.RandomDataGenerator(['birds']);
+  return Array.from({ length: AMBIENT.birdCount }, () => {
+    const sprite = scene.add.sprite(0, 0, 'bird-0').setScrollFactor(0).setDepth(DEPTH.birds);
+    sprite.play({ key: 'bird-flap', startFrame: rng.between(0, 1) });
+    sprite.anims.timeScale = rng.realInRange(0.8, 1.3);
+    return {
+      sprite,
+      x: rng.between(0, width),
+      y: rng.between(60, 230),
+      speed: rng.between(AMBIENT.birdSpeed.min, AMBIENT.birdSpeed.max),
+      phase: rng.realInRange(0, Math.PI * 2),
+    };
+  });
+}
+
+/** Fumaça saindo do telhado das casas */
+function addChimneySmoke(scene: Phaser.Scene, x: number, y: number): void {
+  scene.add
+    .particles(x, y, 'smoke', {
+      lifespan: AMBIENT.smoke.lifespan,
+      frequency: AMBIENT.smoke.frequency,
+      speedX: { min: 3, max: 10 },
+      speedY: { min: -24, max: -12 },
+      scale: { start: 0.5, end: 2.2 },
+      alpha: { start: 0.55, end: 0 },
+    })
+    .setDepth(DEPTH.smoke);
+}
+
+/** Linha do topo do chão (X) numa coluna, ou -1 se a coluna é buraco */
+function surfaceRow(map: string[], tx: number): number {
+  for (let ty = 1; ty < map.length; ty++) {
+    if (map[ty][tx] === 'X' && map[ty - 1][tx] !== 'X') return ty;
+  }
+  return -1;
+}
+
+function placeLandmark(scene: Phaser.Scene, level: LevelConfig, lm: Landmark, used: Set<number>): void {
+  const { map, theme } = level;
+  const width = lm.width ?? 1;
+  if (lm.kind === 'palisade') {
+    for (let i = 0; i < width; i++) {
+      const tx = lm.x + i;
+      const row = surfaceRow(map, tx);
+      if (row < 0) continue;
+      scene.add.image(tx * TILE_SIZE, row * TILE_SIZE + 4, `palisade-${theme}`).setOrigin(0, 1).setDepth(DEPTH.landmark);
+      used.add(tx);
+    }
+    return;
+  }
+  const row = surfaceRow(map, lm.x);
+  if (row < 0) return;
+  const img = scene.add.image(lm.x * TILE_SIZE + TILE_SIZE / 2, row * TILE_SIZE + 2, `${lm.kind}-${theme}`).setOrigin(0.5, 1).setDepth(DEPTH.landmark - 1);
+  const half = Math.ceil(img.width / 2 / TILE_SIZE);
+  for (let tx = lm.x - half; tx <= lm.x + half; tx++) used.add(tx);
+  // sai da cumeeira, um pouco à direita do centro
+  if (lm.kind === 'hut') addChimneySmoke(scene, img.x + 10, img.y - img.height + 12);
+}
+
+/** Espalha vegetação e enfeites de forma determinística (mesmo resultado a cada partida) */
+export function decorateLevel(scene: Phaser.Scene, level: LevelConfig): void {
+  const { map, theme } = level;
+  if (!scene.textures.exists(`tree-${theme}`)) return;
+
+  const used = new Set<number>();
+  level.landmarks.forEach((lm) => placeLandmark(scene, level, lm, used));
+
+  const rng = new Phaser.Math.RandomDataGenerator([`scenery-${level.id}`]);
+  const cols = map[0].length;
+  let nextTreeAt = rng.between(2, 5);
+
+  // chão no mesmo nível por `radius` colunas para cada lado (nada pendurado na quina
+  // e nenhum barranco mais alto ao lado cortando o enfeite)
+  const flatAround = (tx: number, row: number, radius: number): boolean => {
+    for (let d = -radius; d <= radius; d++) if (surfaceRow(map, tx + d) !== row) return false;
+    return true;
+  };
+  // sem plataforma ou chão nas `rows` linhas acima, em `radius` colunas para cada lado
+  const clearAbove = (tx: number, row: number, rows: number, radius: number): boolean => {
+    for (let d = -radius; d <= radius; d++) {
+      for (let r = 1; r <= rows; r++) {
+        const ch = map[row - r]?.[tx + d];
+        if (ch === 'X' || ch === 'B') return false;
+      }
+    }
+    return true;
+  };
+
+  for (let tx = 0; tx < cols; tx++) {
+    const row = surfaceRow(map, tx);
+    if (row < 0) continue;
+    const groundY = row * TILE_SIZE;
+    const centerX = tx * TILE_SIZE + TILE_SIZE / 2;
+
+    if (tx >= nextTreeAt && !used.has(tx) && flatAround(tx, row, 2) && clearAbove(tx, row, 4, 1)) {
+      const kind = rng.frac() < 0.35 ? 'palm' : 'tree';
+      scene.add
+        .image(centerX, groundY + SEAT.tree, `${kind}-${theme}`)
+        .setOrigin(0.5, 1)
+        .setDepth(DEPTH.tree)
+        .setFlipX(rng.frac() < 0.5);
+      nextTreeAt = tx + rng.between(4, 8);
+    }
+
+    const seated = (key: string, seat: number, jitter: number): void => {
+      scene.add
+        .image(centerX + rng.between(-jitter, jitter), groundY + seat, key)
+        .setOrigin(0.5, 1)
+        .setDepth(DEPTH.seated)
+        .setFlipX(rng.frac() < 0.5);
+    };
+    if (!used.has(tx) && flatAround(tx, row, 1) && clearAbove(tx, row, 1, 1)) {
+      if (rng.frac() < 0.16) seated(`bush-${theme}-${rng.between(0, 1)}`, SEAT.bush, 4);
+      else if (rng.frac() < 0.07) seated(`rock-${theme}`, SEAT.rock, 6);
+    }
+
+    // tufos e flores são pequenos: ficam na frente, dentro da faixa de grama do próprio tile,
+    // e balançam ao vento cada um no seu ritmo
+    const small = (key: string): void => {
+      const img = scene.add
+        .image(centerX + rng.between(-10, 10), groundY + SEAT.small, key)
+        .setOrigin(0.5, 1)
+        .setDepth(DEPTH.groundDecor)
+        .setFlipX(rng.frac() < 0.5);
+      const sway = rng.realInRange(WIND.minAngle, WIND.maxAngle);
+      scene.tweens.add({
+        targets: img,
+        angle: { from: -sway, to: sway },
+        duration: rng.between(WIND.minMs, WIND.maxMs),
+        delay: rng.between(0, WIND.maxMs),
+        ease: 'Sine.easeInOut',
+        yoyo: true,
+        repeat: -1,
+      });
+    };
+    if (rng.frac() < 0.6) small(`tuft-${theme}-${rng.between(0, DECOR_VARIANTS - 1)}`);
+    if (rng.frac() < 0.18) small(`flower-${theme}-${rng.between(0, DECOR_VARIANTS - 1)}`);
+  }
+}
