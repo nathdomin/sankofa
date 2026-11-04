@@ -226,6 +226,7 @@ Cada fase: ~**120–160 tiles de largura** × **17 tiles de altura** (544 px). C
 - Pulo simples sobe ~120 px: vence degraus de até **3 tiles**.
 - Com aú sobe ~200 px: vence degraus de **4–6 tiles**. Degrau de 4+ tiles **obriga** o aú; na fase 1, ofereça antes um trecho onde o aú é opcional.
 - Distância horizontal de um pulo simples correndo: ~6 tiles. Buracos de 3 tiles são confortáveis.
+- `NOAU=1` e `NOCROUCH=1` na ferramenta desligam o aú e a esquiva, para ver o que cada um exige. O rolê não é simulado.
 - **Sempre rode `node tools/reachability.mjs <fase>`** depois de mexer num mapa (índice da fase a partir de 0): ele simula pulos e aú e lista coletáveis e portal inalcançáveis. É obrigatório nas fases 2 e 3, onde os coletáveis abrem o portal.
 
 ---
@@ -349,8 +350,11 @@ Ordem sugerida (cada passo deixa o jogo jogável):
 - [x] HudScene (inclui a faixa decorativa de padrão geométrico na borda)
 - [x] Menu, Intro e GameOver (Intro → Game → GameOver | Menu; retrato do mentor é uma silhueta placeholder)
 - [x] Card e Victory (layout simples, polimento no Marco 3); o portal leva à Card, que segue para a Intro da próxima fase ou, na última, para a Victory. Créditos já trazem Nathan Domingues; pendente incluir os demais integrantes da equipe, se houver (`VICTORY_TEXTS` em `texts.ts`)
-- [ ] Fases 2 e 3 com as mecânicas especiais (NPCs libertados e diário), **sem arte de cenário própria**
+- [x] Fase 2 (São Paulo): 140 tiles, 5 cartas, 5 NPCs libertados pelo coletável mais próximo, túnel de 1 tile obrigatório (esquiva), sacada baixa opcional com a carta 3, 3 Esquecimentos e 4 Desinformações; sem arte de cenário própria (só a paleta)
+- [ ] Fase 3 (Canindé → cidade moderna) com o diário no HUD, **sem arte de cenário própria**
 - **Pronto quando:** dá para jogar do menu até os créditos sem travar
+
+> Nota: a fala do Luiz Gama não menciona mais o rolê (K), porque ele não foi implementado. Se o rolê entrar, voltar a citá-lo em `texts.ts`.
 
 > **Regra de escopo:** nada de arte de cenário nova no Marco 2. Placeholder simples basta até o fluxo completo funcionar.
 
@@ -361,6 +365,7 @@ Ordem sugerida (cada passo deixa o jogo jogável):
 - [ ] Polir as telas de fim de fase (hoje layout simples): aviso "Fase concluída!", `CardScene` e `VictoryScene`. O **fluxo funcional** (portal → Card → próxima fase → Victory) continua no Marco 2
 - [ ] Design dos coletáveis (hoje placeholders): Sankofa mais fiel ao símbolo Adinkra em vez do coração simples, e brilho/partículas ao coletar; carta de alforria e folha de papel também
 - [ ] Poses próprias dos movimentos de capoeira, hoje placeholders: esquiva (agachado em vez de só achatar o `scaleY`), meia-lua (bananeira em vez da pose de estrela do aú) e rolê (se for implementado)
+- [ ] Refazer o level design da fase 2 com mais variedade e personalidade (hoje simples: ruas, quatro telhados e um túnel); revisar também as fases 1 e 3 depois de jogadas
 - [ ] Ajuste fino do game feel e da dificuldade
 - [ ] Pausa (Esc/P)
 

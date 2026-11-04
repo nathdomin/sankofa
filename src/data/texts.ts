@@ -28,7 +28,7 @@ export const MENTORS: Record<MentorId, Mentor> = {
     lines: [
       'Me tiraram a liberdade quando eu era criança. Com estudo, eu a recuperei.',
       'Agora uso a lei para libertar outras pessoas.',
-      'Encontre as 5 cartas de alforria. Nas passagens baixas, abaixe na esquiva (↓) ou faça o rolê (K).',
+      'Encontre as 5 cartas de alforria. Nas passagens baixas, abaixe na esquiva (↓).',
     ],
   },
   carolina: {
@@ -83,6 +83,10 @@ export const GAME_OVER_TEXTS = {
   subtitle: 'Sankofa: volte e busque o que ficou para trás.',
   retry: 'Tentar de novo (fase atual)',
   menu: 'Menu',
+} as const;
+
+export const NPC_TEXTS = {
+  freed: 'Livre!',
 } as const;
 
 export const CARD_TEXTS = {

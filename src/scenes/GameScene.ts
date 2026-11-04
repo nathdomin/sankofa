@@ -5,6 +5,7 @@ import { LEVELS, type LevelConfig } from '../data/levels';
 import { Checkpoint } from '../entities/Checkpoint';
 import { Collectible } from '../entities/Collectible';
 import { Enemy } from '../entities/Enemy';
+import { Npc } from '../entities/Npc';
 import { Player } from '../entities/Player';
 import { gameState } from '../systems/GameState';
 import { buildLevel, type BuiltLevel, type SpawnPoint } from '../systems/LevelBuilder';
@@ -27,6 +28,7 @@ export class GameScene extends Phaser.Scene {
   private finished = false;
   private dying = false;
   private enemies!: Phaser.GameObjects.Group;
+  private npcs: Npc[] = [];
   private notice!: Phaser.GameObjects.Text;
   private noticeTween: Phaser.Tweens.Tween | null = null;
   private portal!: Phaser.Physics.Arcade.Image;
@@ -92,6 +94,8 @@ export class GameScene extends Phaser.Scene {
       this.physics.add.overlap(this.player, item, () => this.collect(item));
     });
 
+    this.npcs = this.level.npcs.map((point) => new Npc(this, point.x, point.y));
+
     const { goal } = this.level;
     this.portal = this.physics.add.staticImage(goal.x, goal.y, 'portal-locked').setOrigin(0.5, 1).refreshBody();
     this.physics.add.overlap(this.player, this.portal, () => this.touchPortal());
@@ -146,7 +150,17 @@ export class GameScene extends Phaser.Scene {
     if (this.dying || this.finished || !item.collect()) return;
     gameState.addScore(COLLECTIBLE.score);
     gameState.addCollected();
+    this.freeNearestNpc();
     if (!this.portalOpen && gameState.collected >= this.config.required) this.setPortalOpen(true, true);
+  }
+
+  /** Cada coletável liberta a pessoa ainda presa que estiver mais perto do jogador */
+  private freeNearestNpc(): void {
+    const { x, y } = this.player;
+    const free = this.npcs.filter((npc) => !npc.isFree);
+    if (free.length === 0) return;
+    const dist = (npc: Npc): number => Phaser.Math.Distance.Between(x, y, npc.x, npc.y);
+    free.reduce((best, npc) => (dist(npc) < dist(best) ? npc : best)).free();
   }
 
   /** Portal apagado enquanto faltarem coletáveis obrigatórios */

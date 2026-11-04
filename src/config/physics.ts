@@ -72,6 +72,15 @@ export const COLLECTIBLE = {
   pickRisePx: 22,
 } as const;
 
+export const NPC = {
+  // pulinhos ao ser libertado e balão "Livre!"
+  hopPx: 22,
+  hopMs: 160,
+  hops: 2,
+  balloonMs: 1000,
+  balloonRisePx: 14,
+} as const;
+
 export const GAME = {
   startLives: 3,
   // invencibilidade depois de levar dano ou renascer, com o sprite piscando
