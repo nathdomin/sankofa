@@ -17,6 +17,8 @@ class GameState extends Phaser.Events.EventEmitter {
   levelIndex = 0;
   /** Coletáveis pegos na fase atual */
   collected = 0;
+  /** Pontuação ao entrar na fase: ao tentar de novo, volta a ela (não dá para farmar pontos) */
+  private levelStartScore = 0;
 
   /** Nova partida do zero */
   reset(): void {
@@ -24,6 +26,7 @@ class GameState extends Phaser.Events.EventEmitter {
     this.score = 0;
     this.levelIndex = 0;
     this.collected = 0;
+    this.levelStartScore = 0;
     this.emit(GAME_EVENTS.lives, this.lives);
     this.emit(GAME_EVENTS.score, this.score);
     this.emit(GAME_EVENTS.collected, this.collected);
@@ -33,6 +36,17 @@ class GameState extends Phaser.Events.EventEmitter {
   startLevel(levelIndex: number): void {
     this.levelIndex = levelIndex;
     this.collected = 0;
+    this.levelStartScore = this.score;
+    this.emit(GAME_EVENTS.collected, this.collected);
+  }
+
+  /** Tentar de novo depois do game over: vidas cheias e pontuação de quando a fase começou */
+  restoreLevelStart(): void {
+    this.lives = GAME.startLives;
+    this.score = this.levelStartScore;
+    this.collected = 0;
+    this.emit(GAME_EVENTS.lives, this.lives);
+    this.emit(GAME_EVENTS.score, this.score);
     this.emit(GAME_EVENTS.collected, this.collected);
   }
 

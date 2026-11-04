@@ -5,6 +5,7 @@ import { LEVELS } from '../data/levels';
 import { paintGrid } from '../art/pixel';
 import { PLAYER_COLOR_MAP, PLAYER_POSES, PLAYER_RUN_KEYS, buildPoseGrid, playerTextureKey } from '../art/playerArt';
 import { makeHudTextures } from '../art/hudArt';
+import { makeMentorTextures } from '../art/mentorArt';
 import { makeEdgeTextures, makeTileTextures } from '../art/tileArt';
 import { makeQuilomboArt } from '../art/themes/quilombo';
 
@@ -23,13 +24,14 @@ export class BootScene extends Phaser.Scene {
     makeEdgeTextures(draw);
     makeQuilomboArt(draw);
     makeHudTextures(draw);
+    makeMentorTextures(draw);
     this.makePortalTextures();
     this.makeCollectibleTextures();
     this.makeEnemyTextures();
     this.makeNpcTextures();
     this.makeCheckpointTextures();
 
-    this.scene.start('Game', { levelIndex: 0 });
+    this.scene.start('Menu');
   }
 
   private draw(key: string, w: number, h: number, paint: Painter): void {

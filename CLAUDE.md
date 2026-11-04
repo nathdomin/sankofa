@@ -47,6 +47,7 @@ O jogador atravessa 3 fases, cada uma ligada a uma personalidade negra brasileir
    │  ├─ playerArt.ts         # poses do player em pixel art
    │  ├─ tileArt.ts           # tiles de chão/bloco por fase
    │  ├─ hudArt.ts            # faixa decorativa e ícone de vida do HUD
+   │  ├─ mentorArt.ts         # retratos placeholder (silhuetas) dos mentores
    │  └─ themes/
    │     └─ quilombo.ts       # céu, parallax e enfeites da fase 1
    ├─ config/
@@ -72,6 +73,8 @@ O jogador atravessa 3 fases, cada uma ligada a uma personalidade negra brasileir
    │  └─ Npc.ts
    └─ systems/
       ├─ LevelBuilder.ts      # converte mapa ASCII em objetos
+      ├─ transitions.ts       # goToScene: troca de cena com fade
+      ├─ sceneInput.ts        # teclas de confirmar/navegar nos menus
       ├─ Scenery.ts           # parallax, landmarks e vegetação a partir do tema da fase
       └─ GameState.ts         # vidas, fase atual, pontuação (singleton que emite eventos para a HUD)
 ```
@@ -274,7 +277,7 @@ Transições com `fadeOut`/`fadeIn` da câmera (300 ms).
 
 ## 8. Textos (`src/data/texts.ts`)
 
-> Quando `texts.ts` for criado, ele passa a ser a fonte da verdade dos textos; esta seção fica só como rascunho original.
+> `src/data/texts.ts` já existe e é a **fonte da verdade** dos textos (mentores, cartas, menu, game over); esta seção fica só como rascunho original.
 
 > ⚠️ Textos históricos são **rascunhos**. Revisar com fontes confiáveis (Fundação Cultural Palmares, Museu Afro Brasil, professor) antes da apresentação. Manter o texto curto: a carta precisa caber na tela e ser lida em ~20 segundos.
 
@@ -335,7 +338,7 @@ Paleta global em `palette.ts`: dourado `#f2b705`, verde `#1e7a3c`, vermelho `#c0
 - [x] Fase 1 montada com câmera (e já com a arte de cenário do Marco 3)
 - **Pronto quando:** dá para atravessar a fase 1 do início ao portal só pulando
 
-> Estado provisório: o portal reinicia a mesma fase (o fluxo Card → próxima fase vem depois).
+> Estado provisório: o portal reinicia a mesma fase (o fluxo Card → próxima fase → Victory vem depois).
 
 ### Marco 2: Sistemas e conteúdo (meta: até 11/11)
 Ordem sugerida (cada passo deixa o jogo jogável):
@@ -346,7 +349,8 @@ Ordem sugerida (cada passo deixa o jogo jogável):
 - [ ] Rolê, se houver tempo (seção 3.1)
 - [x] Coletáveis + portal trancado/aberto
 - [x] HudScene (inclui a faixa decorativa de padrão geométrico na borda; falta a faixa no menu)
-- [ ] Menu, Intro, Card, GameOver e Victory com o fluxo completo (já com a fase 1)
+- [x] Menu, Intro e GameOver (Intro → Game → GameOver | Menu; retrato do mentor é uma silhueta placeholder)
+- [ ] Card e Victory, e o portal levando à Card (hoje reinicia a fase)
 - [ ] Fases 2 e 3 com as mecânicas especiais (NPCs libertados e diário), **sem arte de cenário própria**
 - **Pronto quando:** dá para jogar do menu até os créditos sem travar
 
@@ -355,6 +359,8 @@ Ordem sugerida (cada passo deixa o jogo jogável):
 ### Marco 3: Visual e identidade (meta: até 15/11)
 - [ ] Temas de cenário das fases 2 (`saopaulo`) e 3 (`caninde`), seguindo o modelo de `art/themes/quilombo.ts`; tirar de `Scenery.ts` o acoplamento direto com o tema quilombo (ex.: `SUN`)
 - [ ] Padrões decorativos, animações e tweens
+- [ ] História do protagonista (a definir com o grupo: nome, tom, motivação): prólogo curto antes da fase 1 (o estudante capoeirista encontra o Sankofa e volta no tempo), falas de ligação entre as fases e epílogo na `VictoryScene` (volta ao presente). Reaproveita a caixa de fala da `IntroScene`; ilustrações ou retrato do protagonista só se sobrar tempo
+- [ ] Polir as telas de fim de fase (hoje layout simples): aviso "Fase concluída!", `CardScene` e `VictoryScene`. O **fluxo funcional** (portal → Card → próxima fase → Victory) continua no Marco 2
 - [ ] Design dos coletáveis (hoje placeholders): Sankofa mais fiel ao símbolo Adinkra em vez do coração simples, e brilho/partículas ao coletar; carta de alforria e folha de papel também
 - [ ] Poses próprias dos movimentos de capoeira, hoje placeholders: esquiva (agachado em vez de só achatar o `scaleY`), meia-lua (bananeira em vez da pose de estrela do aú) e rolê (se for implementado)
 - [ ] Ajuste fino do game feel e da dificuldade

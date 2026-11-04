@@ -9,6 +9,7 @@ import { Player } from '../entities/Player';
 import { gameState } from '../systems/GameState';
 import { buildLevel, type BuiltLevel, type SpawnPoint } from '../systems/LevelBuilder';
 import { addParallax, decorateLevel, type ParallaxUpdater } from '../systems/Scenery';
+import type { GameOverSceneData } from './GameOverScene';
 import type { HudSceneData } from './HudScene';
 
 export interface GameSceneData {
@@ -210,9 +211,7 @@ export class GameScene extends Phaser.Scene {
     cam.fadeOut(GAME.deathFadeMs);
     cam.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
       if (!alive) {
-        // provisório: a GameOverScene entra mais adiante no Marco 2
-        gameState.reset();
-        this.scene.restart({ levelIndex: this.levelIndex } satisfies GameSceneData);
+        this.scene.start('GameOver', { levelIndex: this.levelIndex } satisfies GameOverSceneData);
         return;
       }
       this.player.respawn(this.respawnPoint.x, this.respawnPoint.y);
