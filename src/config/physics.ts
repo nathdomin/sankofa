@@ -63,6 +63,15 @@ export const ENEMY = {
   defeatMs: 200,
 } as const;
 
+export const COLLECTIBLE = {
+  score: 50,
+  // flutuação suave: sobe e desce em torno da posição do tile
+  floatPx: 3,
+  floatMs: 900,
+  pickMs: 250,
+  pickRisePx: 22,
+} as const;
+
 export const GAME = {
   startLives: 3,
   // invencibilidade depois de levar dano ou renascer, com o sprite piscando
@@ -71,6 +80,8 @@ export const GAME = {
   invincibleAlpha: 0.35,
   // tempo do fade ao morrer, antes de voltar ao checkpoint
   deathFadeMs: 250,
+  // aviso na tela (portal trancado, portal aberto)
+  noticeMs: 1500,
 } as const;
 
 export const CAMERA = {

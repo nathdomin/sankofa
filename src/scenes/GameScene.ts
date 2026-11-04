@@ -1,8 +1,9 @@
 import Phaser from 'phaser';
-import { CAMERA, CAPOEIRA, ENEMY, GAME, WORLD } from '../config/physics';
+import { CAMERA, CAPOEIRA, COLLECTIBLE, ENEMY, GAME, TILE_SIZE, WORLD } from '../config/physics';
 import { PALETTE, toCss } from '../config/palette';
 import { LEVELS, type LevelConfig } from '../data/levels';
 import { Checkpoint } from '../entities/Checkpoint';
+import { Collectible } from '../entities/Collectible';
 import { Enemy } from '../entities/Enemy';
 import { Player } from '../entities/Player';
 import { GAME_EVENTS, gameState } from '../systems/GameState';
@@ -22,7 +23,11 @@ export class GameScene extends Phaser.Scene {
   private finished = false;
   private dying = false;
   private enemies!: Phaser.GameObjects.Group;
-  private livesText!: Phaser.GameObjects.Text;
+  private hudText!: Phaser.GameObjects.Text;
+  private notice!: Phaser.GameObjects.Text;
+  private noticeTween: Phaser.Tweens.Tween | null = null;
+  private portal!: Phaser.Physics.Arcade.Image;
+  private portalOpen = false;
   private parallax: ParallaxUpdater = () => undefined;
 
   constructor() {
@@ -36,6 +41,8 @@ export class GameScene extends Phaser.Scene {
     this.config = config;
     this.finished = false;
     this.dying = false;
+    this.portalOpen = false;
+    this.noticeTween = null;
     gameState.startLevel(this.levelIndex);
   }
 
@@ -76,9 +83,16 @@ export class GameScene extends Phaser.Scene {
       if (enemy instanceof Enemy) this.touchEnemy(enemy);
     });
 
+    this.level.collectibles.forEach((point) => {
+      // o spawn é a base do tile; o item fica no centro dele
+      const item = new Collectible(this, point.x, point.y - TILE_SIZE / 2, this.config.collectible.texture);
+      this.physics.add.overlap(this.player, item, () => this.collect(item));
+    });
+
     const { goal } = this.level;
-    const portal = this.physics.add.staticImage(goal.x, goal.y, 'portal-open').setOrigin(0.5, 1).refreshBody();
-    this.physics.add.overlap(this.player, portal, () => this.reachGoal());
+    this.portal = this.physics.add.staticImage(goal.x, goal.y, 'portal-locked').setOrigin(0.5, 1).refreshBody();
+    this.physics.add.overlap(this.player, this.portal, () => this.touchPortal());
+    this.setPortalOpen(gameState.collected >= this.config.required, false);
 
     cam.setBounds(0, 0, widthPx, heightPx);
     cam.startFollow(this.player, true, CAMERA.lerpX, CAMERA.lerpY);
@@ -94,10 +108,19 @@ export class GameScene extends Phaser.Scene {
       strokeThickness: 4,
     };
     this.add.text(16, 12, `${this.config.title} · ${this.config.era}`, style).setScrollFactor(0).setDepth(100);
-    this.livesText = this.add.text(16, 38, '', style).setScrollFactor(0).setDepth(100);
-    this.updateLivesText(gameState.lives);
-    gameState.on(GAME_EVENTS.lives, this.updateLivesText, this);
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => gameState.off(GAME_EVENTS.lives, this.updateLivesText, this));
+    this.hudText = this.add.text(16, 38, '', style).setScrollFactor(0).setDepth(100);
+    this.notice = this.add
+      .text(cam.width / 2, 90, '', { ...style, fontSize: '24px', color: toCss(PALETTE.gold) })
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(100)
+      .setAlpha(0);
+    this.updateHudText();
+    const events = [GAME_EVENTS.lives, GAME_EVENTS.score, GAME_EVENTS.collected];
+    events.forEach((name) => gameState.on(name, this.updateHudText, this));
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      events.forEach((name) => gameState.off(name, this.updateHudText, this));
+    });
   }
 
   update(time: number, delta: number): void {
@@ -109,8 +132,49 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  private updateLivesText(lives: number): void {
-    this.livesText.setText(`Vidas: ${lives}`);
+  private updateHudText(): void {
+    const { required, collectible } = this.config;
+    const count = required > 0 ? `${gameState.collected}/${required}` : `${gameState.collected}`;
+    this.hudText.setText(
+      `Vidas: ${gameState.lives}   Pontos: ${gameState.score}   ${collectible.namePlural}: ${count}`,
+    );
+  }
+
+  /** Mostra um aviso no alto da tela e some depois de um tempo */
+  private showNotice(text: string): void {
+    this.notice.setText(text).setAlpha(1);
+    this.noticeTween?.stop();
+    this.noticeTween = this.tweens.add({
+      targets: this.notice,
+      alpha: 0,
+      delay: GAME.noticeMs,
+      duration: 300,
+    });
+  }
+
+  private collect(item: Collectible): void {
+    if (this.dying || this.finished || !item.collect()) return;
+    gameState.addScore(COLLECTIBLE.score);
+    gameState.addCollected();
+    if (!this.portalOpen && gameState.collected >= this.config.required) this.setPortalOpen(true, true);
+  }
+
+  /** Portal apagado enquanto faltarem coletáveis obrigatórios */
+  private setPortalOpen(open: boolean, announce: boolean): void {
+    this.portalOpen = open;
+    this.portal.setTexture(open ? 'portal-open' : 'portal-locked');
+    if (!announce) return;
+    this.showNotice('O portal abriu!');
+    this.tweens.add({ targets: this.portal, scale: { from: 1.15, to: 1 }, duration: 300, ease: 'Back.easeOut' });
+  }
+
+  private touchPortal(): void {
+    if (this.portalOpen) {
+      this.reachGoal();
+      return;
+    }
+    const remaining = this.config.required - gameState.collected;
+    this.showNotice(remaining === 1 ? 'Colete 1 restante' : `Colete ${remaining} restantes`);
   }
 
   /** Pisão de cima derrota (se o inimigo permitir); qualquer outro toque custa uma vida */

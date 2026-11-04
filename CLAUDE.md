@@ -334,7 +334,7 @@ Paleta global em `palette.ts`: dourado `#f2b705`, verde `#1e7a3c`, vermelho `#c0
 - [x] Fase 1 montada com câmera (e já com a arte de cenário do Marco 3)
 - **Pronto quando:** dá para atravessar a fase 1 do início ao portal só pulando
 
-> Estado provisório: os `C` do mapa são lidos mas ainda não viram entidades; a pontuação ainda não aparece na tela; o portal está sempre aberto e reinicia a mesma fase; o título da fase é um texto solto na `GameScene` (vai para a `HudScene`).
+> Estado provisório: vidas, pontos e coletáveis aparecem num texto solto na `GameScene` (vai para a `HudScene`); o portal reinicia a mesma fase (o fluxo Card → próxima fase vem depois); o título da fase também é um texto solto.
 
 ### Marco 2: Sistemas e conteúdo (meta: até 11/11)
 Ordem sugerida (cada passo deixa o jogo jogável):
@@ -343,7 +343,7 @@ Ordem sugerida (cada passo deixa o jogo jogável):
 - [x] Meia-lua de compasso (com hit-stop); usa por ora a pose de estrela do aú como placeholder
 - [x] Esquiva (sem teste em fase ainda: a fase 1 não tem vãos baixos)
 - [ ] Rolê, se houver tempo (seção 3.1)
-- [ ] Coletáveis + portal trancado/aberto
+- [x] Coletáveis + portal trancado/aberto
 - [ ] HudScene
 - [ ] Menu, Intro, Card, GameOver e Victory com o fluxo completo (já com a fase 1)
 - [ ] Fases 2 e 3 com as mecânicas especiais (NPCs libertados e diário), **sem arte de cenário própria**
@@ -354,6 +354,7 @@ Ordem sugerida (cada passo deixa o jogo jogável):
 ### Marco 3: Visual e identidade (meta: até 15/11)
 - [ ] Temas de cenário das fases 2 (`saopaulo`) e 3 (`caninde`), seguindo o modelo de `art/themes/quilombo.ts`; tirar de `Scenery.ts` o acoplamento direto com o tema quilombo (ex.: `SUN`)
 - [ ] Padrões decorativos, animações e tweens
+- [ ] Design dos coletáveis (hoje placeholders): Sankofa mais fiel ao símbolo Adinkra em vez do coração simples, e brilho/partículas ao coletar; carta de alforria e folha de papel também
 - [ ] Poses próprias dos movimentos de capoeira, hoje placeholders: esquiva (agachado em vez de só achatar o `scaleY`), meia-lua (bananeira em vez da pose de estrela do aú) e rolê (se for implementado)
 - [ ] Ajuste fino do game feel e da dificuldade
 - [ ] Pausa (Esc/P)
