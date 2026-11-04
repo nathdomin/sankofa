@@ -36,6 +36,8 @@ O jogador atravessa 3 fases, cada uma ligada a uma personalidade negra brasileir
 ├─ index.html
 ├─ package.json
 ├─ tsconfig.json
+├─ tools/
+│  └─ reachability.mjs        # checagem de alcance dos mapas (node, sem dependências)
 ├─ vite.config.ts
 └─ src/
    ├─ main.ts                 # config do Phaser e registro das cenas
@@ -220,6 +222,7 @@ Cada fase: ~**120–160 tiles de largura** × **17 tiles de altura** (544 px). C
 - Pulo simples sobe ~120 px: vence degraus de até **3 tiles**.
 - Com aú sobe ~200 px: vence degraus de **4–6 tiles**. Degrau de 4+ tiles **obriga** o aú; na fase 1, ofereça antes um trecho onde o aú é opcional.
 - Distância horizontal de um pulo simples correndo: ~6 tiles. Buracos de 3 tiles são confortáveis.
+- **Sempre rode `node tools/reachability.mjs <fase>`** depois de mexer num mapa (índice da fase a partir de 0): ele simula pulos e aú e lista coletáveis e portal inalcançáveis. É obrigatório nas fases 2 e 3, onde os coletáveis abrem o portal.
 
 ---
 
@@ -227,7 +230,7 @@ Cada fase: ~**120–160 tiles de largura** × **17 tiles de altura** (544 px). C
 
 ### Fase 1: Serra da Barriga · Século XVII · Mentor: Zumbi dos Palmares
 - **Cenário:** mata, morros e paliçadas de madeira do Quilombo dos Palmares. Fase com bastante subida (plataformas em escada).
-- **Coletável:** símbolo **Sankofa** (amarelo/dourado). `required: 0`, opcional e só para pontuação. Colocar uns 15.
+- **Coletável:** símbolo **Sankofa** (amarelo/dourado). `required: 0`, opcional e só para pontuação. Há **10** no mapa, espalhados pelo caminho: arco no início, arcos sobre buracos para mostrar a trajetória do pulo e alguns em plataformas altas como recompensa do aú.
 - **Ensina:** ginga, pular, aú (pulo duplo), derrotar inimigo pulando em cima e com a **meia-lua de compasso**.
 - **Inimigos:** só Desinformação, poucos.
 - Paleta: céu laranja-entardecer, chão terroso, vegetação verde.
