@@ -55,7 +55,7 @@ export class GameScene extends Phaser.Scene {
     this.physics.world.resume();
 
     this.respawnPoint = this.level.playerSpawn;
-    this.player = new Player(this, this.respawnPoint.x, this.respawnPoint.y);
+    this.player = new Player(this, this.respawnPoint.x, this.respawnPoint.y, this.level.isSolidAt);
     this.physics.add.collider(this.player, this.level.solids);
 
     this.level.checkpoints.forEach((point) => {

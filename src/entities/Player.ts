@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { CAPOEIRA, GAME, PLAYER, WORLD } from '../config/physics';
+import { CAPOEIRA, GAME, PLAYER, TILE_SIZE, WORLD } from '../config/physics';
 import { PALETTE } from '../config/palette';
 
 export type PlayerState = 'idle' | 'run' | 'jump' | 'au' | 'meiaLua' | 'esquiva' | 'role' | 'hurt';
@@ -42,14 +42,16 @@ export class Player extends Phaser.GameObjects.Zone {
   private controlsEnabled = true;
   private invincibleUntil = Number.NEGATIVE_INFINITY;
   private hurtTimer: Phaser.Time.TimerEvent | null = null;
+  private readonly isSolidAt: (tx: number, ty: number) => boolean;
   private attackReadyAt = Number.NEGATIVE_INFINITY;
   private attackTimers: Phaser.Time.TimerEvent[] = [];
   /** Área do golpe da meia-lua; o corpo só fica ativo na janela de ataque */
   readonly attackZone: Phaser.GameObjects.Zone;
 
-  /** x, y = posição dos pés */
-  constructor(scene: Phaser.Scene, x: number, y: number) {
+  /** x, y = posição dos pés; isSolidAt diz se um tile é sólido (usado para saber se há espaço para levantar) */
+  constructor(scene: Phaser.Scene, x: number, y: number, isSolidAt: (tx: number, ty: number) => boolean) {
     super(scene, x, y - PLAYER.hitbox.h / 2, PLAYER.hitbox.w, PLAYER.hitbox.h);
+    this.isSolidAt = isSolidAt;
     scene.add.existing(this);
     scene.physics.add.existing(this);
 
@@ -110,12 +112,13 @@ export class Player extends Phaser.GameObjects.Zone {
 
   /** Reposiciona com os pés em (x, y) e zera o movimento */
   respawn(x: number, y: number): void {
+    // sai da esquiva antes: devolve a hitbox em pé para o reset posicionar o corpo certo
+    this.setState('idle');
     this.arcadeBody.reset(x, y - PLAYER.hitbox.h / 2);
     this.lastGroundedAt = Number.NEGATIVE_INFINITY;
     this.jumpBufferedAt = Number.NEGATIVE_INFINITY;
     this.auAvailable = true;
     this.arcadeBody.setVelocity(0, 0);
-    this.setState('idle');
     this.syncVisual();
   }
 
@@ -130,18 +133,27 @@ export class Player extends Phaser.GameObjects.Zone {
     const dir = this.controlsEnabled ? this.inputDir() : 0;
     // consome o JustDown todo frame para um aperto antigo não disparar o golpe depois
     const attackPressed = this.controlsEnabled && anyJustDown(this.keys.attack);
-    if (attackPressed && !LOCKED_STATES.has(this.current) && time >= this.attackReadyAt) {
+    // abaixado não ataca: levantar para o golpe poderia enfiar o corpo no teto
+    if (attackPressed && !LOCKED_STATES.has(this.current) && this.current !== 'esquiva' && time >= this.attackReadyAt) {
       this.attackReadyAt = time + CAPOEIRA.meiaLua.cooldownMs;
       this.setState('meiaLua');
       // no chão o capoeirista "planta" a mão: perde a maior parte da velocidade
       if (onGround) this.arcadeBody.velocity.x *= CAPOEIRA.meiaLua.groundSpeedFactor;
     }
 
+    if (!LOCKED_STATES.has(this.current)) this.updateCrouch(onGround);
+
     if (!LOCKED_STATES.has(this.current)) {
       if (dir !== 0) this.facing = dir;
       this.applyHorizontal(dir, delta / 1000);
-      if (this.controlsEnabled && this.handleJump(time, onGround)) onGround = false;
-      this.resolveState(onGround, dir);
+      if (this.current === 'esquiva') {
+        // sem pulo abaixado; consome os apertos para não virarem pulo atrasado ao levantar
+        anyJustDown(this.keys.jump);
+        anyJustUp(this.keys.jump);
+      } else {
+        if (this.controlsEnabled && this.handleJump(time, onGround)) onGround = false;
+        this.resolveState(onGround, dir);
+      }
     }
 
     this.followAttackZone();
@@ -192,7 +204,8 @@ export class Player extends Phaser.GameObjects.Zone {
   private applyHorizontal(dir: -1 | 0 | 1, dt: number): void {
     const body = this.arcadeBody;
     const vx = body.velocity.x;
-    const target = dir * PLAYER.runSpeed;
+    const maxSpeed = this.current === 'esquiva' ? PLAYER.runSpeed * CAPOEIRA.esquiva.speedFactor : PLAYER.runSpeed;
+    const target = dir * maxSpeed;
     // desacelera ao soltar ou ao inverter a direção, acelera no resto
     const rate = dir === 0 || vx * dir < 0 ? PLAYER.deceleration : PLAYER.acceleration;
     const diff = target - vx;
@@ -242,6 +255,47 @@ export class Player extends Phaser.GameObjects.Zone {
     }
   }
 
+  /** Segurar ↓ no chão abaixa; só levanta quando soltar E houver espaço acima */
+  private updateCrouch(onGround: boolean): void {
+    const wantsCrouch = this.controlsEnabled && anyDown(this.keys.down);
+    if (this.current === 'esquiva') {
+      if ((!wantsCrouch || !onGround) && this.canStand()) this.setState('idle');
+    } else if (wantsCrouch && onGround) {
+      this.setState('esquiva');
+    }
+  }
+
+  /** Os tiles que a hitbox em pé ocuparia acima da hitbox abaixada estão livres? */
+  private canStand(): boolean {
+    const b = this.arcadeBody;
+    const firstRow = Math.floor((b.bottom - PLAYER.hitbox.h) / TILE_SIZE);
+    const lastRow = Math.floor((b.top - 1) / TILE_SIZE);
+    // 1 px de folga nas laterais: encostar numa parede não conta como bloqueio
+    const firstCol = Math.floor((b.left + 1) / TILE_SIZE);
+    const lastCol = Math.floor((b.right - 1) / TILE_SIZE);
+    for (let ty = firstRow; ty <= lastRow; ty++) {
+      for (let tx = firstCol; tx <= lastCol; tx++) {
+        if (this.isSolidAt(tx, ty)) return false;
+      }
+    }
+    return true;
+  }
+
+  /** Troca a altura da hitbox mantendo os pés no mesmo lugar */
+  private setHitboxHeight(h: number): void {
+    const b = this.arcadeBody;
+    const bottom = b.bottom;
+    b.setSize(PLAYER.hitbox.w, h, false);
+    // O Arcade deriva a posição do corpo da Zone a cada frame e ignora um offset que a
+    // desloque do centro. Então o offset fica em 0 e a própria Zone é movida junto com o corpo.
+    b.position.y = bottom - h;
+    // o postUpdate do Arcade move a Zone pela diferença para prev/prevFrame: zera os dois
+    b.prev.y = b.position.y;
+    b.prevFrame.y = b.position.y;
+    this.y = b.position.y + this.displayOriginY;
+    b.updateCenter();
+  }
+
   /** Achata ou estica o visual na vertical e volta ao normal (squash & stretch) */
   private squash(scaleY: number): void {
     this.squashTween?.stop();
@@ -255,6 +309,7 @@ export class Player extends Phaser.GameObjects.Zone {
   }
 
   private exitState(): void {
+    if (this.current === 'esquiva') this.setHitboxHeight(PLAYER.hitbox.h);
     this.hurtTimer?.remove(false);
     this.hurtTimer = null;
     this.clearAttack();
@@ -296,7 +351,20 @@ export class Player extends Phaser.GameObjects.Zone {
       case 'meiaLua':
         this.startMeiaLua();
         break;
-      // esquiva e role entram no Marco 2
+      case 'esquiva': {
+        const e = CAPOEIRA.esquiva;
+        this.squashTween?.stop(); // não disputar o scaleY com o squash de pulo/aterrissagem
+        this.setHitboxHeight(e.hitbox.h);
+        // squash com a origem nos pés; a inclinação segue o lado em que olha (em updateVisual)
+        this.stateTween = this.scene.tweens.add({
+          targets: this.visual,
+          scaleY: e.squashY,
+          duration: e.enterMs,
+          ease: 'Quad.easeOut',
+        });
+        break;
+      }
+      // role entra no Marco 2
       default:
         break;
     }
@@ -399,6 +467,7 @@ export class Player extends Phaser.GameObjects.Zone {
       if (v.texture.key !== texture) v.setTexture(texture);
     }
     v.setFlipX(this.facing < 0);
+    if (this.current === 'esquiva') v.setAngle(this.facing * CAPOEIRA.esquiva.tiltDeg);
     this.syncVisual();
   }
 

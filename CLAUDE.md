@@ -338,7 +338,8 @@ Ordem sugerida (cada passo deixa o jogo jogável):
 - [x] `GameState` (vidas, fase, pontuação) + vidas, invencibilidade, checkpoint e buracos (falta só a GameOverScene, hoje a partida recomeça direto)
 - [x] Inimigos (patrulha, stomp, dano, Esquecimento imune a stomp)
 - [x] Meia-lua de compasso (com hit-stop); usa por ora a pose de estrela do aú como placeholder
-- [ ] Esquiva; rolê se houver tempo (seção 3.1)
+- [x] Esquiva (sem teste em fase ainda: a fase 1 não tem vãos baixos)
+- [ ] Rolê, se houver tempo (seção 3.1)
 - [ ] Coletáveis + portal trancado/aberto
 - [ ] HudScene
 - [ ] Menu, Intro, Card, GameOver e Victory com o fluxo completo (já com a fase 1)
@@ -350,6 +351,7 @@ Ordem sugerida (cada passo deixa o jogo jogável):
 ### Marco 3: Visual e identidade (meta: até 15/11)
 - [ ] Temas de cenário das fases 2 (`saopaulo`) e 3 (`caninde`), seguindo o modelo de `art/themes/quilombo.ts`; tirar de `Scenery.ts` o acoplamento direto com o tema quilombo (ex.: `SUN`)
 - [ ] Padrões decorativos, animações e tweens
+- [ ] Poses próprias dos movimentos de capoeira, hoje placeholders: esquiva (agachado em vez de só achatar o `scaleY`), meia-lua (bananeira em vez da pose de estrela do aú) e rolê (se for implementado)
 - [ ] Ajuste fino do game feel e da dificuldade
 - [ ] Pausa (Esc/P)
 

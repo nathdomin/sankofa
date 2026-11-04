@@ -44,7 +44,8 @@ export const CAPOEIRA = {
     // rastro dourado em arco: raios das duas faixas, espessura e duração do fade
     trail: { radii: [26, 34], lineWidth: 4, fadeMs: 200 },
   },
-  esquiva: { speedFactor: 0.4, hitbox: { w: 22, h: 22 } },
+  // squashY/tiltDeg: só visual; enterMs = tempo de abaixar
+  esquiva: { speedFactor: 0.4, hitbox: { w: 22, h: 22 }, squashY: 0.55, tiltDeg: 8, enterMs: 80 },
   role: { speed: 420, durationMs: 250, cooldownMs: 700 },
   // parado: respiração sutil, o corpo sobe e desce sobre os pés (sem inclinar para os lados)
   ginga: { breathScaleY: 1.03, breathCycleMs: 1600 },
