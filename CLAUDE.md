@@ -338,19 +338,17 @@ Paleta global em `palette.ts`: dourado `#f2b705`, verde `#1e7a3c`, vermelho `#c0
 - [x] Fase 1 montada com câmera (e já com a arte de cenário do Marco 3)
 - **Pronto quando:** dá para atravessar a fase 1 do início ao portal só pulando
 
-> Estado provisório: o portal reinicia a mesma fase (o fluxo Card → próxima fase → Victory vem depois).
-
 ### Marco 2: Sistemas e conteúdo (meta: até 11/11)
 Ordem sugerida (cada passo deixa o jogo jogável):
-- [x] `GameState` (vidas, fase, pontuação) + vidas, invencibilidade, checkpoint e buracos (falta só a GameOverScene, hoje a partida recomeça direto)
+- [x] `GameState` (vidas, fase, pontuação) + vidas, invencibilidade, checkpoint e buracos
 - [x] Inimigos (patrulha, stomp, dano, Esquecimento imune a stomp)
 - [x] Meia-lua de compasso (com hit-stop); usa por ora a pose de estrela do aú como placeholder
 - [x] Esquiva (sem teste em fase ainda: a fase 1 não tem vãos baixos)
 - [ ] Rolê, se houver tempo (seção 3.1)
 - [x] Coletáveis + portal trancado/aberto
-- [x] HudScene (inclui a faixa decorativa de padrão geométrico na borda; falta a faixa no menu)
+- [x] HudScene (inclui a faixa decorativa de padrão geométrico na borda)
 - [x] Menu, Intro e GameOver (Intro → Game → GameOver | Menu; retrato do mentor é uma silhueta placeholder)
-- [ ] Card e Victory, e o portal levando à Card (hoje reinicia a fase)
+- [x] Card e Victory (layout simples, polimento no Marco 3); o portal leva à Card, que segue para a Intro da próxima fase ou, na última, para a Victory. Créditos já trazem Nathan Domingues; pendente incluir os demais integrantes da equipe, se houver (`VICTORY_TEXTS` em `texts.ts`)
 - [ ] Fases 2 e 3 com as mecânicas especiais (NPCs libertados e diário), **sem arte de cenário própria**
 - **Pronto quando:** dá para jogar do menu até os créditos sem travar
 

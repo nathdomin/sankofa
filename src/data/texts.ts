@@ -84,3 +84,37 @@ export const GAME_OVER_TEXTS = {
   retry: 'Tentar de novo (fase atual)',
   menu: 'Menu',
 } as const;
+
+export const CARD_TEXTS = {
+  hint: 'Pressione Enter para continuar',
+} as const;
+
+// TODO: incluir os nomes dos demais integrantes da equipe, se houver, antes da apresentação
+export const VICTORY_TEXTS = {
+  title: 'Sankofa',
+  message: [
+    'Sankofa significa “voltar e buscar o que ficou para trás”.',
+    'Conhecer o passado é o caminho para construir o futuro.',
+  ],
+  score: 'Pontuação total',
+  creditsTitle: 'Créditos',
+  credits: [
+    'Sankofa: Caminhos da Resistência',
+    'Um jogo para o Novembro Negro',
+    'Dia da Consciência Negra – 20 de novembro',
+    '',
+    'Desenvolvimento',
+    'Nathan Domingues',
+    '',
+    'Inspirado em',
+    'Zumbi dos Palmares',
+    'Luiz Gama',
+    'Carolina Maria de Jesus',
+    '',
+    'Feito com Phaser 3',
+    '',
+    'Obrigado por jogar!',
+  ],
+  hint: 'Pressione Enter para continuar',
+  hintMenu: 'Pressione Enter para voltar ao menu',
+} as const;

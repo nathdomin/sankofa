@@ -9,6 +9,8 @@ import { Player } from '../entities/Player';
 import { gameState } from '../systems/GameState';
 import { buildLevel, type BuiltLevel, type SpawnPoint } from '../systems/LevelBuilder';
 import { addParallax, decorateLevel, type ParallaxUpdater } from '../systems/Scenery';
+import { goToScene } from '../systems/transitions';
+import type { CardSceneData } from './CardScene';
 import type { GameOverSceneData } from './GameOverScene';
 import type { HudSceneData } from './HudScene';
 
@@ -241,12 +243,7 @@ export class GameScene extends Phaser.Scene {
       .setScrollFactor(0)
       .setDepth(100);
 
-    // por enquanto reinicia a fase; o fluxo Card → próxima fase entra no Marco 2
-    this.time.delayedCall(1500, () => {
-      cam.fadeOut(CAMERA.fadeMs);
-      cam.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
-        this.scene.restart({ levelIndex: this.levelIndex } satisfies GameSceneData);
-      });
-    });
+    // depois do aviso, vai para a carta histórica da fase
+    this.time.delayedCall(GAME.noticeMs, () => goToScene(this, 'Card', { levelIndex: this.levelIndex } satisfies CardSceneData));
   }
 }
