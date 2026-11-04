@@ -85,6 +85,17 @@ export const GAME_OVER_TEXTS = {
   menu: 'Menu',
 } as const;
 
+export const PORTAL_TEXTS = {
+  opened: 'O portal abriu!',
+} as const;
+
+// Fase 3: o contador do HUD vira um diário que vai sendo preenchido
+export const DIARY_TEXTS = {
+  label: 'Diário',
+  unit: 'páginas',
+  complete: 'O diário está completo! Siga até a biblioteca.',
+} as const;
+
 export const NPC_TEXTS = {
   freed: 'Livre!',
 } as const;

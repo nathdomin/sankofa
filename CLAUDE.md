@@ -207,6 +207,7 @@ export interface LevelConfig {
   mentorId: 'zumbi' | 'luizgama' | 'carolina';
   collectible: { texture: string; name: string; namePlural: string };
   required: number;         // coletáveis obrigatórios para abrir o portal
+  diary?: boolean;          // HUD mostra o contador como diário (fase 3)
   palette: { sky: number; ground: number; block: number; accent: number };
   theme: 'quilombo' | 'saopaulo' | 'caninde';  // conjunto de texturas de cenário
   landmarks: Landmark[];    // cenário posicionado à mão (ex.: paliçada, cabana); x em tiles
@@ -351,8 +352,8 @@ Ordem sugerida (cada passo deixa o jogo jogável):
 - [x] Menu, Intro e GameOver (Intro → Game → GameOver | Menu; retrato do mentor é uma silhueta placeholder)
 - [x] Card e Victory (layout simples, polimento no Marco 3); o portal leva à Card, que segue para a Intro da próxima fase ou, na última, para a Victory. Créditos já trazem Nathan Domingues; pendente incluir os demais integrantes da equipe, se houver (`VICTORY_TEXTS` em `texts.ts`)
 - [x] Fase 2 (São Paulo): 140 tiles, 5 cartas, 5 NPCs libertados pelo coletável mais próximo, túnel de 1 tile obrigatório (esquiva), sacada baixa opcional com a carta 3, 3 Esquecimentos e 4 Desinformações; sem arte de cenário própria (só a paleta)
-- [ ] Fase 3 (Canindé → cidade moderna) com o diário no HUD, **sem arte de cenário própria**
-- **Pronto quando:** dá para jogar do menu até os créditos sem travar
+- [x] Fase 3 (Canindé → cidade moderna): 150 tiles, 10 folhas (8 obrigatórias), diário no HUD ("Diário: 5/8 páginas") e aviso ao completar; varal baixo opcional, viaduto de 1 tile obrigatório (esquiva), prédio de 5 tiles obrigatório (aú), sequência de inimigos para a meia-lua; sem arte de cenário própria
+- **Pronto quando:** dá para jogar do menu até os créditos sem travar ✅ (verificado por teste automatizado percorrendo as 3 fases; só falta o rolê, opcional)
 
 > Nota: a fala do Luiz Gama não menciona mais o rolê (K), porque ele não foi implementado. Se o rolê entrar, voltar a citá-lo em `texts.ts`.
 
@@ -365,7 +366,10 @@ Ordem sugerida (cada passo deixa o jogo jogável):
 - [ ] Polir as telas de fim de fase (hoje layout simples): aviso "Fase concluída!", `CardScene` e `VictoryScene`. O **fluxo funcional** (portal → Card → próxima fase → Victory) continua no Marco 2
 - [ ] Design dos coletáveis (hoje placeholders): Sankofa mais fiel ao símbolo Adinkra em vez do coração simples, e brilho/partículas ao coletar; carta de alforria e folha de papel também
 - [ ] Poses próprias dos movimentos de capoeira, hoje placeholders: esquiva (agachado em vez de só achatar o `scaleY`), meia-lua (bananeira em vez da pose de estrela do aú) e rolê (se for implementado)
-- [ ] Refazer o level design da fase 2 com mais variedade e personalidade (hoje simples: ruas, quatro telhados e um túnel); revisar também as fases 1 e 3 depois de jogadas
+- [ ] Refazer o level design das **3 fases**, deixando-as mais bonitas e mais desafiadoras. Hoje os mapas são funcionais e simples (fase 2: ruas, quatro telhados e um túnel; fase 3: trechos retos com um viaduto e um prédio). Objetivos:
+  - **Mais bonitas:** variedade de alturas e silhuetas, composição pensada em camadas (primeiro plano, plataformas, fundo), marcos visuais por trecho (paliçadas e cabanas, casarões e sacadas, barracos e varais, a biblioteca ao fim), coletáveis posicionados para guiar o olhar; combinar com os temas de cenário das fases 2 e 3
+  - **Mais desafiadoras, mas justas:** curva de dificuldade crescente dentro de cada fase e entre as fases (a fase 1 continua fácil para a apresentação), combinações de movimentos (aú + meia-lua, esquiva entre inimigos), plataformas móveis ou sequências de precisão só se couberem no prazo, sem pulos cegos nem mortes injustas
+  - **Processo:** rodar `node tools/reachability.mjs <fase>` a cada mudança (inclusive `NOAU=1` e `NOCROUCH=1` para saber o que cada movimento exige); manter coletáveis obrigatórios alcançáveis; **o usuário testa e aprova cada fase antes do commit**
 - [ ] Ajuste fino do game feel e da dificuldade
 - [ ] Pausa (Esc/P)
 

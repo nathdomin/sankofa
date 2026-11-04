@@ -3,6 +3,7 @@ import { BAND_H } from '../art/hudArt';
 import { PALETTE, toCss } from '../config/palette';
 import { GAME } from '../config/physics';
 import { LEVELS, type LevelConfig } from '../data/levels';
+import { DIARY_TEXTS } from '../data/texts';
 import { GAME_EVENTS, gameState } from '../systems/GameState';
 
 export interface HudSceneData {
@@ -53,7 +54,7 @@ export class HudScene extends Phaser.Scene {
 
     this.scoreText = this.add.text(width / 2, ROW_Y, '', style).setOrigin(0.5).setDepth(2);
     this.add
-      .text(width - 16, ROW_Y, `${this.config.title} · ${this.config.era}`, style)
+      .text(width - 16, ROW_Y, this.config.title, style)
       .setOrigin(1, 0.5)
       .setDepth(2);
 
@@ -66,11 +67,11 @@ export class HudScene extends Phaser.Scene {
   }
 
   private refresh(): void {
-    const { required } = this.config;
+    const { required, diary } = this.config;
     this.lifeIcons.forEach((icon, i) => icon.setAlpha(i < gameState.lives ? 1 : 0.25));
 
     const count = required > 0 ? `${gameState.collected}/${required}` : `${gameState.collected}`;
-    this.setTextPop(this.counterText, count);
+    this.setTextPop(this.counterText, diary ? `${DIARY_TEXTS.label}: ${count} ${DIARY_TEXTS.unit}` : count);
     this.setTextPop(this.scoreText, `Pontos: ${gameState.score}`);
   }
 

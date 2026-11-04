@@ -6,6 +6,7 @@ import { Checkpoint } from '../entities/Checkpoint';
 import { Collectible } from '../entities/Collectible';
 import { Enemy } from '../entities/Enemy';
 import { Npc } from '../entities/Npc';
+import { DIARY_TEXTS, PORTAL_TEXTS } from '../data/texts';
 import { Player } from '../entities/Player';
 import { gameState } from '../systems/GameState';
 import { buildLevel, type BuiltLevel, type SpawnPoint } from '../systems/LevelBuilder';
@@ -135,13 +136,13 @@ export class GameScene extends Phaser.Scene {
   }
 
   /** Mostra um aviso no alto da tela e some depois de um tempo */
-  private showNotice(text: string): void {
+  private showNotice(text: string, ms: number = GAME.noticeMs): void {
     this.notice.setText(text).setAlpha(1);
     this.noticeTween?.stop();
     this.noticeTween = this.tweens.add({
       targets: this.notice,
       alpha: 0,
-      delay: GAME.noticeMs,
+      delay: ms,
       duration: 300,
     });
   }
@@ -168,7 +169,9 @@ export class GameScene extends Phaser.Scene {
     this.portalOpen = open;
     this.portal.setTexture(open ? 'portal-open' : 'portal-locked');
     if (!announce) return;
-    this.showNotice('O portal abriu!');
+    // na fase do diário, o aviso é o de diário completo, que precisa de mais tempo para ler
+    if (this.config.diary) this.showNotice(DIARY_TEXTS.complete, GAME.noticeMs * 2);
+    else this.showNotice(PORTAL_TEXTS.opened);
     this.tweens.add({ targets: this.portal, scale: { from: 1.15, to: 1 }, duration: 300, ease: 'Back.easeOut' });
   }
 

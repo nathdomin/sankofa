@@ -25,6 +25,8 @@ export interface LevelConfig {
   mentorId: MentorId;
   collectible: { texture: string; name: string; namePlural: string };
   required: number;
+  /** HUD mostra o coletável como um diário ("Diário: 5/8 páginas") */
+  diary?: boolean;
   palette: LevelPalette;
   theme: SceneryTheme;
   landmarks: Landmark[];
@@ -102,6 +104,38 @@ export const LEVELS: readonly LevelConfig[] = [
       'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX...XXXXXXXXXXXXXXXXXXXXXX...XXXXXXXXXXX...XXXXXXXXXXX...XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
       'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX...XXXXXXXXXXXXXXXXXXXXXX...XXXXXXXXXXX...XXXXXXXXXXX...XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
       'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX...XXXXXXXXXXXXXXXXXXXXXX...XXXXXXXXXXX...XXXXXXXXXXX...XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+    ],
+  },
+  {
+    id: 3,
+    title: 'Canindé → cidade moderna',
+    era: 'Século XX',
+    mentorId: 'carolina',
+    collectible: { texture: 'papel', name: 'página', namePlural: 'páginas' },
+    required: 8,
+    diary: true,
+    // sem tema de cenário ainda (Marco 3): só a paleta; blocos laranja = barracos, cinza-azulado = cidade
+    palette: { sky: 0xbfe3f5, ground: 0x6f7f8f, block: 0xe0562f, accent: 0x7f9bb0 },
+    theme: 'caninde',
+    landmarks: [],
+    map: [
+      '............................................................................................XXXXXX....................................................',
+      '............................................................................................XXXXXX....................................................',
+      '............................................................................................XXXXXX....................................................',
+      '............................................................................................XXXXXX....................................................',
+      '............................................................................................XXXXXX....................................................',
+      '............................................................................................XXXXXX....................................................',
+      '....................................................................................C.......XXXXXX..............................C.....................',
+      '............................................................................................XXXXXX....................................................',
+      '.................................................................C..........................XXXXXX....................................................',
+      '..........................................................................XXXXXXXXXXX.......XXXXXX...........................XXXXXXX..................',
+      '.........C....................................C...........................XXXXXXXXXXX.......XXXXXX..........C...........C....XXXXXXX..................',
+      '........BBB..................................................XXXXXXXXXX...XXXXXXXXXXX.......XXXXXX...........................XXXXXXX........C.........',
+      '....................BBBBBB...................................XXXXXXXXXX...XXXXXXXXXXX.......XXXXXX...........................XXXXXXX.......BBB........',
+      '...P..................C.....E...........E...F....E..K........XXXXXXXXXX...XXXXXXXXXXX...F......C.......E..............K...F..XXXXXXX......E.....G.....',
+      'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX...XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX...XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.....XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+      'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX...XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX...XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.....XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+      'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX...XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX...XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.....XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
     ],
   },
 ];
