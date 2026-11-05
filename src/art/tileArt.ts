@@ -1,8 +1,9 @@
 import Phaser from 'phaser';
 import { TILE_SIZE } from '../config/physics';
 import { darken, lighten } from '../config/palette';
-import type { LevelPalette } from '../data/levels';
+import type { LevelPalette, SceneryTheme } from '../data/levels';
 import { lerpColor } from './colors';
+import { paintSacada } from './themes/saopaulo';
 
 export type Draw = (key: string, w: number, h: number, paint: (g: Phaser.GameObjects.Graphics) => void) => void;
 
@@ -98,7 +99,12 @@ function paintFringe(g: Phaser.GameObjects.Graphics, rng: Phaser.Math.RandomData
   }
 }
 
-export function makeTileTextures(draw: Draw, id: number, p: LevelPalette): void {
+/** Plataforma flutuante (`B`) própria de cada tema; sem entrada, usa os troncos amarrados */
+const THEME_BLOCKS: Partial<Record<SceneryTheme, (g: Phaser.GameObjects.Graphics, p: LevelPalette) => void>> = {
+  saopaulo: paintSacada,
+};
+
+export function makeTileTextures(draw: Draw, id: number, p: LevelPalette, theme: SceneryTheme): void {
   for (let v = 0; v < TILE_VARIANTS; v++) {
     draw(tileKeys.ground(id, v), S, S, (g) => {
       paintDirt(g, p, new Phaser.Math.RandomDataGenerator([`ground-${id}-${v}`]), 0, p.ground);
@@ -134,8 +140,13 @@ export function makeTileTextures(draw: Draw, id: number, p: LevelPalette): void 
     paintDirt(g, p, new Phaser.Math.RandomDataGenerator([`deep-${id}`]), 0, darken(p.ground, 14));
   });
 
+  const themed = THEME_BLOCKS[theme];
   // plataforma de troncos amarrados
   draw(tileKeys.block(id), S, S, (g) => {
+    if (themed) {
+      themed(g, p);
+      return;
+    }
     const wood = p.block;
     const bark = darken(wood, 30);
     for (const y of [0, 16]) {

@@ -99,7 +99,7 @@ export class GameScene extends Phaser.Scene {
     this.npcs = this.level.npcs.map((point) => new Npc(this, point.x, point.y));
 
     const { goal } = this.level;
-    this.portal = this.physics.add.staticImage(goal.x, goal.y, 'portal-locked').setOrigin(0.5, 1).refreshBody();
+    this.portal = this.physics.add.staticImage(goal.x, goal.y, this.portalTexture(false)).setOrigin(0.5, 1).refreshBody();
     this.physics.add.overlap(this.player, this.portal, () => this.touchPortal());
     this.setPortalOpen(gameState.collected >= this.config.required, false);
 
@@ -174,10 +174,17 @@ export class GameScene extends Phaser.Scene {
     free.reduce((best, npc) => (dist(npc) < dist(best) ? npc : best)).free();
   }
 
+  /** Portal do tema da fase (ex.: porta da faculdade); sem arte própria, usa o arco padrão */
+  private portalTexture(open: boolean): string {
+    const state = open ? 'open' : 'locked';
+    const themed = `portal-${this.config.theme}-${state}`;
+    return this.textures.exists(themed) ? themed : `portal-${state}`;
+  }
+
   /** Portal apagado enquanto faltarem coletáveis obrigatórios */
   private setPortalOpen(open: boolean, announce: boolean): void {
     this.portalOpen = open;
-    this.portal.setTexture(open ? 'portal-open' : 'portal-locked');
+    this.portal.setTexture(this.portalTexture(open));
     if (!announce) return;
     // na fase do diário, o aviso é o de diário completo, que precisa de mais tempo para ler
     if (this.config.diary) this.showNotice(DIARY_TEXTS.complete, GAME.noticeMs * 2);

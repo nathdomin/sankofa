@@ -66,10 +66,38 @@ export class MenuScene extends Phaser.Scene {
       stroke: toCss(PALETTE.black),
       strokeThickness: 4,
     };
-    this.add.text(width / 2, 440, MENU_TEXTS.controls, small).setOrigin(0.5).setDepth(2);
-    this.add.text(width / 2, height - 40, MENU_TEXTS.tagline, { ...small, fontSize: '18px' }).setOrigin(0.5).setDepth(6);
+    this.add.text(width / 2, 428, MENU_TEXTS.controls, small).setOrigin(0.5).setDepth(2);
+    this.createLevelsButton(width / 2, 466);
+    this.add.text(width / 2, height - 36, MENU_TEXTS.tagline, { ...small, fontSize: '18px' }).setOrigin(0.5).setDepth(6);
 
     onKeys(this, CONFIRM_KEYS, () => this.play());
+    onKeys(this, ['F'], () => this.openLevels());
+  }
+
+  /** Botão secundário que abre a tela de escolha de fase */
+  private createLevelsButton(x: number, y: number): void {
+    const box = this.add
+      .rectangle(x, y, 260, 34, PALETTE.black, 0.7)
+      .setStrokeStyle(2, PALETTE.gold)
+      .setDepth(2)
+      .setInteractive({ useHandCursor: true });
+    const label = this.add
+      .text(x, y, MENU_TEXTS.levels, { fontFamily: 'monospace', fontSize: '18px', fontStyle: 'bold', color: toCss(PALETTE.cream) })
+      .setOrigin(0.5)
+      .setDepth(3);
+    box.on('pointerover', () => {
+      box.setFillStyle(PALETTE.gold, 1);
+      label.setColor(toCss(PALETTE.black));
+    });
+    box.on('pointerout', () => {
+      box.setFillStyle(PALETTE.black, 0.7);
+      label.setColor(toCss(PALETTE.cream));
+    });
+    box.on('pointerdown', () => this.openLevels());
+  }
+
+  private openLevels(): void {
+    goToScene(this, 'LevelSelect');
   }
 
   update(_time: number, delta: number): void {

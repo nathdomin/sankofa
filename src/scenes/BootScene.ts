@@ -8,6 +8,7 @@ import { makeHudTextures } from '../art/hudArt';
 import { makeMentorTextures } from '../art/mentorArt';
 import { makeEdgeTextures, makeTileTextures } from '../art/tileArt';
 import { makeQuilomboArt } from '../art/themes/quilombo';
+import { makeSaoPauloArt } from '../art/themes/saopaulo';
 
 type Painter = (g: Phaser.GameObjects.Graphics) => void;
 
@@ -20,9 +21,10 @@ export class BootScene extends Phaser.Scene {
   create(): void {
     const draw = this.draw.bind(this);
     this.makePlayerTextures();
-    LEVELS.forEach((level) => makeTileTextures(draw, level.id, level.palette));
+    LEVELS.forEach((level) => makeTileTextures(draw, level.id, level.palette, level.theme));
     makeEdgeTextures(draw);
     makeQuilomboArt(draw);
+    makeSaoPauloArt(draw);
     makeHudTextures(draw);
     makeMentorTextures(draw);
     this.makePortalTextures();

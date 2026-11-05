@@ -1,7 +1,8 @@
 import Phaser from 'phaser';
 import { TILE_SIZE } from '../config/physics';
-import type { LevelConfig, Landmark } from '../data/levels';
+import type { LevelConfig, Landmark, LandmarkKind, SceneryTheme } from '../data/levels';
 import { DECOR_VARIANTS, SUN } from '../art/themes/quilombo';
+import { SUN_SAOPAULO, paintBuilding } from '../art/themes/saopaulo';
 
 // Profundidades: fundo < construções < árvores < tiles (0) < enfeites de chão < player (10) < primeiro plano
 export const DEPTH = {
@@ -41,6 +42,23 @@ const AMBIENT = {
   smoke: { lifespan: 3200, frequency: 380 },
 } as const;
 
+// O que cada tema liga no fundo: halo do sol (se tiver) e pólen dourado
+interface ThemeFx {
+  sun?: { x: number; y: number };
+  motes: boolean;
+}
+const THEME_FX: Record<SceneryTheme, ThemeFx> = {
+  quilombo: { sun: SUN, motes: true },
+  saopaulo: { sun: SUN_SAOPAULO, motes: false },
+  caninde: { motes: false },
+};
+
+// Saída de fumaça de cada marco, a partir do centro (dx) e do topo (dy) da imagem
+const CHIMNEY: Partial<Record<LandmarkKind, { dx: number; dy: number }>> = {
+  hut: { dx: 10, dy: 12 },
+  townhouse: { dx: 30, dy: 2 },
+};
+
 export type ParallaxUpdater = (cam: Phaser.Cameras.Scene2D.Camera, delta: number) => void;
 
 interface Bird {
@@ -59,17 +77,20 @@ export function addParallax(scene: Phaser.Scene, level: LevelConfig): ParallaxUp
 
   scene.add.image(0, 0, `sky-${theme}`).setOrigin(0).setScrollFactor(0).setDepth(DEPTH.sky);
 
+  const fx = THEME_FX[theme];
   // halo do sol pulsando devagar
-  const glow = scene.add.image(SUN.x, SUN.y, `sunglow-${theme}`).setScrollFactor(0).setDepth(DEPTH.sunGlow);
-  scene.tweens.add({
-    targets: glow,
-    alpha: { from: 0.7, to: 1 },
-    scale: { from: 0.95, to: 1.08 },
-    duration: AMBIENT.sunPulseMs,
-    ease: 'Sine.easeInOut',
-    yoyo: true,
-    repeat: -1,
-  });
+  if (fx.sun) {
+    const glow = scene.add.image(fx.sun.x, fx.sun.y, `sunglow-${theme}`).setScrollFactor(0).setDepth(DEPTH.sunGlow);
+    scene.tweens.add({
+      targets: glow,
+      alpha: { from: 0.7, to: 1 },
+      scale: { from: 0.95, to: 1.08 },
+      duration: AMBIENT.sunPulseMs,
+      ease: 'Sine.easeInOut',
+      yoyo: true,
+      repeat: -1,
+    });
+  }
 
   const layer = (key: string, depth: number, top?: number): Phaser.GameObjects.TileSprite => {
     const frame = scene.textures.getFrame(key);
@@ -87,20 +108,22 @@ export function addParallax(scene: Phaser.Scene, level: LevelConfig): ParallaxUp
   const fg = layer(`fg-${theme}`, DEPTH.foreground);
 
   // pólen dourado flutuando na luz do fim de tarde
-  scene.add
-    .particles(0, 0, 'mote', {
-      x: { min: 0, max: width },
-      y: { min: height * 0.35, max: height * 0.9 },
-      lifespan: { min: 4000, max: 7000 },
-      speedX: { min: -10, max: 10 },
-      speedY: { min: -14, max: -4 },
-      scale: { start: 1, end: 0.4 },
-      alpha: { start: 0.9, end: 0 },
-      frequency: 220,
-      blendMode: Phaser.BlendModes.ADD,
-    })
-    .setScrollFactor(0)
-    .setDepth(DEPTH.motes);
+  if (fx.motes) {
+    scene.add
+      .particles(0, 0, 'mote', {
+        x: { min: 0, max: width },
+        y: { min: height * 0.35, max: height * 0.9 },
+        lifespan: { min: 4000, max: 7000 },
+        speedX: { min: -10, max: 10 },
+        speedY: { min: -14, max: -4 },
+        scale: { start: 1, end: 0.4 },
+        alpha: { start: 0.9, end: 0 },
+        frequency: 220,
+        blendMode: Phaser.BlendModes.ADD,
+      })
+      .setScrollFactor(0)
+      .setDepth(DEPTH.motes);
+  }
 
   const birds = createBirds(scene, width);
 
@@ -166,9 +189,41 @@ function surfaceRow(map: string[], tx: number): number {
   return -1;
 }
 
+/** Prédio pintado sobre os tiles sólidos: a altura vem do mapa (da primeira linha sólida da coluna até o fim do bloco) */
+function placeBuilding(scene: Phaser.Scene, level: LevelConfig, lm: Landmark): void {
+  const { map, theme } = level;
+  const painters: Partial<Record<SceneryTheme, typeof paintBuilding>> = { saopaulo: paintBuilding };
+  const paint = painters[theme];
+  if (!paint) return;
+  let top = 0;
+  while (top < map.length && map[top][lm.x] !== 'X') top++;
+  let bottom = top;
+  while (bottom + 1 < map.length && map[bottom + 1][lm.x] === 'X') bottom++;
+  if (top >= map.length) return;
+
+  const w = (lm.width ?? 1) * TILE_SIZE;
+  const h = (bottom - top + 1) * TILE_SIZE;
+  const variant = lm.variant ?? 0;
+  const key = `building-${theme}-${variant}-${w}x${h}`;
+  if (!scene.textures.exists(key)) {
+    const g = scene.add.graphics();
+    paint(g, w, h, variant);
+    g.generateTexture(key, w, h);
+    g.destroy();
+  }
+  // acima dos tiles (0) e abaixo da sombra das quinas (1) e da franja do topo (2)
+  scene.add.image(lm.x * TILE_SIZE, top * TILE_SIZE, key).setOrigin(0, 0).setDepth(0.5);
+}
+
 function placeLandmark(scene: Phaser.Scene, level: LevelConfig, lm: Landmark, used: Set<number>): void {
   const { map, theme } = level;
   const width = lm.width ?? 1;
+  if (lm.kind === 'building') {
+    placeBuilding(scene, level, lm);
+    return;
+  }
+  const key = lm.variant === undefined ? `${lm.kind}-${theme}` : `${lm.kind}-${theme}-${lm.variant}`;
+  if (!scene.textures.exists(key)) return;
   if (lm.kind === 'palisade') {
     for (let i = 0; i < width; i++) {
       const tx = lm.x + i;
@@ -181,31 +236,55 @@ function placeLandmark(scene: Phaser.Scene, level: LevelConfig, lm: Landmark, us
   }
   const row = surfaceRow(map, lm.x);
   if (row < 0) return;
-  const img = scene.add.image(lm.x * TILE_SIZE + TILE_SIZE / 2, row * TILE_SIZE + 2, `${lm.kind}-${theme}`).setOrigin(0.5, 1).setDepth(DEPTH.landmark - 1);
+  // lampiões ficam na frente das casas
+  const depth = lm.kind === 'lamp' ? DEPTH.landmark : DEPTH.landmark - 1;
+  const img = scene.add.image(lm.x * TILE_SIZE + TILE_SIZE / 2, row * TILE_SIZE + 2, key).setOrigin(0.5, 1).setDepth(depth);
   const half = Math.ceil(img.width / 2 / TILE_SIZE);
   for (let tx = lm.x - half; tx <= lm.x + half; tx++) used.add(tx);
-  // sai da cumeeira, um pouco à direita do centro
-  if (lm.kind === 'hut') addChimneySmoke(scene, img.x + 10, img.y - img.height + 12);
+  const chimney = CHIMNEY[lm.kind];
+  if (chimney) addChimneySmoke(scene, img.x + chimney.dx, img.y - img.height + chimney.dy);
 }
 
-/** Espalha vegetação e enfeites de forma determinística (mesmo resultado a cada partida) */
-export function decorateLevel(scene: Phaser.Scene, level: LevelConfig): void {
-  const { map, theme } = level;
-  if (!scene.textures.exists(`tree-${theme}`)) return;
+/** Chão no mesmo nível por `radius` colunas para cada lado (nada pendurado na quina) */
+function flatAround(map: string[], tx: number, row: number, radius: number): boolean {
+  for (let d = -radius; d <= radius; d++) if (surfaceRow(map, tx + d) !== row) return false;
+  return true;
+}
 
+/** Marcos posicionados à mão + enfeites espalhados de forma determinística (mesmo resultado a cada partida) */
+export function decorateLevel(scene: Phaser.Scene, level: LevelConfig): void {
+  const { theme } = level;
   const used = new Set<number>();
   level.landmarks.forEach((lm) => placeLandmark(scene, level, lm, used));
 
+  if (scene.textures.exists(`tree-${theme}`)) decorateNature(scene, level, used);
+  else if (scene.textures.exists(`crate-${theme}`)) decorateCity(scene, level, used);
+}
+
+/** Cidade: caixas e barris encostados no chão, nas ruas planas */
+function decorateCity(scene: Phaser.Scene, level: LevelConfig, used: Set<number>): void {
+  const { map, theme } = level;
+  const rng = new Phaser.Math.RandomDataGenerator([`scenery-${level.id}`]);
+  for (let tx = 0; tx < map[0].length; tx++) {
+    const row = surfaceRow(map, tx);
+    if (row < 0 || used.has(tx) || !flatAround(map, tx, row, 1)) continue;
+    const roll = rng.frac();
+    if (roll > 0.12) continue;
+    scene.add
+      .image(tx * TILE_SIZE + TILE_SIZE / 2 + rng.between(-6, 6), row * TILE_SIZE + SEAT.small, `${roll < 0.06 ? 'crate' : 'barrel'}-${theme}`)
+      .setOrigin(0.5, 1)
+      .setDepth(DEPTH.seated)
+      .setFlipX(rng.frac() < 0.5);
+  }
+}
+
+/** Natureza: árvores, arbustos, pedras, tufos e flores (com vento) */
+function decorateNature(scene: Phaser.Scene, level: LevelConfig, used: Set<number>): void {
+  const { map, theme } = level;
   const rng = new Phaser.Math.RandomDataGenerator([`scenery-${level.id}`]);
   const cols = map[0].length;
   let nextTreeAt = rng.between(2, 5);
 
-  // chão no mesmo nível por `radius` colunas para cada lado (nada pendurado na quina
-  // e nenhum barranco mais alto ao lado cortando o enfeite)
-  const flatAround = (tx: number, row: number, radius: number): boolean => {
-    for (let d = -radius; d <= radius; d++) if (surfaceRow(map, tx + d) !== row) return false;
-    return true;
-  };
   // sem plataforma ou chão nas `rows` linhas acima, em `radius` colunas para cada lado
   const clearAbove = (tx: number, row: number, rows: number, radius: number): boolean => {
     for (let d = -radius; d <= radius; d++) {
@@ -223,7 +302,7 @@ export function decorateLevel(scene: Phaser.Scene, level: LevelConfig): void {
     const groundY = row * TILE_SIZE;
     const centerX = tx * TILE_SIZE + TILE_SIZE / 2;
 
-    if (tx >= nextTreeAt && !used.has(tx) && flatAround(tx, row, 2) && clearAbove(tx, row, 4, 1)) {
+    if (tx >= nextTreeAt && !used.has(tx) && flatAround(map, tx, row, 2) && clearAbove(tx, row, 4, 1)) {
       const kind = rng.frac() < 0.35 ? 'palm' : 'tree';
       scene.add
         .image(centerX, groundY + SEAT.tree, `${kind}-${theme}`)
@@ -240,7 +319,7 @@ export function decorateLevel(scene: Phaser.Scene, level: LevelConfig): void {
         .setDepth(DEPTH.seated)
         .setFlipX(rng.frac() < 0.5);
     };
-    if (!used.has(tx) && flatAround(tx, row, 1) && clearAbove(tx, row, 1, 1)) {
+    if (!used.has(tx) && flatAround(map, tx, row, 1) && clearAbove(tx, row, 1, 1)) {
       if (rng.frac() < 0.16) seated(`bush-${theme}-${rng.between(0, 1)}`, SEAT.bush, 4);
       else if (rng.frac() < 0.07) seated(`rock-${theme}`, SEAT.rock, 6);
     }

@@ -70,12 +70,20 @@ export const MENU_TEXTS = {
   subtitle: 'Caminhos da Resistência',
   play: 'Jogar',
   hint: 'Enter ou Espaço',
+  levels: 'Escolher fase (F)',
   controls: 'Setas ou A/D: mover  |  Espaço: pular (duas vezes no ar)  |  J: meia-lua  |  ↓: esquiva',
   tagline: 'Um jogo sobre o Dia da Consciência Negra – 20 de novembro',
 } as const;
 
 export const INTRO_TEXTS = {
   hint: 'Enter ou Espaço para continuar',
+} as const;
+
+export const LEVEL_SELECT_TEXTS = {
+  title: 'Escolher fase',
+  back: 'Voltar',
+  hint: '↑ ↓ e Enter, ou as teclas 1, 2 e 3',
+  shortcut: 'Segure Shift para pular a introdução  |  Esc: voltar',
 } as const;
 
 export const PAUSE_TEXTS = {

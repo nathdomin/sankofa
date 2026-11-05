@@ -49,7 +49,8 @@ O jogador atravessa 3 fases, cada uma ligada a uma personalidade negra brasileir
    │  ├─ hudArt.ts            # faixa decorativa e ícone de vida do HUD
    │  ├─ mentorArt.ts         # retratos placeholder (silhuetas) dos mentores
    │  └─ themes/
-   │     └─ quilombo.ts       # céu, parallax e enfeites da fase 1
+   │     ├─ quilombo.ts       # céu, parallax e enfeites da fase 1
+   │     └─ saopaulo.ts       # casario, sobrados, lampiões, prédios e faculdade da fase 2
    ├─ config/
    │  ├─ physics.ts           # constantes de movimento
    │  └─ palette.ts           # cores do jogo
@@ -59,6 +60,7 @@ O jogador atravessa 3 fases, cada uma ligada a uma personalidade negra brasileir
    ├─ scenes/
    │  ├─ BootScene.ts         # gera texturas placeholder
    │  ├─ MenuScene.ts
+   │  ├─ LevelSelectScene.ts  # escolha de fase (Shift pula a Intro)
    │  ├─ IntroScene.ts        # mentor apresenta a fase
    │  ├─ GameScene.ts         # gameplay
    │  ├─ HudScene.ts          # roda em paralelo à GameScene
@@ -269,7 +271,8 @@ Boot → Menu → [Intro → Game(+HUD) → Card] ×3 → Victory
                      GameOver → Intro (mesma fase) | Menu
 ```
 
-- **MenuScene:** título "Sankofa", subtítulo "Caminhos da Resistência", botão "Jogar" e uma linha curta "Um jogo sobre o Dia da Consciência Negra – 20 de novembro".
+- **MenuScene:** título "Sankofa", subtítulo "Caminhos da Resistência", botão "Jogar", botão "Escolher fase" (tecla F) e uma linha curta "Um jogo sobre o Dia da Consciência Negra – 20 de novembro".
+- **LevelSelectScene:** tela "Escolher fase" aberta pelo menu: lista as 3 fases (todas liberadas) e "Voltar"; ↑↓ + Enter, mouse ou teclas 1, 2 e 3; Esc volta. Começa com vidas e pontuação zeradas e passa pela Intro; **segurar Shift ao escolher pula a Intro** e vai direto ao jogo (atalho de teste). Se não quiser expor na versão final, é só tirar o botão do menu.
 - **IntroScene:** fundo na paleta da fase, nome da fase + época, retrato placeholder do mentor (silhueta estilizada, **não tentar desenhar o rosto da pessoa real**) e 2–3 falas curtas avançadas com Enter/Espaço.
 - **HudScene:** vidas, contador do coletável (`3/5` quando há `required`, ou só o número quando não há) e nome da fase.
 - **CardScene:** carta histórica em formato de cartão centralizado (seção 8), com "Pressione Enter para continuar".
@@ -317,7 +320,8 @@ Transições com `fadeOut`/`fadeIn` da câmera (300 ms).
 - **Folha de papel:** retângulo branco com dobra no canto.
 - **Inimigos:** blob escuro (roxo-acinzentado) com dois olhos brancos.
 - **NPC:** silhueta simples cinza (preso) que vira colorida (livre).
-- **Portal:** arco; apagado quando trancado, brilhante quando aberto.
+- **Portal:** arco; apagado quando trancado, brilhante quando aberto. Cada tema pode ter o seu (`portal-<tema>-locked|open`; sem arte própria, cai no arco padrão): na fase 2 é a porta da faculdade (pilastres, frontão e friso de padrão africano).
+- **Plataformas flutuantes (`B`):** por padrão, troncos amarrados; cada tema pode trocar (`THEME_BLOCKS` em `tileArt.ts`): na fase 2 são sacadas de sobrado (tampo de pedra, grade de ferro e mísulas).
 - **Fundo:** parallax com formas simples (morros, casas, prédios) na paleta da fase. A fase 1 (tema `quilombo`) já tem céu em gradiente, 6 camadas, sol, nuvens, pássaros, pólen, árvores, paliçadas e cabanas. As fases 2 e 3 começam **sem tema** (só a cor do céu) e só ganham arte própria no Marco 3.
 - **Detalhe de identidade:** faixa decorativa com padrões geométricos inspirados em tecidos africanos na borda do HUD e no menu.
 
@@ -362,16 +366,18 @@ Ordem sugerida (cada passo deixa o jogo jogável):
 > **Regra de escopo:** nada de arte de cenário nova no Marco 2. Placeholder simples basta até o fluxo completo funcionar.
 
 ### Marco 3: Visual e identidade (meta: até 15/11)
-- [ ] Temas de cenário das fases 2 (`saopaulo`) e 3 (`caninde`), seguindo o modelo de `art/themes/quilombo.ts`; tirar de `Scenery.ts` o acoplamento direto com o tema quilombo (ex.: `SUN`)
+- [ ] Temas de cenário: `saopaulo` feito (aguardando aprovação) e `caninde` pendente, seguindo o modelo de `art/themes/quilombo.ts`. O `Scenery.ts` já é dirigido por tema (`THEME_FX`: sol e pólen opcionais; marcos com variantes; `building` pinta a fachada de prédios sobre os tiles sólidos, com a altura vinda do mapa)
 - [ ] Padrões decorativos, animações e tweens
 - [ ] História do protagonista (a definir com o grupo: nome, tom, motivação): prólogo curto antes da fase 1 (o estudante capoeirista encontra o Sankofa e volta no tempo), falas de ligação entre as fases e epílogo na `VictoryScene` (volta ao presente). Reaproveita a caixa de fala da `IntroScene`; ilustrações ou retrato do protagonista só se sobrar tempo
 - [ ] Polir as telas de fim de fase (hoje layout simples): aviso "Fase concluída!", `CardScene` e `VictoryScene`. O **fluxo funcional** (portal → Card → próxima fase → Victory) continua no Marco 2
 - [ ] Design dos coletáveis (hoje placeholders): Sankofa mais fiel ao símbolo Adinkra em vez do coração simples, e brilho/partículas ao coletar; carta de alforria e folha de papel também
+- [ ] Redesign do menu principal: hoje tem informação demais (título, subtítulo, botão, dica, controles, seletor e frase) e o visual não é moderno. Objetivos: menos elementos na tela (os controles podem ir para uma tela de ajuda ou para a Pausa), hierarquia clara, botões mais limpos, composição e animação de fundo mais atuais; manter a identidade (Sankofa, faixa de padrão africano, paleta). Aproveitar para alinhar a `LevelSelectScene` e as telas de Pausa/GameOver ao mesmo estilo. **O usuário aprova antes do commit**
+- [ ] Design dos NPCs (hoje placeholder de retângulos, igual para os 5 e sem rosto): pixel art com 5 variações (cabelo, roupa, rosto), estado preso (postura curvada, corrente nos pulsos) e livre (colorido, braços para cima, brilho ao libertar), com dignidade e sem estereótipos. **Decisão do usuário: fazer depois de finalizar o level design das 3 fases**
 - [ ] Poses próprias dos movimentos de capoeira, hoje placeholders: esquiva (agachado em vez de só achatar o `scaleY`), meia-lua (bananeira em vez da pose de estrela do aú) e rolê (se for implementado)
 - [ ] Refazer o level design das **3 fases**, deixando-as mais bonitas e mais desafiadoras. Hoje os mapas são funcionais e simples (fase 2: ruas, quatro telhados e um túnel; fase 3: trechos retos com um viaduto e um prédio). Objetivos:
   - **Mais bonitas:** variedade de alturas e silhuetas, composição pensada em camadas (primeiro plano, plataformas, fundo), marcos visuais por trecho (paliçadas e cabanas, casarões e sacadas, barracos e varais, a biblioteca ao fim), coletáveis posicionados para guiar o olhar; combinar com os temas de cenário das fases 2 e 3
   - **Mais desafiadoras, mas justas:** curva de dificuldade crescente dentro de cada fase e entre as fases (a fase 1 continua fácil para a apresentação), combinações de movimentos (aú + meia-lua, esquiva entre inimigos), plataformas móveis ou sequências de precisão só se couberem no prazo, sem pulos cegos nem mortes injustas
-  - **Andamento:** fase 1 refeita duas vezes (colinas, ponte quebrada, 8 inimigos, 2 checkpoints; aguardando aprovação do usuário); fases 2 e 3 pendentes
+  - **Andamento:** fase 1 **aprovada** (colinas, ponte quebrada, 8 inimigos, 2 checkpoints); fase 2 refeita com tema de São Paulo (150 tiles, 2 túneis baixos obrigatórios, rota alta de sacadas, 4 telhados, escadaria até a faculdade, 8 inimigos; aguardando aprovação); fase 3 pendente
   - **Processo:** rodar `node tools/reachability.mjs <fase>` a cada mudança (inclusive `NOAU=1` e `NOCROUCH=1` para saber o que cada movimento exige); manter coletáveis obrigatórios alcançáveis; **o usuário testa e aprova cada fase antes do commit**
 - [ ] Ajuste fino do game feel e da dificuldade
 - [x] Pausa (Esc/P): `PauseScene` por cima da GameScene parada, com "Continuar" e "Menu"
