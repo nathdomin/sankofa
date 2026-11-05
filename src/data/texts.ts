@@ -65,6 +65,84 @@ export const CARDS: Record<MentorId, HistoricalCard> = {
   },
 };
 
+// --- História do protagonista ---
+// Nome provisório: o grupo ainda pode trocar (é só mudar aqui). As falas do protagonista não usam
+// adjetivos de gênero, para servir a qualquer pessoa que jogue.
+export const PROTAGONIST_NAME = 'Aiyê';
+
+export type Speaker = 'protagonista' | 'sankofa' | MentorId;
+
+export interface StoryLine {
+  speaker: Speaker;
+  text: string;
+}
+
+/** Cenário de fundo da cena: o presente ao entardecer, a "viagem" entre épocas, o presente ao amanhecer */
+export type StoryMood = 'present-dusk' | 'time' | 'present-dawn';
+
+export type StoryId = 'prologo' | 'elo1' | 'elo2' | 'epilogo';
+
+export interface StoryScript {
+  title: string;
+  subtitle: string;
+  mood: StoryMood;
+  lines: StoryLine[];
+}
+
+export const SPEAKER_NAMES: Record<'protagonista' | 'sankofa', string> = {
+  protagonista: PROTAGONIST_NAME,
+  sankofa: 'Sankofa',
+};
+
+export const STORIES: Record<StoryId, StoryScript> = {
+  prologo: {
+    title: 'Hoje',
+    subtitle: 'Véspera do 20 de novembro',
+    mood: 'present-dusk',
+    lines: [
+      { speaker: 'protagonista', text: 'Amanhã é 20 de novembro e preciso apresentar um trabalho sobre a história negra do Brasil. Só que não sei por onde começar.' },
+      { speaker: 'protagonista', text: 'A roda de capoeira acabou e o berimbau já foi guardado. Foi quando vi, no chão, um símbolo dourado brilhando: um Sankofa.' },
+      { speaker: 'sankofa', text: 'Sankofa: voltar e buscar o que ficou para trás.' },
+      { speaker: 'protagonista', text: 'Toquei no símbolo e o mundo girou. Quando a luz se apagou, eu já não estava mais aqui…' },
+    ],
+  },
+  // depois da fase 1 (Zumbi), a caminho do século XIX
+  elo1: {
+    title: 'O símbolo brilha',
+    subtitle: 'Do século XVII ao XIX',
+    mood: 'time',
+    lines: [
+      { speaker: 'protagonista', text: 'Eu só tinha ouvido falar de Palmares. Agora senti a Serra da Barriga sob os pés e vi que resistir também é construir uma vida nova.' },
+      { speaker: 'sankofa', text: 'Ainda há o que buscar. Siga a luz até o século XIX.' },
+      { speaker: 'protagonista', text: 'O chão mudou: ruas de pedra, sobrados, lampiões. São Paulo, muito tempo atrás.' },
+    ],
+  },
+  // depois da fase 2 (Luiz Gama), a caminho do século XX
+  elo2: {
+    title: 'O símbolo brilha',
+    subtitle: 'Do século XIX ao XX',
+    mood: 'time',
+    lines: [
+      { speaker: 'protagonista', text: 'Luiz Gama transformou o estudo em liberdade para centenas de pessoas. A lei também pode ser caminho de resistência.' },
+      { speaker: 'sankofa', text: 'Falta uma voz. Agora, o século XX.' },
+      { speaker: 'protagonista', text: 'A luz me levou a uma favela cercada por uma cidade que crescia: o Canindé.' },
+    ],
+  },
+  epilogo: {
+    title: 'De volta ao presente',
+    subtitle: 'Amanhecer de 20 de novembro',
+    mood: 'present-dawn',
+    lines: [
+      { speaker: 'protagonista', text: 'Voltei para a roda e o Sankofa ficou quieto na minha mão. Hoje tenho muito o que contar.' },
+      { speaker: 'protagonista', text: 'Zumbi me ensinou a resistir. Luiz Gama, a usar o conhecimento. Carolina, a ter voz.' },
+      { speaker: 'protagonista', text: 'Agora sei por onde começar: voltar, buscar o que ficou para trás e levar essas histórias adiante.' },
+    ],
+  },
+};
+
+/** História que passa entre uma fase e a próxima (índice da fase que acabou de terminar) */
+export const LINK_STORY: Readonly<Record<number, StoryId>> = { 0: 'elo1', 1: 'elo2' };
+
 export const MENU_TEXTS = {
   title: 'Sankofa',
   subtitle: 'Caminhos da Resistência',

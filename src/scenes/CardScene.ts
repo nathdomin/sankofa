@@ -3,9 +3,10 @@ import { BAND_H } from '../art/hudArt';
 import { PALETTE, darken, toCss } from '../config/palette';
 import { CAMERA } from '../config/physics';
 import { LEVELS, type LevelConfig } from '../data/levels';
-import { CARDS, CARD_TEXTS, type HistoricalCard } from '../data/texts';
+import { CARDS, CARD_TEXTS, LINK_STORY, type HistoricalCard } from '../data/texts';
 import { CONFIRM_KEYS, onKeys } from '../systems/sceneInput';
 import { goToScene } from '../systems/transitions';
+import type { StorySceneData } from './StoryScene';
 
 export interface CardSceneData {
   levelIndex: number;
@@ -77,7 +78,11 @@ export class CardScene extends Phaser.Scene {
 
   private next(): void {
     const nextLevel = this.levelIndex + 1;
-    if (nextLevel < LEVELS.length) goToScene(this, 'Intro', { levelIndex: nextLevel });
-    else goToScene(this, 'Victory');
+    const hasNext = nextLevel < LEVELS.length;
+    // entre as fases passa uma cena de história; depois da última, o epílogo
+    const storyId = hasNext ? LINK_STORY[this.levelIndex] : 'epilogo';
+    const next = hasNext ? { scene: 'Intro', data: { levelIndex: nextLevel } } : { scene: 'Victory' };
+    if (storyId) goToScene(this, 'Story', { storyId, next } satisfies StorySceneData);
+    else goToScene(this, next.scene, next.data);
   }
 }

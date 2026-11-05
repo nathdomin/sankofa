@@ -7,6 +7,7 @@ import { MENU_TEXTS } from '../data/texts';
 import { gameState } from '../systems/GameState';
 import { CONFIRM_KEYS, onKeys } from '../systems/sceneInput';
 import { goToScene } from '../systems/transitions';
+import type { StorySceneData } from './StoryScene';
 
 const CLOUD_DRIFT = 0.012; // px por ms
 
@@ -130,6 +131,7 @@ export class MenuScene extends Phaser.Scene {
 
   private play(): void {
     gameState.reset();
-    goToScene(this, 'Intro', { levelIndex: 0 });
+    // o jogo começa pelo prólogo; a escolha de fase pula direto para a Intro
+    goToScene(this, 'Story', { storyId: 'prologo', next: { scene: 'Intro', data: { levelIndex: 0 } } } satisfies StorySceneData);
   }
 }

@@ -9,6 +9,7 @@ import { IntroScene } from './scenes/IntroScene';
 import { LevelSelectScene } from './scenes/LevelSelectScene';
 import { MenuScene } from './scenes/MenuScene';
 import { PauseScene } from './scenes/PauseScene';
+import { StoryScene } from './scenes/StoryScene';
 import { VictoryScene } from './scenes/VictoryScene';
 
 // ?debug na URL mostra as hitboxes do Arcade
@@ -32,7 +33,7 @@ const config: Phaser.Types.Core.GameConfig = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [BootScene, MenuScene, LevelSelectScene, IntroScene, GameScene, HudScene, CardScene, VictoryScene, GameOverScene, PauseScene],
+  scene: [BootScene, MenuScene, LevelSelectScene, StoryScene, IntroScene, GameScene, HudScene, CardScene, VictoryScene, GameOverScene, PauseScene],
 };
 
 declare global {

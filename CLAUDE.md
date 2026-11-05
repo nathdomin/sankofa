@@ -63,6 +63,7 @@ O jogador atravessa 3 fases, cada uma ligada a uma personalidade negra brasileir
    │  ├─ BootScene.ts         # gera texturas placeholder
    │  ├─ MenuScene.ts
    │  ├─ LevelSelectScene.ts  # escolha de fase (Shift pula a Intro)
+   │  ├─ StoryScene.ts        # cenas de história: prólogo, ligações entre fases e epílogo
    │  ├─ IntroScene.ts        # mentor apresenta a fase
    │  ├─ GameScene.ts         # gameplay
    │  ├─ HudScene.ts          # roda em paralelo à GameScene
@@ -81,6 +82,7 @@ O jogador atravessa 3 fases, cada uma ligada a uma personalidade negra brasileir
       ├─ transitions.ts       # goToScene: troca de cena com fade
       ├─ sceneInput.ts        # teclas de confirmar/navegar nos menus
       ├─ OptionList.ts        # lista de opções (GameOver, Pausa)
+      ├─ DialogueBox.ts       # caixa de fala com texto digitado (Intro e Story)
       ├─ Scenery.ts           # parallax, landmarks e vegetação a partir do tema da fase
       └─ GameState.ts         # vidas, fase atual, pontuação (singleton que emite eventos para a HUD)
 ```
@@ -104,7 +106,7 @@ O jogador atravessa 3 fases, cada uma ligada a uma personalidade negra brasileir
 
 ## 3. Personagem e "game feel"
 
-Protagonista **original** (não é nenhuma das personalidades históricas): um jovem estudante dos dias de hoje, capoeirista, que encontra um símbolo Sankofa e é levado de volta no tempo. Ele atravessa as três épocas aprendendo com cada mentor e, no final, volta ao presente com essas histórias. Sankofa = "voltar e buscar o que ficou para trás".
+Protagonista **original** (não é nenhuma das personalidades históricas), chamado **Aiyê** (nome provisório, constante `PROTAGONIST_NAME` em `texts.ts`): um estudante dos dias de hoje, capoeirista. Na véspera do 20 de novembro precisa apresentar um trabalho sobre a história negra e não sabe por onde começar; depois da roda de capoeira encontra um símbolo Sankofa e é levado de volta no tempo. Tom esperançoso e inspirador; as falas dele não usam adjetivos de gênero. No epílogo volta ao presente, decide levar as três histórias adiante e a Victory fecha com o significado do Sankofa. Ele atravessa as três épocas aprendendo com cada mentor e, no final, volta ao presente com essas histórias. Sankofa = "voltar e buscar o que ficou para trás".
 
 Hitbox em pé: **22×40**. Sprite: **40×50** (maior que a hitbox para caber rosto e braços abertos). Abaixado: hitbox **22×22**, mantendo os pés no chão.
 
@@ -269,13 +271,15 @@ Cada fase: ~**120–160 tiles de largura** × **17 tiles de altura** (544 px). C
 ## 7. Fluxo de cenas
 
 ```
-Boot → Menu → [Intro → Game(+HUD) → Card] ×3 → Victory
+Boot → Menu → Story(prólogo) → [Intro → Game(+HUD) → Card → Story(ligação)] ×3 → Story(epílogo) → Victory
                          ↓ sem vidas
                      GameOver → Intro (mesma fase) | Menu
+(a ligação só existe entre as fases 1→2 e 2→3; a escolha de fase pula o prólogo e as ligações)
 ```
 
 - **MenuScene:** título "Sankofa", subtítulo "Caminhos da Resistência", botão "Jogar", botão "Escolher fase" (tecla F) e uma linha curta "Um jogo sobre o Dia da Consciência Negra – 20 de novembro".
 - **LevelSelectScene:** tela "Escolher fase" aberta pelo menu: lista as 3 fases (todas liberadas) e "Voltar"; ↑↓ + Enter, mouse ou teclas 1, 2 e 3; Esc volta. Começa com vidas e pontuação zeradas e passa pela Intro; **segurar Shift ao escolher pula a Intro** e vai direto ao jogo (atalho de teste). Se não quiser expor na versão final, é só tirar o botão do menu.
+- **StoryScene:** cena de história com caixa de fala (`DialogueBox`, a mesma da Intro), retrato de quem fala (o sprite do protagonista, o símbolo Sankofa ou a silhueta de um mentor) e fundo por clima: presente ao entardecer (prólogo), viagem no tempo com poeira dourada (ligações) e presente ao amanhecer (epílogo). Os textos ficam em `STORIES` (`texts.ts`); recebe `{ storyId, next }`. O jogo começa pelo prólogo (botão Jogar); a escolha de fase não passa por ele.
 - **IntroScene:** fundo na paleta da fase, nome da fase + época, retrato placeholder do mentor (silhueta estilizada, **não tentar desenhar o rosto da pessoa real**) e 2–3 falas curtas avançadas com Enter/Espaço.
 - **HudScene:** vidas, contador do coletável (`3/5` quando há `required`, ou só o número quando não há) e nome da fase.
 - **CardScene:** carta histórica em formato de cartão centralizado (seção 8), com "Pressione Enter para continuar".
@@ -371,7 +375,7 @@ Ordem sugerida (cada passo deixa o jogo jogável):
 ### Marco 3: Visual e identidade (meta: até 15/11)
 - [ ] Temas de cenário: `saopaulo` **aprovado** e `caninde` **aprovado**, seguindo o modelo de `art/themes/quilombo.ts`. O `Scenery.ts` já é dirigido por tema (`THEME_FX`: sol e pólen opcionais; `transition` na fase para o fundo mudar de cenário; marcos com variantes; `building` pinta a fachada de prédios sobre os tiles sólidos, com a altura vinda do mapa)
 - [ ] Padrões decorativos, animações e tweens
-- [ ] História do protagonista (a definir com o grupo: nome, tom, motivação): prólogo curto antes da fase 1 (o estudante capoeirista encontra o Sankofa e volta no tempo), falas de ligação entre as fases e epílogo na `VictoryScene` (volta ao presente). Reaproveita a caixa de fala da `IntroScene`; ilustrações ou retrato do protagonista só se sobrar tempo
+- [x] História do protagonista (feita e **aprovada**; nome, tom, gancho e final definidos pelo usuário): prólogo antes da fase 1, ligações entre as fases 1→2 e 2→3 e epílogo antes da `VictoryScene`, tudo na `StoryScene`. Textos em `STORIES`, revisáveis pelo grupo. Ilustrações do protagonista só se sobrar tempo
 - [ ] Polir as telas de fim de fase (hoje layout simples): aviso "Fase concluída!", `CardScene` e `VictoryScene`. O **fluxo funcional** (portal → Card → próxima fase → Victory) continua no Marco 2
 - [ ] Design dos coletáveis (hoje placeholders): Sankofa mais fiel ao símbolo Adinkra em vez do coração simples, e brilho/partículas ao coletar; carta de alforria e folha de papel também
 - [ ] Redesign do menu principal: hoje tem informação demais (título, subtítulo, botão, dica, controles, seletor e frase) e o visual não é moderno. Objetivos: menos elementos na tela (os controles podem ir para uma tela de ajuda ou para a Pausa), hierarquia clara, botões mais limpos, composição e animação de fundo mais atuais; manter a identidade (Sankofa, faixa de padrão africano, paleta). Aproveitar para alinhar a `LevelSelectScene` e as telas de Pausa/GameOver ao mesmo estilo. **O usuário aprova antes do commit**
@@ -384,6 +388,13 @@ Ordem sugerida (cada passo deixa o jogo jogável):
   - **Processo:** rodar `node tools/reachability.mjs <fase>` a cada mudança (inclusive `NOAU=1` e `NOCROUCH=1` para saber o que cada movimento exige); manter coletáveis obrigatórios alcançáveis; **o usuário testa e aprova cada fase antes do commit**
 - [ ] Ajuste fino do game feel e da dificuldade
 - [x] Pausa (Esc/P): `PauseScene` por cima da GameScene parada, com "Continuar" e "Menu"
+- [ ] **Revisão geral** (último passo do Marco 3, depois de todos os outros): jogar o jogo inteiro do menu aos créditos, nas 3 fases, e fechar pendências antes do Marco 4. Checklist:
+  - textos históricos (mentores, cartas) revisados com fontes confiáveis (Fundação Cultural Palmares, Museu Afro Brasil, professor) e sem nada apresentado como citação real
+  - créditos completos (incluir os demais integrantes da equipe, se houver) e frase do Dia da Consciência Negra conferida
+  - consistência visual entre menu, seletor de fases, Intro, HUD, Pausa, GameOver, Card e Victory
+  - dificuldade e game feel: nenhuma morte injusta, checkpoints bem colocados, fase 1 ainda acessível para a apresentação
+  - `node tools/reachability.mjs` nas 3 fases (com `NOAU=1` e `NOCROUCH=1`), `npm run build` sem erros e teste automatizado percorrendo o jogo todo
+  - limpeza: itens ou textos que citam recursos não implementados (ex.: rolê), TODOs soltos e o `CLAUDE.md` atualizado com o estado final
 
 ### Marco 4: Som e entrega (meta: até 17/11, **congelamento**)
 - [ ] Efeitos sonoros e mute
