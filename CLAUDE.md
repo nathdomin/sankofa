@@ -366,7 +366,7 @@ Ordem sugerida (cada passo deixa o jogo jogável):
 > **Regra de escopo:** nada de arte de cenário nova no Marco 2. Placeholder simples basta até o fluxo completo funcionar.
 
 ### Marco 3: Visual e identidade (meta: até 15/11)
-- [ ] Temas de cenário: `saopaulo` feito (aguardando aprovação) e `caninde` pendente, seguindo o modelo de `art/themes/quilombo.ts`. O `Scenery.ts` já é dirigido por tema (`THEME_FX`: sol e pólen opcionais; marcos com variantes; `building` pinta a fachada de prédios sobre os tiles sólidos, com a altura vinda do mapa)
+- [ ] Temas de cenário: `saopaulo` **aprovado** e `caninde` pendente, seguindo o modelo de `art/themes/quilombo.ts`. O `Scenery.ts` já é dirigido por tema (`THEME_FX`: sol e pólen opcionais; marcos com variantes; `building` pinta a fachada de prédios sobre os tiles sólidos, com a altura vinda do mapa)
 - [ ] Padrões decorativos, animações e tweens
 - [ ] História do protagonista (a definir com o grupo: nome, tom, motivação): prólogo curto antes da fase 1 (o estudante capoeirista encontra o Sankofa e volta no tempo), falas de ligação entre as fases e epílogo na `VictoryScene` (volta ao presente). Reaproveita a caixa de fala da `IntroScene`; ilustrações ou retrato do protagonista só se sobrar tempo
 - [ ] Polir as telas de fim de fase (hoje layout simples): aviso "Fase concluída!", `CardScene` e `VictoryScene`. O **fluxo funcional** (portal → Card → próxima fase → Victory) continua no Marco 2
@@ -377,7 +377,7 @@ Ordem sugerida (cada passo deixa o jogo jogável):
 - [ ] Refazer o level design das **3 fases**, deixando-as mais bonitas e mais desafiadoras. Hoje os mapas são funcionais e simples (fase 2: ruas, quatro telhados e um túnel; fase 3: trechos retos com um viaduto e um prédio). Objetivos:
   - **Mais bonitas:** variedade de alturas e silhuetas, composição pensada em camadas (primeiro plano, plataformas, fundo), marcos visuais por trecho (paliçadas e cabanas, casarões e sacadas, barracos e varais, a biblioteca ao fim), coletáveis posicionados para guiar o olhar; combinar com os temas de cenário das fases 2 e 3
   - **Mais desafiadoras, mas justas:** curva de dificuldade crescente dentro de cada fase e entre as fases (a fase 1 continua fácil para a apresentação), combinações de movimentos (aú + meia-lua, esquiva entre inimigos), plataformas móveis ou sequências de precisão só se couberem no prazo, sem pulos cegos nem mortes injustas
-  - **Andamento:** fase 1 **aprovada** (colinas, ponte quebrada, 8 inimigos, 2 checkpoints); fase 2 refeita com tema de São Paulo (150 tiles, 2 túneis baixos obrigatórios, rota alta de sacadas, 4 telhados, escadaria até a faculdade, 8 inimigos; aguardando aprovação); fase 3 pendente
+  - **Andamento:** fase 1 **aprovada** (colinas, ponte quebrada, 8 inimigos, 2 checkpoints); fase 2 refeita com tema de São Paulo (150 tiles, 2 túneis baixos obrigatórios, rota alta de sacadas, 4 telhados, escadaria até a faculdade, 8 inimigos, portal da faculdade e sacadas de ferro; **aprovada**, exceto o design dos NPCs, que fica para o item próprio); fase 3 pendente
   - **Processo:** rodar `node tools/reachability.mjs <fase>` a cada mudança (inclusive `NOAU=1` e `NOCROUCH=1` para saber o que cada movimento exige); manter coletáveis obrigatórios alcançáveis; **o usuário testa e aprova cada fase antes do commit**
 - [ ] Ajuste fino do game feel e da dificuldade
 - [x] Pausa (Esc/P): `PauseScene` por cima da GameScene parada, com "Continuar" e "Menu"
