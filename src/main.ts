@@ -4,6 +4,7 @@ import { audio } from './systems/audio/AudioManager';
 import { AudioUiScene } from './scenes/AudioUiScene';
 import { BootScene } from './scenes/BootScene';
 import { CardScene } from './scenes/CardScene';
+import { EnemiesScene } from './scenes/EnemiesScene';
 import { GameOverScene } from './scenes/GameOverScene';
 import { GameScene } from './scenes/GameScene';
 import { HelpScene } from './scenes/HelpScene';
@@ -36,7 +37,7 @@ const config: Phaser.Types.Core.GameConfig = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [BootScene, MenuScene, LevelSelectScene, HelpScene, StoryScene, IntroScene, GameScene, HudScene, CardScene, VictoryScene, GameOverScene, PauseScene, AudioUiScene],
+  scene: [BootScene, MenuScene, LevelSelectScene, HelpScene, StoryScene, EnemiesScene, IntroScene, GameScene, HudScene, CardScene, VictoryScene, GameOverScene, PauseScene, AudioUiScene],
 };
 
 declare global {

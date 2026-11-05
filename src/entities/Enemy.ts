@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { ENEMY, TILE_SIZE } from '../config/physics';
+import { enemyTextureKey } from '../art/enemyArt';
 import type { EnemyKind } from '../systems/LevelBuilder';
 
 /** Inimigo que patrulha: anda até bater numa parede ou chegar à beira da plataforma e vira */
@@ -11,7 +12,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
   /** x, y = posição dos pés */
   constructor(scene: Phaser.Scene, x: number, y: number, kind: EnemyKind, isSolidAt: (tx: number, ty: number) => boolean) {
-    super(scene, x, y, `enemy-${kind}`);
+    super(scene, x, y, enemyTextureKey(kind, 0));
     this.kind = kind;
     this.isSolidAt = isSolidAt;
 
@@ -19,6 +20,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.setOrigin(0.5, 1).setDepth(8);
     scene.add.existing(this);
     scene.physics.add.existing(this);
+    this.play(`enemy-${kind}-walk`);
 
     const { body: box } = ENEMY[kind];
     this.arcadeBody.setSize(box.w, box.h, false).setOffset(box.ox, box.oy).setCollideWorldBounds(true);
@@ -48,11 +50,13 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     body.setVelocityX(this.dir * ENEMY[this.kind].speed);
   }
 
-  /** Derrotado: some com um achatamento rápido */
+  /** Derrotado: some com um achatamento rápido e uma nuvem de pixels (ruído da desinformação ou poeira do esquecimento) */
   defeat(): void {
     if (this.defeated) return;
     this.defeated = true;
     this.arcadeBody.enable = false;
+    this.anims.stop();
+    this.burst();
     this.scene.tweens.add({
       targets: this,
       scaleY: 0.2,
@@ -62,6 +66,25 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       ease: 'Quad.easeOut',
       onComplete: () => this.destroy(),
     });
+  }
+
+  private burst(): void {
+    const { count, speed, lifeMs } = ENEMY.defeatBurst;
+    const noise = this.kind === 'desinformacao';
+    const emitter = this.scene.add
+      .particles(this.x, this.y - this.height / 2, 'pixel', {
+        lifespan: lifeMs,
+        speed,
+        scale: { start: 1, end: 0 },
+        alpha: { start: 1, end: 0 },
+        // desinformação estoura em ruído magenta e ciano; esquecimento vira poeira pálida que sobe
+        tint: noise ? [0xe0409a, 0x40d8e8, 0x7a6a94] : [0xa8e6ff, 0x8a84a0, 0x6e6a80],
+        gravityY: noise ? 200 : -60,
+        emitting: false,
+      })
+      .setDepth(9);
+    emitter.explode(count);
+    this.scene.time.delayedCall(lifeMs + 100, () => emitter.destroy());
   }
 
   /**

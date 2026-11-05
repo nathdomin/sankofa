@@ -48,6 +48,7 @@ O jogador atravessa 3 fases, cada uma ligada a uma personalidade negra brasileir
    │  ├─ playerArt.ts         # poses do player em pixel art
    │  ├─ tileArt.ts           # tiles de chão/bloco por fase
    │  ├─ hudArt.ts            # faixa decorativa e ícone de vida do HUD
+   │  ├─ enemyArt.ts          # os dois inimigos em pixel art (2 quadros cada) e o pixel das partículas de derrota
    │  ├─ collectibleArt.ts    # Sankofa, carta de alforria, folha de papel e texturas de brilho (halo, faísca)
    │  ├─ npcArt.ts            # as 5 pessoas libertadas da fase 2 (preso e livre) e o elo de corrente
    │  ├─ mentorArt.ts         # retratos em pixel art dos mentores (3 quadros: parado, falando, piscando)
@@ -68,6 +69,7 @@ O jogador atravessa 3 fases, cada uma ligada a uma personalidade negra brasileir
    │  ├─ LevelSelectScene.ts  # escolha de fase (Shift pula a Intro)
    │  ├─ HelpScene.ts         # "Como jogar": controles e dicas
    │  ├─ StoryScene.ts        # cenas de história: prólogo, ligações entre fases e epílogo
+   │  ├─ EnemiesScene.ts      # "Quem atravessa o caminho": apresenta os inimigos antes da fase 1
    │  ├─ IntroScene.ts        # mentor apresenta a fase
    │  ├─ GameScene.ts         # gameplay
    │  ├─ HudScene.ts          # roda em paralelo à GameScene
@@ -280,7 +282,7 @@ Cada fase: ~**120–160 tiles de largura** × **17 tiles de altura** (544 px). C
 ## 7. Fluxo de cenas
 
 ```
-Boot → Menu → Story(prólogo) → [Intro → Game(+HUD) → Card → Story(ligação)] ×3 → Story(epílogo) → Victory
+Boot → Menu → Story(prólogo) → Enemies → [Intro → Game(+HUD) → Card → Story(ligação)] ×3 → Story(epílogo) → Victory
                          ↓ sem vidas
                      GameOver → Intro (mesma fase) | Menu
 (a ligação só existe entre as fases 1→2 e 2→3; a escolha de fase pula o prólogo e as ligações)
@@ -290,6 +292,7 @@ Boot → Menu → Story(prólogo) → [Intro → Game(+HUD) → Card → Story(l
 - **HelpScene:** "Como jogar", com os controles em teclas desenhadas e duas dicas; Enter, Esc ou clique voltam.
 - **LevelSelectScene:** tela "Escolher fase" aberta pelo menu (mesmo estilo do menu, com a época sob o nome da fase): lista as 3 fases (todas liberadas) e "Voltar"; ↑↓ + Enter, mouse ou teclas 1, 2 e 3; Esc volta. Começa com vidas e pontuação zeradas e passa pela Intro; **segurar Shift ao escolher pula a Intro** e vai direto ao jogo (atalho de teste). Se não quiser expor na versão final, é só tirar o botão do menu.
 - **StoryScene:** cena de história com caixa de fala (`DialogueBox`, a mesma da Intro), retrato animado de quem fala (`Portrait`: o sprite do protagonista, o símbolo Sankofa ou o retrato de um mentor) e fundo por clima: presente ao entardecer (prólogo), viagem no tempo com poeira dourada (ligações) e presente ao amanhecer (epílogo). Os textos ficam em `STORIES` (`texts.ts`); recebe `{ storyId, next }`. O jogo começa pelo prólogo (botão Jogar); a escolha de fase não passa por ele.
+- **EnemiesScene** ("Quem atravessa o caminho"): vem logo depois do prólogo, antes da Intro da fase 1 (a escolha de fase pula). Dois cartões lado a lado, cada um com o inimigo andando, o nome, uma frase-resumo, **o que é** e **como vencer**; o texto frisa que eles não são pessoas, e sim ideias que querem apagar a nossa história. Textos em `ENEMIES_TEXTS` (`texts.ts`). A Intro da fase 2 (Luiz Gama) reforça o aviso sobre o Esquecimento.
 - **IntroScene:** fundo na paleta da fase, nome da fase + época, retrato animado do mentor (pixel art em busto, 200×240: **respira, pisca e mexe a boca enquanto o texto é digitado**, via `Portrait` + gancho `onTyping` da `DialogueBox`) e 2–3 falas curtas avançadas com Enter/Espaço.
 - **HudScene:** vidas, contador do coletável (`3/5` quando há `required`, ou só o número quando não há) e nome da fase.
 - **PauseScene / GameOverScene:** no estilo do menu (ver acima). Pausa: "Continuar" e "Menu", Esc/P retomam. Game Over: subtítulo do Sankofa, "Tentar de novo (fase atual)" e "Menu".
@@ -315,7 +318,8 @@ Transições com `fadeOut`/`fadeIn` da câmera (300 ms).
 - **Luiz Gama (fase 2):**
   1. "Me tiraram a liberdade quando eu era criança. Com estudo, eu a recuperei."
   2. "Agora uso a lei para libertar outras pessoas."
-  3. "Encontre as 5 cartas de alforria. Nas passagens baixas, abaixe na esquiva (↓) ou faça o rolê (K)."
+  3. "Encontre as 5 cartas de alforria. Nas passagens baixas, abaixe na esquiva (↓)."
+  4. "Cuidado com o Esquecimento: ele é rápido e só cai com a meia-lua (J)."
 - **Carolina Maria de Jesus (fase 3):**
   1. "Eu catava papel para sobreviver. Nesses papéis, eu escrevia minha vida."
   2. "Escrever é ter voz. Me ajude a completar o diário: junte 8 páginas."
@@ -338,7 +342,7 @@ Transições com `fadeOut`/`fadeIn` da câmera (300 ms).
 - **Carta de alforria:** pergaminho enrolado em cima e embaixo, linhas de tinta e lacre de cera vermelho com fitas. A chave da textura é `alforria` (dois r).
 - **Folha de papel:** página de caderno com pauta azul, margem vermelha, letra de mão e canto dobrado.
 - **Brilho dos coletáveis** (`Collectible.ts`, valores em `COLLECTIBLE`): halo que pulsa atrás do item (tom por coletável), cintilho que passa de tempos em tempos e, ao coletar, clarão, anel se expandindo, faíscas e "+50" subindo.
-- **Inimigos:** blob escuro (roxo-acinzentado) com dois olhos brancos.
+- **Inimigos** (`art/enemyArt.ts`, 2 quadros de animação cada, hitboxes inalteradas): **Desinformação** é uma nuvem de boato roxa com franja de "ruído de TV" (ciano e magenta), olhos desiguais, sobrancelha brava, sorriso de dentes de serra e um "?" ou "!" que alterna sobre a cabeça; **Esquecimento** é um espectro de névoa com coroa de pontas, olhos vazios que brilham e a base se desfazendo em poeira. Ao serem derrotados estouram em pixels (ruído magenta/ciano ou poeira pálida que sobe). Sempre conceitos, nunca pessoas.
 - **NPC (fase 2):** 5 pessoas em pixel art (28×46, de frente; `art/npcArt.ts`): mulher de turbante e avental, homem de chapéu de palha e suspensório, mulher de cabelo crespo e blusa dourada, homem mais velho de cabelo e barba grisalhos com colete, jovem de cabelo curto. A i-ésima `N` do mapa usa a variação i. **Preso:** cores apagadas, cabeça erguida e algemas nos pulsos ligadas por uma corrente curta. **Livre:** cores cheias, sorriso, braços para o alto e algemas abertas; ao libertar há clarão dourado, faíscas, elos de corrente caindo, pulinhos, balão "Livre!" e depois uma comemoração suave. Valores em `NPC` (`physics.ts`).
 - **Portal:** arco; apagado quando trancado, brilhante quando aberto. Cada tema pode ter o seu (`portal-<tema>-locked|open`; sem arte própria, cai no arco padrão): na fase 2 é a porta da faculdade (pilastres, frontão e friso de padrão africano).
 - **Plataformas flutuantes (`B`):** por padrão, troncos amarrados; cada tema pode trocar (`THEME_BLOCKS` em `tileArt.ts`): na fase 2 são sacadas de sobrado (tampo de pedra, grade de ferro e mísulas).
@@ -405,6 +409,7 @@ Ordem sugerida (cada passo deixa o jogo jogável):
   - **Andamento:** fase 1 **aprovada** (colinas, ponte quebrada, 8 inimigos, 2 checkpoints); fase 2 refeita com tema de São Paulo (150 tiles, 2 túneis baixos obrigatórios, rota alta de sacadas, 4 telhados, escadaria até a faculdade, 8 inimigos, portal da faculdade e sacadas de ferro; **aprovada**, exceto o design dos NPCs, que fica para o item próprio); fase 3 refeita com tema do Canindé e cidade moderna (viaduto, prédio de 5 tiles, 9 inimigos, 3 checkpoints; **aprovada**). **Level design das 3 fases concluído**
   - **Processo:** rodar `node tools/reachability.mjs <fase>` a cada mudança (inclusive `NOAU=1` e `NOCROUCH=1` para saber o que cada movimento exige); manter coletáveis obrigatórios alcançáveis; **o usuário testa e aprova cada fase antes do commit**
 - [x] **Sons do jogo** (feito, aguardando aprovação; ver seção 10): sistema de áudio em `src/systems/` (Web Audio API, sem arquivos externos, um único `AudioContext` criado após a primeira interação por causa da política de autoplay); efeitos de gameplay (pulo, aú, meia-lua, acerto, pisão, coleta com um som por tipo, libertar pessoa, dano, checkpoint, portal, fase concluída), sons de interface (mover, confirmar, voltar, texto das falas) e, se couber, um pano de fundo musical curto e suave gerado em código por fase. Tecla **M** muta tudo (com aviso na tela e valor lembrado), volume central em `physics.ts` ou `config/audio.ts`, sons baixos o bastante para não cansar. **Direção da música (pedido do usuário):** algo ligado ao tema da Consciência Negra, como samba ou capoeira, estilizado no estilo do jogo. **O usuário testa e aprova antes do commit**
+- [x] **Design dos inimigos e explicação no começo do jogo** (pedido do usuário; feito, aguardando aprovação): novo visual da Desinformação e do Esquecimento, com animação de andar e efeito ao serem derrotados; cena `EnemiesScene` depois do prólogo explicando o que cada um é e como vencer; aviso extra do Esquecimento na Intro do Luiz Gama
 - [ ] Ajuste fino do game feel e da dificuldade
 - [x] Pausa (Esc/P): `PauseScene` por cima da GameScene parada, com "Continuar" e "Menu"
 - [ ] **Revisão geral** (último passo do Marco 3, depois de todos os outros): jogar o jogo inteiro do menu aos créditos, nas 3 fases, e fechar pendências antes do Marco 4. Checklist:

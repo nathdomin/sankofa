@@ -8,6 +8,7 @@ import { gameState } from '../systems/GameState';
 import { addMenuBackdrop } from '../systems/MenuBackdrop';
 import { OptionList } from '../systems/OptionList';
 import { goToScene } from '../systems/transitions';
+import type { EnemiesSceneData } from './EnemiesScene';
 import type { StorySceneData } from './StoryScene';
 
 const LEFT = 84;
@@ -79,6 +80,8 @@ export class MenuScene extends Phaser.Scene {
   private play(): void {
     gameState.reset();
     // o jogo começa pelo prólogo; a escolha de fase pula direto para a Intro
-    goToScene(this, 'Story', { storyId: 'prologo', next: { scene: 'Intro', data: { levelIndex: 0 } } } satisfies StorySceneData);
+    // depois do prólogo, a apresentação dos inimigos e só então a Intro da fase 1
+    const enemies = { scene: 'Enemies', data: { next: { scene: 'Intro', data: { levelIndex: 0 } } } satisfies EnemiesSceneData };
+    goToScene(this, 'Story', { storyId: 'prologo', next: enemies } satisfies StorySceneData);
   }
 }

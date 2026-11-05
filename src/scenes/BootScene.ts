@@ -1,10 +1,11 @@
 import Phaser from 'phaser';
-import { PLAYER } from '../config/physics';
+import { ENEMY, PLAYER } from '../config/physics';
 import { PALETTE, darken } from '../config/palette';
 import { LEVELS } from '../data/levels';
 import { paintGrid } from '../art/pixel';
 import { PLAYER_COLOR_MAP, PLAYER_POSES, PLAYER_RUN_KEYS, buildPoseGrid, playerTextureKey } from '../art/playerArt';
 import { makeCollectibleTextures } from '../art/collectibleArt';
+import { ENEMY_FRAMES, enemyTextureKey, makeEnemyTextures, type EnemyArtKind } from '../art/enemyArt';
 import { makeHudTextures } from '../art/hudArt';
 import { makeMentorTextures } from '../art/mentorArt';
 import { makeNpcTextures } from '../art/npcArt';
@@ -34,7 +35,8 @@ export class BootScene extends Phaser.Scene {
     makeMentorTextures(draw);
     this.makePortalTextures();
     makeCollectibleTextures(draw);
-    this.makeEnemyTextures();
+    makeEnemyTextures(draw);
+    this.makeEnemyAnimations();
     makeNpcTextures(draw);
     this.makeCheckpointTextures();
 
@@ -86,27 +88,16 @@ export class BootScene extends Phaser.Scene {
     this.draw('portal-open', 48, 64, (g) => paintArch(g, 0x9a8a78, 0xffc94a, 0xfff4d0));
   }
 
-  private makeEnemyTextures(): void {
-    const eyes = (g: Phaser.GameObjects.Graphics, y: number): void => {
-      g.fillStyle(PALETTE.white).fillCircle(9, y, 4).fillCircle(19, y, 4);
-      g.fillStyle(PALETTE.black).fillCircle(10, y + 1, 2).fillCircle(20, y + 1, 2);
-    };
-
-    this.draw('enemy-desinformacao', 28, 24, (g) => {
-      const body = 0x4b3f5c;
-      g.fillStyle(body).fillEllipse(14, 15, 28, 18).fillCircle(8, 9, 6).fillCircle(18, 8, 7);
-      g.fillStyle(darken(body, 20)).fillRect(3, 21, 22, 3);
-      eyes(g, 12);
-    });
-
-    this.draw('enemy-esquecimento', 28, 28, (g) => {
-      const body = 0x2f2a3a;
-      g.fillStyle(body);
-      for (let x = 2; x < 26; x += 6) g.fillTriangle(x, 10, x + 6, 10, x + 3, 0);
-      g.fillEllipse(14, 18, 28, 18);
-      g.fillStyle(darken(body, 25)).fillRect(3, 25, 22, 3);
-      eyes(g, 16);
-    });
+  /** Cada inimigo balança entre dois quadros enquanto anda */
+  private makeEnemyAnimations(): void {
+    for (const kind of ['desinformacao', 'esquecimento'] as EnemyArtKind[]) {
+      this.anims.create({
+        key: `enemy-${kind}-walk`,
+        frames: Array.from({ length: ENEMY_FRAMES }, (_, i) => ({ key: enemyTextureKey(kind, i) })),
+        frameRate: ENEMY.animFps[kind],
+        repeat: -1,
+      });
+    }
   }
 
   private makeCheckpointTextures(): void {

@@ -29,6 +29,7 @@ export const MENTORS: Record<MentorId, Mentor> = {
       'Me tiraram a liberdade quando eu era criança. Com estudo, eu a recuperei.',
       'Agora uso a lei para libertar outras pessoas.',
       'Encontre as 5 cartas de alforria. Nas passagens baixas, abaixe na esquiva (↓).',
+      'Cuidado com o Esquecimento: ele é rápido e só cai com a meia-lua (J).',
     ],
   },
   carolina: {
@@ -150,6 +151,25 @@ export const MENU_TEXTS = {
   levels: 'Escolher fase',
   help: 'Como jogar',
   tagline: 'Dia da Consciência Negra · 20 de novembro',
+} as const;
+
+export const ENEMIES_TEXTS = {
+  title: 'Quem atravessa o caminho',
+  subtitle: 'Eles não são pessoas: são ideias que querem apagar a nossa história.',
+  howTitle: 'Como vencer',
+  hint: 'Enter ou Espaço para continuar',
+  desinformacao: {
+    name: 'Desinformação',
+    tag: 'Boatos e mentiras',
+    what: 'Notícias falsas e boatos que escondem a verdade sobre a nossa história. Aparecem em todas as fases.',
+    how: 'Pule em cima dela ou use a meia-lua (J).',
+  },
+  esquecimento: {
+    name: 'Esquecimento',
+    tag: 'Histórias que se apagam',
+    what: 'Quando ninguém conta uma história, ela vai sumindo. É mais rápido e só aparece a partir da fase 2.',
+    how: 'As pontas impedem o pisão: só a meia-lua (J) o derrota.',
+  },
 } as const;
 
 export const HELP_TEXTS = {

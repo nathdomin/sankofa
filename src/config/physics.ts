@@ -61,6 +61,9 @@ export const ENEMY = {
   stompTolerance: 16,
   stompScore: 100,
   defeatMs: 200,
+  // quadros por segundo da animação de andar e partículas ao ser derrotado
+  animFps: { desinformacao: 5, esquecimento: 4 },
+  defeatBurst: { count: 12, speed: { min: 40, max: 140 }, lifeMs: 520 },
 } as const;
 
 export const COLLECTIBLE = {
