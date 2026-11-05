@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { audio } from '../systems/audio/AudioManager';
 import { PALETTE, toCss } from '../config/palette';
 import { CAMERA } from '../config/physics';
 import { LEVELS } from '../data/levels';
@@ -24,6 +25,7 @@ export class LevelSelectScene extends Phaser.Scene {
     const { height } = this.scale;
     this.cameras.main.fadeIn(CAMERA.fadeMs);
     this.updateBackdrop = addMenuBackdrop(this);
+    audio.playMusic('roda');
 
     this.add
       .text(LEFT, 100, LEVEL_SELECT_TEXTS.title, { fontFamily: 'monospace', fontSize: '56px', fontStyle: 'bold', color: toCss(PALETTE.gold), stroke: toCss(PALETTE.black), strokeThickness: 8 })
@@ -54,7 +56,7 @@ export class LevelSelectScene extends Phaser.Scene {
 
     LEVELS.forEach((_level, i) => {
       const digit = DIGIT_KEYS[i];
-      if (digit) onKeys(this, [digit, `NUMPAD_${digit}`], () => start(i));
+      if (digit) onKeys(this, [digit, `NUMPAD_${digit}`], () => { audio.play('uiConfirm'); start(i); });
     });
     onKeys(this, ['ESC'], () => this.back());
 
@@ -68,6 +70,7 @@ export class LevelSelectScene extends Phaser.Scene {
   }
 
   private back(): void {
+    audio.play('uiBack');
     goToScene(this, 'Menu');
   }
 }

@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { audio } from '../systems/audio/AudioManager';
 import { BAND_H } from '../art/hudArt';
 import { PALETTE, darken, toCss } from '../config/palette';
 import { CAMERA } from '../config/physics';
@@ -38,6 +39,7 @@ export class CardScene extends Phaser.Scene {
   create(): void {
     const { width, height } = this.scale;
     this.cameras.main.setBackgroundColor(darken(this.config.palette.sky, 60)).fadeIn(CAMERA.fadeMs);
+    audio.playMusic('roda');
     this.add.tileSprite(0, 0, width, BAND_H, 'hud-band').setOrigin(0).setDepth(5);
     this.add.tileSprite(0, height - BAND_H, width, BAND_H, 'hud-band').setOrigin(0).setDepth(5);
 
@@ -112,6 +114,7 @@ export class CardScene extends Phaser.Scene {
   }
 
   private next(): void {
+    audio.play('uiConfirm');
     const nextLevel = this.levelIndex + 1;
     const hasNext = nextLevel < LEVELS.length;
     // entre as fases passa uma cena de história; depois da última, o epílogo

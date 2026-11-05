@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { audio } from '../systems/audio/AudioManager';
 import { BAND_H } from '../art/hudArt';
 import { gradientAt, type GradientStop } from '../art/colors';
 import { PALETTE, toCss } from '../config/palette';
@@ -59,6 +60,7 @@ export class StoryScene extends Phaser.Scene {
     const { width, height } = this.scale;
     this.cameras.main.setBackgroundColor(PALETTE.black).fadeIn(CAMERA.fadeMs);
     this.paintBackground(this.script.mood);
+    audio.playMusic('roda');
     this.add.tileSprite(0, 0, width, BAND_H, 'hud-band').setOrigin(0).setDepth(5);
     this.add.tileSprite(0, height - BAND_H, width, BAND_H, 'hud-band').setOrigin(0).setDepth(5);
 

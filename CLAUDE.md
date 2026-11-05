@@ -60,7 +60,8 @@ O jogador atravessa 3 fases, cada uma ligada a uma personalidade negra brasileir
    │  └─ palette.ts           # cores do jogo
    ├─ data/
    │  ├─ levels.ts            # mapas ASCII + config de cada fase
-   │  └─ texts.ts             # diálogos dos mentores e cartas históricas
+   │  ├─ texts.ts             # diálogos dos mentores e cartas históricas
+   │  └─ music.ts             # trilhas (melodia, baixo, acordes e percussão em texto) de cada fase
    ├─ scenes/
    │  ├─ BootScene.ts         # gera texturas placeholder
    │  ├─ MenuScene.ts
@@ -72,6 +73,7 @@ O jogador atravessa 3 fases, cada uma ligada a uma personalidade negra brasileir
    │  ├─ HudScene.ts          # roda em paralelo à GameScene
    │  ├─ CardScene.ts         # carta histórica ao fim da fase
    │  ├─ PauseScene.ts        # pausa por cima da GameScene
+   │  ├─ AudioUiScene.ts      # alto-falante no canto e aviso de som ligado/desligado (última cena registrada: fica por cima)
    │  ├─ GameOverScene.ts
    │  └─ VictoryScene.ts      # final + créditos
    ├─ entities/
@@ -85,6 +87,7 @@ O jogador atravessa 3 fases, cada uma ligada a uma personalidade negra brasileir
       ├─ transitions.ts       # goToScene: troca de cena com fade
       ├─ sceneInput.ts        # teclas de confirmar/navegar nos menus
       ├─ OptionList.ts        # lista de opções (GameOver, Pausa)
+      ├─ audio/               # AudioManager (singleton `audio`), MusicPlayer, synth, percussion e sfx (Web Audio, sem arquivos)
       ├─ DialogueBox.ts       # caixa de fala com texto digitado (Intro e Story)
       ├─ Portrait.ts          # retrato animado de quem fala (respira, pisca, mexe a boca)
       ├─ MenuBackdrop.ts      # fundo comum do menu, do seletor de fases e da ajuda
@@ -218,6 +221,7 @@ export interface LevelConfig {
   title: string;            // ex.: "Serra da Barriga"
   era: string;              // ex.: "Século XVII"
   mentorId: 'zumbi' | 'luizgama' | 'carolina';
+  music: 'palmares' | 'saopaulo' | 'caninde';  // trilha da fase
   collectible: { texture: string; name: string; namePlural: string };
   required: number;         // coletáveis obrigatórios para abrir o portal
   diary?: boolean;          // HUD mostra o contador como diário (fase 3)
@@ -343,13 +347,15 @@ Transições com `fadeOut`/`fadeIn` da câmera (300 ms).
 
 Paleta global em `palette.ts`: dourado `#f2b705`, verde `#1e7a3c`, vermelho `#c0392b`, terra `#7a4a2a`, preto `#1a1a1a`, creme `#f5e6c8`.
 
-## 10. Áudio (passo "Sons do jogo" do Marco 3)
+## 10. Áudio (feito no Marco 3, passo "Sons do jogo")
 
-> O áudio saiu do Marco 4 e virou um passo próprio do Marco 3, logo depois do design dos NPCs e antes do ajuste fino.
+Tudo gerado em código com a **Web Audio API** (osciladores, ruído filtrado e envelopes), sem nenhum arquivo de som. Volumes em `src/config/audio.ts` (geral, efeitos, música, abaixar ao pausar).
 
-- Efeitos curtos gerados com **Web Audio API** (osciladores, ruído e envelopes, sem arquivos): pulo, aú, meia-lua (golpe e acerto), pisão no inimigo, coletar (com timbre próprio por coletável), libertar uma pessoa (fase 2), dano, perder vida, checkpoint, portal abrindo, fase concluída, navegação e confirmação nos menus, avanço de texto das falas.
-- Sem arquivos de música no MVP. Se sobrar tempo, adicionar uma trilha royalty-free em `public/audio/` (verificar a licença).
-- Tecla M muta tudo, respeitando a política de autoplay (o áudio só começa após a primeira interação).
+- **AudioManager** (`audio`, em `systems/audio/`): cria o `AudioContext` só na primeira interação (política de autoplay); o que for pedido antes (a música do menu) toca assim que libera. Cadeia: efeitos e música → volume geral → compressor → saída. A aba escondida suspende o áudio.
+- **Tecla M** muta tudo (rampa curta), lembra a escolha no navegador (`localStorage`, com tratamento de erro) e mostra o aviso "Som ligado/desligado (M)" mais um alto-falante no canto (`AudioUiScene`).
+- **Efeitos** (`sfx.ts`): pulo, aú, meia-lua (golpe e acerto), pisão, dano, perder vida, game over, três sons de coleta com timbre próprio (Sankofa: sino dourado; carta: papel e sininho; folha: riscos de lápis e notinha), libertar pessoa (correntes e subida alegre), checkpoint, portal abrindo, fase concluída (fanfarra de samba), navegação/confirmação/voltar dos menus e o tique do texto das falas.
+- **Música** (`data/music.ts` + `MusicPlayer`): composições originais no espírito da **capoeira e do samba**, em versão chiptune. Cada trilha é um laço de 4 compassos com melodia (onda quadrada/triangular), baixo (violão de sete cordas), acordes (cavaquinho) e percussão sintetizada: berimbau (dong, ding e caxixi), atabaque, surdo, tamborim, pandeiro, agogô e palmas. Trilhas: `roda` (menu, histórias e cartas: lenta, só berimbau, atabaque e palmas), `palmares` (fase 1: capoeira de roda), `saopaulo` (fase 2: samba de roda), `caninde` (fase 3: samba urbano, mais rápido) e `vitoria` (final). A trilha da fase vem de `LevelConfig.music` e já começa na Intro, sem reiniciar ao entrar no jogo. A pausa abaixa a música; ao completar a fase ela some e toca a fanfarra.
+- Se o grupo preferir, dá para trocar a música por uma trilha royalty-free em `public/audio/` (verificar a licença) na revisão geral.
 
 ---
 
@@ -398,7 +404,7 @@ Ordem sugerida (cada passo deixa o jogo jogável):
   - **Mais desafiadoras, mas justas:** curva de dificuldade crescente dentro de cada fase e entre as fases (a fase 1 continua fácil para a apresentação), combinações de movimentos (aú + meia-lua, esquiva entre inimigos), plataformas móveis ou sequências de precisão só se couberem no prazo, sem pulos cegos nem mortes injustas
   - **Andamento:** fase 1 **aprovada** (colinas, ponte quebrada, 8 inimigos, 2 checkpoints); fase 2 refeita com tema de São Paulo (150 tiles, 2 túneis baixos obrigatórios, rota alta de sacadas, 4 telhados, escadaria até a faculdade, 8 inimigos, portal da faculdade e sacadas de ferro; **aprovada**, exceto o design dos NPCs, que fica para o item próprio); fase 3 refeita com tema do Canindé e cidade moderna (viaduto, prédio de 5 tiles, 9 inimigos, 3 checkpoints; **aprovada**). **Level design das 3 fases concluído**
   - **Processo:** rodar `node tools/reachability.mjs <fase>` a cada mudança (inclusive `NOAU=1` e `NOCROUCH=1` para saber o que cada movimento exige); manter coletáveis obrigatórios alcançáveis; **o usuário testa e aprova cada fase antes do commit**
-- [ ] **Sons do jogo** (próximo passo): sistema de áudio em `src/systems/` (Web Audio API, sem arquivos externos, um único `AudioContext` criado após a primeira interação por causa da política de autoplay); efeitos de gameplay (pulo, aú, meia-lua, acerto, pisão, coleta com um som por tipo, libertar pessoa, dano, checkpoint, portal, fase concluída), sons de interface (mover, confirmar, voltar, texto das falas) e, se couber, um pano de fundo musical curto e suave gerado em código por fase. Tecla **M** muta tudo (com aviso na tela e valor lembrado), volume central em `physics.ts` ou `config/audio.ts`, sons baixos o bastante para não cansar. Se o grupo preferir, no passo de revisão trocar por trilha royalty-free em `public/audio/` (verificar a licença). **O usuário testa e aprova antes do commit**
+- [x] **Sons do jogo** (feito, aguardando aprovação; ver seção 10): sistema de áudio em `src/systems/` (Web Audio API, sem arquivos externos, um único `AudioContext` criado após a primeira interação por causa da política de autoplay); efeitos de gameplay (pulo, aú, meia-lua, acerto, pisão, coleta com um som por tipo, libertar pessoa, dano, checkpoint, portal, fase concluída), sons de interface (mover, confirmar, voltar, texto das falas) e, se couber, um pano de fundo musical curto e suave gerado em código por fase. Tecla **M** muta tudo (com aviso na tela e valor lembrado), volume central em `physics.ts` ou `config/audio.ts`, sons baixos o bastante para não cansar. **Direção da música (pedido do usuário):** algo ligado ao tema da Consciência Negra, como samba ou capoeira, estilizado no estilo do jogo. **O usuário testa e aprova antes do commit**
 - [ ] Ajuste fino do game feel e da dificuldade
 - [x] Pausa (Esc/P): `PauseScene` por cima da GameScene parada, com "Continuar" e "Menu"
 - [ ] **Revisão geral** (último passo do Marco 3, depois de todos os outros): jogar o jogo inteiro do menu aos créditos, nas 3 fases, e fechar pendências antes do Marco 4. Checklist:

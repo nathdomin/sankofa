@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { audio } from '../systems/audio/AudioManager';
 import { PALETTE, toCss } from '../config/palette';
 import { CAMERA } from '../config/physics';
 import { HELP_TEXTS } from '../data/texts';
@@ -21,6 +22,7 @@ export class HelpScene extends Phaser.Scene {
     const { height } = this.scale;
     this.cameras.main.fadeIn(CAMERA.fadeMs);
     this.updateBackdrop = addMenuBackdrop(this);
+    audio.playMusic('roda');
 
     this.add
       .text(LEFT, 100, HELP_TEXTS.title, { fontFamily: 'monospace', fontSize: '56px', fontStyle: 'bold', color: toCss(PALETTE.gold), stroke: toCss(PALETTE.black), strokeThickness: 8 })
@@ -51,7 +53,10 @@ export class HelpScene extends Phaser.Scene {
       .setDepth(6);
     this.tweens.add({ targets: hint, alpha: 0.4, duration: 800, yoyo: true, repeat: -1 });
 
-    onKeys(this, [...CONFIRM_KEYS, 'ESC'], () => goToScene(this, 'Menu'));
+    onKeys(this, [...CONFIRM_KEYS, 'ESC'], () => {
+      audio.play('uiBack');
+      goToScene(this, 'Menu');
+    });
     this.input.on('pointerdown', () => goToScene(this, 'Menu'));
   }
 

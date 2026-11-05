@@ -1,5 +1,7 @@
 import Phaser from 'phaser';
 import { WORLD } from './config/physics';
+import { audio } from './systems/audio/AudioManager';
+import { AudioUiScene } from './scenes/AudioUiScene';
 import { BootScene } from './scenes/BootScene';
 import { CardScene } from './scenes/CardScene';
 import { GameOverScene } from './scenes/GameOverScene';
@@ -34,15 +36,20 @@ const config: Phaser.Types.Core.GameConfig = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [BootScene, MenuScene, LevelSelectScene, HelpScene, StoryScene, IntroScene, GameScene, HudScene, CardScene, VictoryScene, GameOverScene, PauseScene],
+  scene: [BootScene, MenuScene, LevelSelectScene, HelpScene, StoryScene, IntroScene, GameScene, HudScene, CardScene, VictoryScene, GameOverScene, PauseScene, AudioUiScene],
 };
 
 declare global {
   interface Window {
     __sankofa?: Phaser.Game;
+    __audio?: typeof audio;
   }
 }
 
+audio.init();
 const game = new Phaser.Game(config);
 // acesso pelo console para testes, só em desenvolvimento
-if (import.meta.env.DEV) window.__sankofa = game;
+if (import.meta.env.DEV) {
+  window.__sankofa = game;
+  window.__audio = audio;
+}

@@ -3,6 +3,7 @@ import { NPC } from '../config/physics';
 import { npcTextureKey } from '../art/npcArt';
 import { PALETTE, toCss } from '../config/palette';
 import { NPC_TEXTS } from '../data/texts';
+import { audio } from '../systems/audio/AudioManager';
 
 /** Pessoa a ser libertada (fase 2): silhueta cinza que vira colorida, pula e mostra um balão. x, y = pés */
 export class Npc extends Phaser.GameObjects.Image {
@@ -61,6 +62,7 @@ export class Npc extends Phaser.GameObjects.Image {
     this.freed = true;
     this.setTexture(npcTextureKey(this.variant, true));
     this.celebrate();
+    audio.play('free');
 
     const baseY = this.y;
     this.scene.tweens.add({

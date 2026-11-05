@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { CAPOEIRA, GAME, PLAYER, TILE_SIZE, WORLD } from '../config/physics';
 import { PALETTE } from '../config/palette';
 import { CROUCH_FRAMES, GINGA_FRAMES, playerTextureKey } from '../art/playerArt';
+import { audio } from '../systems/audio/AudioManager';
 
 export type PlayerState = 'idle' | 'run' | 'jump' | 'au' | 'meiaLua' | 'esquiva' | 'role' | 'hurt';
 
@@ -94,6 +95,7 @@ export class Player extends Phaser.GameObjects.Zone {
     if (this.current === 'hurt') return;
     const away = this.arcadeBody.center.x >= sourceX ? 1 : -1;
     this.setState('hurt');
+    audio.play('hurt');
     this.arcadeBody.setVelocity(away * PLAYER.hurtKnockbackX, PLAYER.hurtKnockbackY);
     this.facing = away === 1 ? -1 : 1; // continua olhando para o inimigo
     this.setInvincible(GAME.invincibleMs);
@@ -230,12 +232,14 @@ export class Player extends Phaser.GameObjects.Zone {
       this.lastGroundedAt = Number.NEGATIVE_INFINITY; // gasta o coyote
       this.setState('jump');
       this.squash(PLAYER.jumpStretchY);
+      audio.play('jump');
       leftGround = true;
     } else if (pressed && !onGround && this.auAvailable) {
       body.setVelocityY(PLAYER.auVelocity);
       this.auAvailable = false;
       this.jumpBufferedAt = Number.NEGATIVE_INFINITY;
       this.setState('au');
+      audio.play('au');
     }
 
     // pulo variável: soltar cedo corta a subida
@@ -361,6 +365,7 @@ export class Player extends Phaser.GameObjects.Zone {
 
   private startMeiaLua(): void {
     const m = CAPOEIRA.meiaLua;
+    audio.play('swing');
     // gira em torno do centro do corpo, no sentido para onde olha (horário para a direita)
     this.visual.setOrigin(0.5, 0.5);
     this.stateTween = this.scene.tweens.add({

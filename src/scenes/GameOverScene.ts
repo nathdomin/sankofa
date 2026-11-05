@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { audio } from '../systems/audio/AudioManager';
 import { BAND_H } from '../art/hudArt';
 import { PALETTE, toCss } from '../config/palette';
 import { CAMERA } from '../config/physics';
@@ -29,6 +30,8 @@ export class GameOverScene extends Phaser.Scene {
   create(): void {
     const { width, height } = this.scale;
     this.cameras.main.fadeIn(CAMERA.fadeMs);
+    audio.stopMusic(0.2);
+    audio.play('gameover');
     this.updateBackdrop = addMenuBackdrop(this);
     // o cenário do menu, mais escuro e sem cor: o momento é de pausa e recomeço, não de punição
     this.add.rectangle(0, 0, width, height, PALETTE.black, 0.5).setOrigin(0).setDepth(2);

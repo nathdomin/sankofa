@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { PALETTE, toCss } from '../config/palette';
+import { audio } from './audio/AudioManager';
 import { CONFIRM_KEYS, onKeys } from './sceneInput';
 
 export interface MenuOption {
@@ -59,18 +60,26 @@ export class OptionList {
         .setDepth(depth)
         .setInteractive({ useHandCursor: true });
       text.on('pointerover', () => this.select(i));
-      text.on('pointerdown', () => option.action());
+      text.on('pointerdown', () => {
+        audio.play('uiConfirm');
+        option.action();
+      });
       return text;
     });
     this.select(0, false);
 
     onKeys(scene, ['UP', 'W'], () => this.select(this.selected - 1));
     onKeys(scene, ['DOWN', 'S'], () => this.select(this.selected + 1));
-    onKeys(scene, CONFIRM_KEYS, () => this.options[this.selected].action());
+    onKeys(scene, CONFIRM_KEYS, () => {
+      audio.play('uiConfirm');
+      this.options[this.selected].action();
+    });
   }
 
   private select(index: number, animate = true): void {
+    const previous = this.selected;
     this.selected = Phaser.Math.Wrap(index, 0, this.options.length);
+    if (animate && this.selected !== previous) audio.play('uiMove');
     this.texts.forEach((text, i) => {
       const active = i === this.selected;
       if (this.align === 'center') {

@@ -38,6 +38,7 @@ export class BootScene extends Phaser.Scene {
     makeNpcTextures(draw);
     this.makeCheckpointTextures();
 
+    this.scene.launch('AudioUi');
     this.scene.start('Menu');
   }
 

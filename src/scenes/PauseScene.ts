@@ -3,6 +3,7 @@ import { BAND_H } from '../art/hudArt';
 import { PALETTE, toCss } from '../config/palette';
 import { PAUSE_TEXTS } from '../data/texts';
 import { addLeftScrim } from '../systems/MenuBackdrop';
+import { audio } from '../systems/audio/AudioManager';
 import { OptionList } from '../systems/OptionList';
 import { onKeys } from '../systems/sceneInput';
 import { goToScene } from '../systems/transitions';
@@ -47,6 +48,8 @@ export class PauseScene extends Phaser.Scene {
   }
 
   private resume(): void {
+    audio.setDuck(false);
+    audio.play('uiBack');
     this.scene.resume('Game');
     this.scene.stop();
   }

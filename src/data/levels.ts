@@ -1,3 +1,5 @@
+import type { MusicId } from './music';
+
 export type MentorId = 'zumbi' | 'luizgama' | 'carolina';
 
 export interface LevelPalette {
@@ -26,6 +28,8 @@ export interface LevelConfig {
   title: string;
   era: string;
   mentorId: MentorId;
+  /** trilha que toca na fase (e na apresentação do mentor) */
+  music: MusicId;
   collectible: { texture: string; name: string; namePlural: string };
   required: number;
   /** HUD mostra o coletável como um diário ("Diário: 5/8 páginas") */
@@ -46,6 +50,7 @@ export const LEVELS: readonly LevelConfig[] = [
     title: 'Serra da Barriga',
     era: 'Século XVII',
     mentorId: 'zumbi',
+    music: 'palmares',
     collectible: { texture: 'sankofa', name: 'Sankofa', namePlural: 'Sankofas' },
     required: 0,
     palette: { sky: 0xf4a259, ground: 0x7a4a2a, block: 0x8b5a2b, accent: 0x3f8f3a },
@@ -85,6 +90,7 @@ export const LEVELS: readonly LevelConfig[] = [
     title: 'São Paulo',
     era: 'Século XIX',
     mentorId: 'luizgama',
+    music: 'saopaulo',
     collectible: { texture: 'alforria', name: 'carta de alforria', namePlural: 'cartas de alforria' },
     required: 5,
     // chão em cinza-pedra (rua de pedra) e blocos terracota (telhados e sacadas)
@@ -136,6 +142,7 @@ export const LEVELS: readonly LevelConfig[] = [
     title: 'Canindé → cidade moderna',
     era: 'Século XX',
     mentorId: 'carolina',
+    music: 'caninde',
     collectible: { texture: 'papel', name: 'página', namePlural: 'páginas' },
     required: 8,
     diary: true,

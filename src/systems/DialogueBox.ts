@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { PALETTE, toCss } from '../config/palette';
+import { audio } from './audio/AudioManager';
 import { CONFIRM_KEYS, onKeys } from './sceneInput';
 
 export interface DialogueLine {
@@ -63,6 +64,7 @@ export class DialogueBox {
       this.finishTyping();
       return;
     }
+    audio.play('uiConfirm');
     if (this.index < this.lines.length - 1) {
       this.index++;
       this.startLine();
@@ -84,6 +86,7 @@ export class DialogueBox {
       repeat: line.text.length - 1,
       callback: () => {
         shown++;
+        if (shown % 3 === 0) audio.play('type');
         this.speech.setText(line.text.slice(0, shown));
         if (shown >= line.text.length) {
           this.typer = null;

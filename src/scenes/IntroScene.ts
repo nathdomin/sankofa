@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { audio } from '../systems/audio/AudioManager';
 import { BAND_H } from '../art/hudArt';
 import { PALETTE, darken, toCss } from '../config/palette';
 import { CAMERA } from '../config/physics';
@@ -36,6 +37,7 @@ export class IntroScene extends Phaser.Scene {
     const { width, height } = this.scale;
     const { palette } = this.config;
     this.cameras.main.setBackgroundColor(palette.sky).fadeIn(CAMERA.fadeMs);
+    audio.playMusic(this.config.music);
 
     // fundo na paleta da fase: morros e chão
     const bg = this.add.graphics();

@@ -6,6 +6,7 @@ import { Checkpoint } from '../entities/Checkpoint';
 import { Collectible } from '../entities/Collectible';
 import { Enemy } from '../entities/Enemy';
 import { Npc } from '../entities/Npc';
+import { audio } from '../systems/audio/AudioManager';
 import { DIARY_TEXTS, PORTAL_TEXTS } from '../data/texts';
 import { Player } from '../entities/Player';
 import { gameState } from '../systems/GameState';
@@ -107,6 +108,7 @@ export class GameScene extends Phaser.Scene {
     cam.startFollow(this.player, true, CAMERA.lerpX, CAMERA.lerpY);
     cam.setDeadzone(CAMERA.deadzoneW, CAMERA.deadzoneH);
     cam.fadeIn(CAMERA.fadeMs);
+    audio.playMusic(this.config.music);
 
     // avisos no alto da tela, logo abaixo do HUD
     this.notice = this.add
@@ -141,6 +143,7 @@ export class GameScene extends Phaser.Scene {
 
   private pauseGame(): void {
     if (this.dying || this.finished) return;
+    audio.setDuck(true);
     this.scene.launch('Pause');
     this.scene.pause();
   }
@@ -161,6 +164,7 @@ export class GameScene extends Phaser.Scene {
     if (this.dying || this.finished || !item.collect()) return;
     gameState.addScore(COLLECTIBLE.score);
     gameState.addCollected();
+    audio.collect(this.config.collectible.texture);
     this.freeNearestNpc();
     if (!this.portalOpen && gameState.collected >= this.config.required) this.setPortalOpen(true, true);
   }
@@ -186,6 +190,7 @@ export class GameScene extends Phaser.Scene {
     this.portalOpen = open;
     this.portal.setTexture(this.portalTexture(open));
     if (!announce) return;
+    audio.play('portal');
     // na fase do diário, o aviso é o de diário completo, que precisa de mais tempo para ler
     if (this.config.diary) this.showNotice(DIARY_TEXTS.complete, GAME.noticeMs * 2);
     else this.showNotice(PORTAL_TEXTS.opened);
@@ -210,6 +215,7 @@ export class GameScene extends Phaser.Scene {
 
     if (stomp) {
       enemy.defeat();
+      audio.play('stomp');
       this.player.bounce(ENEMY.stompBounce);
       gameState.addScore(ENEMY.stompScore);
     } else if (!this.player.isInvincible) {
@@ -224,6 +230,7 @@ export class GameScene extends Phaser.Scene {
     if (this.dying || this.finished || enemy.isDefeated) return;
     const m = CAPOEIRA.meiaLua;
     enemy.defeat();
+    audio.play('hit');
     gameState.addScore(m.score);
     this.cameras.main.shake(m.shakeMs, m.shakeIntensity);
 
@@ -234,6 +241,7 @@ export class GameScene extends Phaser.Scene {
 
   private reachCheckpoint(flag: Checkpoint, point: SpawnPoint): void {
     if (!flag.activate()) return;
+    audio.play('checkpoint');
     this.respawnPoint = point;
   }
 
@@ -241,6 +249,7 @@ export class GameScene extends Phaser.Scene {
   private die(alive: boolean): void {
     if (this.dying || this.finished) return;
     this.dying = true;
+    if (alive) audio.play('lose');
     this.player.setControlsEnabled(false);
 
     const cam = this.cameras.main;
@@ -263,6 +272,8 @@ export class GameScene extends Phaser.Scene {
     if (this.finished) return;
     this.finished = true;
     this.player.setControlsEnabled(false);
+    audio.stopMusic(0.4);
+    audio.play('levelComplete');
 
     this.showLevelComplete();
 

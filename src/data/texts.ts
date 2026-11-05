@@ -205,6 +205,11 @@ export const DIARY_TEXTS = {
   complete: 'O diário está completo! Siga até a biblioteca.',
 } as const;
 
+export const AUDIO_TEXTS = {
+  on: 'Som ligado (M)',
+  off: 'Som desligado (M)',
+} as const;
+
 export const NPC_TEXTS = {
   freed: 'Livre!',
 } as const;

@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { audio } from '../systems/audio/AudioManager';
 import { BAND_H } from '../art/hudArt';
 import { PALETTE, darken, toCss } from '../config/palette';
 import { CAMERA } from '../config/physics';
@@ -31,6 +32,7 @@ export class VictoryScene extends Phaser.Scene {
   create(): void {
     const { width, height } = this.scale;
     this.cameras.main.setBackgroundColor(PALETTE.black).fadeIn(CAMERA.fadeMs);
+    audio.playMusic('vitoria');
     // tarjas pretas por cima dos créditos: o texto entra e sai por baixo delas, sem passar sobre a dica
     this.add.rectangle(0, 0, width, BAND_H + 8, PALETTE.black).setOrigin(0).setDepth(4);
     this.add.rectangle(0, height - 64, width, 64, PALETTE.black).setOrigin(0).setDepth(4);
@@ -113,6 +115,7 @@ export class VictoryScene extends Phaser.Scene {
   }
 
   private advance(): void {
+    audio.play('uiConfirm');
     if (this.stage === 'message') this.startCredits();
     else goToScene(this, 'Menu');
   }

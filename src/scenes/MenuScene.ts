@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { audio } from '../systems/audio/AudioManager';
 import { BAND_H } from '../art/hudArt';
 import { PALETTE, toCss } from '../config/palette';
 import { CAMERA } from '../config/physics';
@@ -23,6 +24,7 @@ export class MenuScene extends Phaser.Scene {
     const { height } = this.scale;
     this.cameras.main.fadeIn(CAMERA.fadeMs);
     this.updateBackdrop = addMenuBackdrop(this);
+    audio.playMusic('roda');
 
     // símbolo Sankofa grande, com halo, à direita
     const cx = 715; // centro do espaço livre à direita do texto
