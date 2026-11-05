@@ -343,9 +343,11 @@ Transições com `fadeOut`/`fadeIn` da câmera (300 ms).
 
 Paleta global em `palette.ts`: dourado `#f2b705`, verde `#1e7a3c`, vermelho `#c0392b`, terra `#7a4a2a`, preto `#1a1a1a`, creme `#f5e6c8`.
 
-## 10. Áudio (Marco 4, opcional)
+## 10. Áudio (passo "Sons do jogo" do Marco 3)
 
-- Efeitos curtos gerados com **Web Audio API** (oscilador simples): pulo, coletar, dano, portal aberto.
+> O áudio saiu do Marco 4 e virou um passo próprio do Marco 3, logo depois do design dos NPCs e antes do ajuste fino.
+
+- Efeitos curtos gerados com **Web Audio API** (osciladores, ruído e envelopes, sem arquivos): pulo, aú, meia-lua (golpe e acerto), pisão no inimigo, coletar (com timbre próprio por coletável), libertar uma pessoa (fase 2), dano, perder vida, checkpoint, portal abrindo, fase concluída, navegação e confirmação nos menus, avanço de texto das falas.
 - Sem arquivos de música no MVP. Se sobrar tempo, adicionar uma trilha royalty-free em `public/audio/` (verificar a licença).
 - Tecla M muta tudo, respeitando a política de autoplay (o áudio só começa após a primeira interação).
 
@@ -396,6 +398,7 @@ Ordem sugerida (cada passo deixa o jogo jogável):
   - **Mais desafiadoras, mas justas:** curva de dificuldade crescente dentro de cada fase e entre as fases (a fase 1 continua fácil para a apresentação), combinações de movimentos (aú + meia-lua, esquiva entre inimigos), plataformas móveis ou sequências de precisão só se couberem no prazo, sem pulos cegos nem mortes injustas
   - **Andamento:** fase 1 **aprovada** (colinas, ponte quebrada, 8 inimigos, 2 checkpoints); fase 2 refeita com tema de São Paulo (150 tiles, 2 túneis baixos obrigatórios, rota alta de sacadas, 4 telhados, escadaria até a faculdade, 8 inimigos, portal da faculdade e sacadas de ferro; **aprovada**, exceto o design dos NPCs, que fica para o item próprio); fase 3 refeita com tema do Canindé e cidade moderna (viaduto, prédio de 5 tiles, 9 inimigos, 3 checkpoints; **aprovada**). **Level design das 3 fases concluído**
   - **Processo:** rodar `node tools/reachability.mjs <fase>` a cada mudança (inclusive `NOAU=1` e `NOCROUCH=1` para saber o que cada movimento exige); manter coletáveis obrigatórios alcançáveis; **o usuário testa e aprova cada fase antes do commit**
+- [ ] **Sons do jogo** (próximo passo): sistema de áudio em `src/systems/` (Web Audio API, sem arquivos externos, um único `AudioContext` criado após a primeira interação por causa da política de autoplay); efeitos de gameplay (pulo, aú, meia-lua, acerto, pisão, coleta com um som por tipo, libertar pessoa, dano, checkpoint, portal, fase concluída), sons de interface (mover, confirmar, voltar, texto das falas) e, se couber, um pano de fundo musical curto e suave gerado em código por fase. Tecla **M** muta tudo (com aviso na tela e valor lembrado), volume central em `physics.ts` ou `config/audio.ts`, sons baixos o bastante para não cansar. Se o grupo preferir, no passo de revisão trocar por trilha royalty-free em `public/audio/` (verificar a licença). **O usuário testa e aprova antes do commit**
 - [ ] Ajuste fino do game feel e da dificuldade
 - [x] Pausa (Esc/P): `PauseScene` por cima da GameScene parada, com "Continuar" e "Menu"
 - [ ] **Revisão geral** (último passo do Marco 3, depois de todos os outros): jogar o jogo inteiro do menu aos créditos, nas 3 fases, e fechar pendências antes do Marco 4. Checklist:
@@ -407,7 +410,7 @@ Ordem sugerida (cada passo deixa o jogo jogável):
   - limpeza: itens ou textos que citam recursos não implementados (ex.: rolê), TODOs soltos e o `CLAUDE.md` atualizado com o estado final
 
 ### Marco 4: Som e entrega (meta: até 17/11, **congelamento**)
-- [ ] Efeitos sonoros e mute
+- [ ] (movido para o passo "Sons do jogo" do Marco 3) Efeitos sonoros e mute
 - [ ] `npm run build` sem erros, testar o `dist/` servido localmente
 - [ ] Deploy (itch.io: zip do `dist/` como projeto HTML; ou Netlify)
 - [ ] Testar no Chrome e no Firefox, em telas 1366×768 e 1920×1080
