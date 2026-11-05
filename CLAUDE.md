@@ -48,6 +48,7 @@ O jogador atravessa 3 fases, cada uma ligada a uma personalidade negra brasileir
    │  ├─ playerArt.ts         # poses do player em pixel art
    │  ├─ tileArt.ts           # tiles de chão/bloco por fase
    │  ├─ hudArt.ts            # faixa decorativa e ícone de vida do HUD
+   │  ├─ collectibleArt.ts    # Sankofa, carta de alforria, folha de papel e texturas de brilho (halo, faísca)
    │  ├─ mentorArt.ts         # retratos em pixel art dos mentores (3 quadros: parado, falando, piscando)
    │  └─ themes/
    │     ├─ quilombo.ts       # céu, parallax e enfeites da fase 1
@@ -159,7 +160,7 @@ A identidade do jogo é o personagem se mover como capoeirista. Cada movimento t
 #### Esquiva / cocorinha, tecla ↓/S (segurar)
 - Só no chão. Abaixa: hitbox muda para 22×22 e a velocidade máxima cai para 40%.
 - Permite passar por **vãos de 1 tile de altura** (32 px), como telhados baixos, varais e galhos.
-- **Visual:** pose própria `crouch` (agachado, joelhos dobrados, guarda alta); sem squash nem inclinação.
+- **Visual:** o personagem **engatinha** (`crouch`: tronco na horizontal, apoiado nas mãos e nos joelhos, ~24 px de altura, bem abaixo do vão de 1 tile); ao andar, os quadros `crouchW0`/`crouchW1` alternam braços e joelhos (`CAPOEIRA.esquiva.stepMs`); sem squash nem inclinação. O desenho vem de `buildCrawlGrid` (`playerArt.ts`), à parte do esqueleto em pé.
 - Ao soltar, **só levanta se houver espaço acima**: checar se os tiles acima da hitbox estão livres. Se estiver bloqueado, continua abaixado até sair do vão.
 
 #### Rolê (rolamento), tecla K/Shift
@@ -327,10 +328,11 @@ Transições com `fadeOut`/`fadeIn` da câmera (300 ms).
 
 ## 9. Visual placeholder (gerado na BootScene)
 
-- **Player:** pixel art 40×50 montada por "esqueleto" (ângulos de coxa, canela, braço e antebraço; `drop` agacha o corpo) em `src/art/playerArt.ts`; visual de capoeirista: cabelo black power, proporções esguias (cabeça menor, pernas e braços mais longos), pele marrom (`#6b4226`), abadá com camiseta branca de barra dourada (`#f2b705`) e estampa de coração Sankofa verde, calça creme e cordão verde na cintura (`#1e7a3c`). Poses: ginga (3 quadros + piscar), corrida (8 quadros), subindo, caindo, aú (estrela), `crouch` (esquiva), `kick` (meia-lua, com a rotação de 360° do tween) e `hurt` (cara de dor). O squash de pulo/aterrissagem continua em tween no `visual`. Cores em `PLAYER_COLORS` (`palette.ts`).
-- **Sankofa:** coração estilizado dourado (aproximação simples do símbolo Adinkra) com leve flutuação (tween em `y`).
-- **Carta de alforria:** retângulo bege com linhas.
-- **Folha de papel:** retângulo branco com dobra no canto.
+- **Player:** pixel art 40×50 montada por "esqueleto" (ângulos de coxa, canela, braço e antebraço; `drop` agacha o corpo) em `src/art/playerArt.ts`; visual de capoeirista: cabelo black power, proporções esguias (cabeça menor, pernas e braços mais longos), pele marrom (`#6b4226`), abadá com camiseta branca de barra dourada (`#f2b705`) e estampa de coração Sankofa verde, calça creme e cordão verde na cintura (`#1e7a3c`). Poses: ginga (3 quadros + piscar), corrida (8 quadros), subindo, caindo, aú (estrela), `crouch` (esquiva engatinhando, com 2 quadros de passo), `kick` (meia-lua, com a rotação de 360° do tween) e `hurt` (cara de dor). O squash de pulo/aterrissagem continua em tween no `visual`. Cores em `PLAYER_COLORS` (`palette.ts`).
+- **Sankofa:** coração dourado em pixel art com relevo e uma espiral gravada em cada lóbulo (o símbolo Adinkra), gerado por equação do coração + espirais em `art/collectibleArt.ts`. Também é o ícone do menu, da Pausa/Game Over, do HUD e da Card.
+- **Carta de alforria:** pergaminho enrolado em cima e embaixo, linhas de tinta e lacre de cera vermelho com fitas. A chave da textura é `alforria` (dois r).
+- **Folha de papel:** página de caderno com pauta azul, margem vermelha, letra de mão e canto dobrado.
+- **Brilho dos coletáveis** (`Collectible.ts`, valores em `COLLECTIBLE`): halo que pulsa atrás do item (tom por coletável), cintilho que passa de tempos em tempos e, ao coletar, clarão, anel se expandindo, faíscas e "+50" subindo.
 - **Inimigos:** blob escuro (roxo-acinzentado) com dois olhos brancos.
 - **NPC:** silhueta simples cinza (preso) que vira colorida (livre).
 - **Portal:** arco; apagado quando trancado, brilhante quando aberto. Cada tema pode ter o seu (`portal-<tema>-locked|open`; sem arte própria, cai no arco padrão): na fase 2 é a porta da faculdade (pilastres, frontão e friso de padrão africano).
@@ -383,8 +385,8 @@ Ordem sugerida (cada passo deixa o jogo jogável):
 - [ ] Padrões decorativos, animações e tweens
 - [x] História do protagonista (feita e **aprovada**; nome, tom, gancho e final definidos pelo usuário): prólogo antes da fase 1, ligações entre as fases 1→2 e 2→3 e epílogo antes da `VictoryScene`, tudo na `StoryScene`. Textos em `STORIES`, revisáveis pelo grupo. Ilustrações do protagonista só se sobrar tempo
 - [x] Polir as telas de fim de fase (feito e **aprovado**): faixa "FASE CONCLUÍDA!", `CardScene` e `VictoryScene` (ver seção 7). Junto veio o **retrato dos mentores com rosto e animação** (`mentorArt.ts` + `Portrait.ts`), pedido pelo usuário. O **fluxo funcional** (portal → Card → próxima fase → Victory) continua no Marco 2
-- [x] **Design e animações do protagonista** (feito, aguardando aprovação): ginga parada em quadros, poses próprias de esquiva (`crouch`), meia-lua (`kick`) e dano (`hurt`, com cara de dor), e **novo visual** (cabelo black power, corpo mais esguio, abadá branco com acabamento dourado e cordão verde), mantendo a hitbox. A corrida já tinha 8 quadros. O `PoseSpec` ganhou `drop` (agachar) e `face`. O retrato do protagonista nas histórias continua usando `idle`
-- [ ] Design dos coletáveis (hoje placeholders): Sankofa mais fiel ao símbolo Adinkra em vez do coração simples, e brilho/partículas ao coletar; carta de alforria e folha de papel também
+- [x] **Design e animações do protagonista** (feito, aguardando aprovação): ginga parada em quadros, poses próprias de esquiva (`crouch`, engatinhando), meia-lua (`kick`) e dano (`hurt`, com cara de dor), e **novo visual** (cabelo black power, corpo mais esguio, abadá branco com acabamento dourado e cordão verde), mantendo a hitbox. A corrida já tinha 8 quadros. O `PoseSpec` ganhou `drop` (agachar) e `face`. O retrato do protagonista nas histórias continua usando `idle`
+- [x] Design dos coletáveis (feito, aguardando aprovação): Sankofa Adinkra com espirais, carta de alforria com lacre e folha de caderno com letra de mão, todos com halo, cintilho e brilho ao coletar (anel, faíscas e pontos)
 - [x] Redesign do menu principal (feito, aprovado: menu enxuto à esquerda com o símbolo à direita, controles movidos para "Como jogar", seletor de fases e ajuda no mesmo estilo; Pausa e Game Over alinhados ao mesmo estilo: título grande e faixa à esquerda, opções com barra dourada; a Pausa escurece o jogo parado com o véu à esquerda e o Game Over usa o fundo do menu mais escuro, com o símbolo apagado). Pedido original: tinha informação demais (título, subtítulo, botão, dica, controles, seletor e frase) e o visual não era moderno. Objetivos: menos elementos na tela (os controles podem ir para uma tela de ajuda ou para a Pausa), hierarquia clara, botões mais limpos, composição e animação de fundo mais atuais; manter a identidade (Sankofa, faixa de padrão africano, paleta). Aproveitar para alinhar a `LevelSelectScene` e as telas de Pausa/GameOver ao mesmo estilo. **O usuário aprova antes do commit**
 - [ ] Design dos NPCs (hoje placeholder de retângulos, igual para os 5 e sem rosto): pixel art com 5 variações (cabelo, roupa, rosto), estado preso (postura curvada, corrente nos pulsos) e livre (colorido, braços para cima, brilho ao libertar), com dignidade e sem estereótipos. **Decisão do usuário: fazer depois de finalizar o level design das 3 fases**
 - [x] (feito dentro do item "Design e animações do protagonista", acima) Poses próprias dos movimentos de capoeira: esquiva (`crouch`) e meia-lua (`kick`) prontas; rolê só se for implementado

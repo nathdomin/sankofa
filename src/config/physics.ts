@@ -45,7 +45,7 @@ export const CAPOEIRA = {
     trail: { radii: [26, 34], lineWidth: 4, fadeMs: 200 },
   },
   // squashY/tiltDeg: só visual; enterMs = tempo de abaixar
-  esquiva: { speedFactor: 0.4, hitbox: { w: 22, h: 22 } },
+  esquiva: { speedFactor: 0.4, hitbox: { w: 22, h: 22 }, stepMs: 130, stepMinSpeed: 20 },
   role: { speed: 420, durationMs: 250, cooldownMs: 700 },
   // parado: ginga em quadros (o peso passa de uma perna para a outra); cada quadro dura frameMs
   ginga: { frameMs: 360 },
@@ -70,6 +70,19 @@ export const COLLECTIBLE = {
   floatMs: 900,
   pickMs: 250,
   pickRisePx: 22,
+  // halo pulsando atrás do item e cintilho que passa de tempos em tempos
+  haloAlpha: { min: 0.55, max: 1 },
+  haloMs: 1100,
+  glintEveryMs: { min: 1600, max: 3600 },
+  glintMs: 420,
+  // brilho ao coletar: anel que se expande, faíscas e pontos flutuando
+  burstCount: 12,
+  burstSpeed: { min: 60, max: 170 },
+  burstLifeMs: 480,
+  ringRadius: 30,
+  ringMs: 340,
+  scoreRisePx: 30,
+  scoreMs: 700,
 } as const;
 
 export const NPC = {

@@ -84,6 +84,8 @@ interface PoseSpec {
   face?: Face;
   /** Abaixa cabeça, tronco, braços e quadris (px): poses agachadas */
   drop?: number;
+  /** Pose de engatinhar (esquiva): o corpo é desenhado na horizontal por buildCrawlGrid */
+  crawl?: CrawlStep;
 }
 
 interface Point { x: number; y: number }
@@ -191,7 +193,29 @@ function drawNeck(g: PixelGrid, dx: number, dy: number): void {
 
 const SPARE_ROWS = 12;
 
+/** Desce o desenho até o pixel mais baixo tocar o chão (se for o caso), recorta para o tamanho do sprite e põe o contorno */
+function finishGrid(work: PixelGrid, grounded: boolean): PixelGrid {
+  const { w, h } = PLAYER.sprite;
+  let shift = 0;
+  if (grounded) {
+    let lowest = 0;
+    work.forEach((row, y) => {
+      // ignora o contorno: a linha abaixo do pé vira o contorno final
+      if (row.some((ch) => ch !== '.' && ch !== 'o')) lowest = y;
+    });
+    shift = BODY.groundY - lowest;
+  }
+  const g = createGrid(w, h);
+  work.forEach((row, y) => {
+    const target = g[y + shift];
+    if (target) row.forEach((ch, x) => (target[x] = ch));
+  });
+  outline(g, 'o');
+  return g;
+}
+
 export function buildPoseGrid(pose: PoseSpec): PixelGrid {
+  if (pose.crawl) return buildCrawlGrid(pose.crawl);
   const { w, h } = PLAYER.sprite;
   // desenha numa grade mais alta para nada ser cortado antes de aterrar
   const work = createGrid(w, h + SPARE_ROWS);
@@ -206,25 +230,78 @@ export function buildPoseGrid(pose: PoseSpec): PixelGrid {
   drawArm(work, BODY.nearShoulderX, pose.nearArm, false, dx, dy);
   drawNeck(work, dx, dy);
   stamp(work, FACES[pose.face ?? 'normal'], BODY.headX + dx, BODY.headY + dy);
+  return finishGrid(work, pose.grounded);
+}
 
-  // no chão, desce o desenho até o pixel mais baixo tocar a linha do chão
-  let shift = 0;
-  if (pose.grounded) {
-    let lowest = 0;
-    work.forEach((row, y) => {
-      // ignora o contorno: a linha abaixo do pé vira o contorno final
-      if (row.some((ch) => ch !== '.' && ch !== 'o')) lowest = y;
-    });
-    shift = BODY.groundY - lowest;
-  }
+type CrawlStep = 'rest' | 'a' | 'b';
 
-  const g = createGrid(w, h);
-  work.forEach((row, y) => {
-    const target = g[y + shift];
-    if (target) row.forEach((ch, x) => (target[x] = ch));
-  });
-  outline(g, 'o');
-  return g;
+interface CrawlLimbs {
+  /** mãos: ombro → cotovelo → mão */
+  nearHand: Point; nearElbow: Point; farHand: Point; farElbow: Point;
+  /** pernas: joelho e tornozelo (o quadril é fixo) */
+  nearKnee: Point; nearAnkle: Point; farKnee: Point; farAnkle: Point;
+}
+
+// engatinhar em quatro apoios: o chão (pés e mãos) fica na linha 46 antes do contorno
+const CRAWL_POSES: Readonly<Record<CrawlStep, CrawlLimbs>> = {
+  rest: {
+    nearElbow: { x: 29, y: 40 }, nearHand: { x: 31, y: 46 },
+    farElbow: { x: 25, y: 40 }, farHand: { x: 26, y: 46 },
+    nearKnee: { x: 15, y: 45 }, nearAnkle: { x: 9, y: 46 },
+    farKnee: { x: 12, y: 45 }, farAnkle: { x: 7, y: 46 },
+  },
+  a: {
+    nearElbow: { x: 31, y: 39 }, nearHand: { x: 34, y: 44 },
+    farElbow: { x: 23, y: 40 }, farHand: { x: 22, y: 46 },
+    nearKnee: { x: 17, y: 44 }, nearAnkle: { x: 11, y: 46 },
+    farKnee: { x: 11, y: 45 }, farAnkle: { x: 5, y: 46 },
+  },
+  b: {
+    nearElbow: { x: 27, y: 40 }, nearHand: { x: 27, y: 46 },
+    farElbow: { x: 29, y: 39 }, farHand: { x: 33, y: 44 },
+    nearKnee: { x: 12, y: 45 }, nearAnkle: { x: 6, y: 46 },
+    farKnee: { x: 17, y: 44 }, farAnkle: { x: 10, y: 46 },
+  },
+};
+
+/** Pose de engatinhar: tronco na horizontal, apoiado nas mãos e nos joelhos, cabeça olhando para a frente */
+function buildCrawlGrid(step: CrawlStep): PixelGrid {
+  const { w, h } = PLAYER.sprite;
+  const g = createGrid(w, h + SPARE_ROWS);
+  const p = CRAWL_POSES[step];
+  const hip = { x: 10, y: 37 };
+  const shoulder = { x: 26, y: 34 };
+
+  const arm = (elbow: Point, hand: Point, far: boolean): void => {
+    limb(g, shoulder, elbow, 3, far ? 'S' : 's', 0, 0);
+    limb(g, elbow, hand, 3, far ? 'S' : 's', 0, 0);
+    limb(g, hand, hand, 3, far ? 's' : 'l', 0, 0);
+  };
+  const leg = (knee: Point, ankle: Point, far: boolean): void => {
+    const pants = far ? 'D' : 'c';
+    limb(g, hip, knee, 5, pants, 0, 0);
+    limb(g, knee, ankle, 4, pants, 0, 0);
+    // pé: sola escura virada para trás, com os dedos apoiados
+    limb(g, ankle, { x: ankle.x - 2, y: ankle.y }, 3, far ? 'S' : 's', 0, 0);
+  };
+
+  arm(p.farElbow, p.farHand, true);
+  leg(p.farKnee, p.farAnkle, true);
+  // tronco: camiseta na horizontal, com a barra dourada na ponta de trás e o cordão verde na cintura
+  rect(g, 12, 31, 16, 9, 'y');
+  rect(g, 12, 31, 16, 2, 'L');
+  rect(g, 12, 38, 16, 2, 'Y');
+  rect(g, 10, 32, 3, 8, 'c');
+  rect(g, 11, 31, 2, 9, 'g');
+  rect(g, 12, 31, 1, 9, 'G');
+  rect(g, 8, 38, 3, 3, 'g');
+  leg(p.nearKnee, p.nearAnkle, false);
+  // manga curta e braço da frente
+  rect(g, 24, 31, 4, 5, 'L');
+  rect(g, 24, 35, 4, 1, 'a');
+  arm(p.nearElbow, p.nearHand, false);
+  stamp(g, FACES.normal, 24, 26);
+  return finishGrid(g, true);
 }
 
 export const RUN_FRAMES = 8;
@@ -281,6 +358,12 @@ const GINGA_B: PoseSpec = {
 /** Ordem dos quadros da ginga parada (cada um tem a variante com os olhos fechados: sufixo "b") */
 export const GINGA_FRAMES = ['gingaA', 'gingaM', 'gingaB', 'gingaM'] as const;
 
+// esquiva: engatinhar. A pose base só preenche os campos de esqueleto, que não são usados no desenho
+const CRAWL_BASE: PoseSpec = { ...IDLE, crawl: 'rest' };
+
+/** Ordem dos quadros ao engatinhar */
+export const CROUCH_FRAMES = ['crouchW0', 'crouch', 'crouchW1', 'crouch'] as const;
+
 export const PLAYER_POSES: Readonly<Record<string, PoseSpec>> = {
   idle: IDLE,
   idleBlink: { ...IDLE, face: 'blink' },
@@ -290,16 +373,10 @@ export const PLAYER_POSES: Readonly<Record<string, PoseSpec>> = {
   gingaMb: { ...GINGA_MID, face: 'blink' },
   gingaB: GINGA_B,
   gingaBb: { ...GINGA_B, face: 'blink' },
-  // esquiva: agachado com os joelhos dobrados e a guarda alta
-  crouch: {
-    near: { thigh: 84, shin: -6 },
-    far: { thigh: 60, shin: -40 },
-    nearArm: { upper: 50, fore: 130 },
-    farArm: { upper: -35, fore: -10 },
-    grounded: true,
-    drop: 9,
-    lean: 1,
-  },
+  // esquiva: engatinhando, baixo o bastante para passar por vãos de 1 tile (crouchW0/W1 = passos)
+  crouch: CRAWL_BASE,
+  crouchW0: { ...CRAWL_BASE, crawl: 'a' },
+  crouchW1: { ...CRAWL_BASE, crawl: 'b' },
   // meia-lua: perna da frente varrendo na horizontal, braços abertos para o equilíbrio
   kick: {
     near: { thigh: 100, shin: 98 },

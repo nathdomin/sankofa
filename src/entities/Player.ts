@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { CAPOEIRA, GAME, PLAYER, TILE_SIZE, WORLD } from '../config/physics';
 import { PALETTE } from '../config/palette';
-import { GINGA_FRAMES, playerTextureKey } from '../art/playerArt';
+import { CROUCH_FRAMES, GINGA_FRAMES, playerTextureKey } from '../art/playerArt';
 
 export type PlayerState = 'idle' | 'run' | 'jump' | 'au' | 'meiaLua' | 'esquiva' | 'role' | 'hurt';
 
@@ -459,8 +459,11 @@ export class Player extends Phaser.GameObjects.Zone {
         return playerTextureKey('hurt');
       case 'meiaLua':
         return playerTextureKey('kick');
-      case 'esquiva':
-        return playerTextureKey('crouch');
+      case 'esquiva': {
+        // andando abaixado, os pés se arrastam pelos quadros; parado, fica na pose de guarda
+        if (Math.abs(this.arcadeBody.velocity.x) < CAPOEIRA.esquiva.stepMinSpeed) return playerTextureKey('crouch');
+        return playerTextureKey(CROUCH_FRAMES[Math.floor(this.scene.time.now / CAPOEIRA.esquiva.stepMs) % CROUCH_FRAMES.length]);
+      }
       default: {
         // ginga parada: percorre os quadros no tempo; piscar troca pelo quadro de olhos fechados
         const frame = GINGA_FRAMES[Math.floor(this.scene.time.now / CAPOEIRA.ginga.frameMs) % GINGA_FRAMES.length];

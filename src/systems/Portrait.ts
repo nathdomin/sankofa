@@ -28,7 +28,7 @@ function lookFor(speaker: Speaker): Look {
     return { idle: playerTextureKey('idle'), talk: playerTextureKey('idle'), blink: playerTextureKey('idleBlink'), scale: 4.8, accent: PALETTE.green, anchor: 'bottom', bobWhenTalking: true };
   }
   if (speaker === 'sankofa') {
-    return { idle: 'sankofa', talk: 'sankofa', blink: 'sankofa', scale: 9, accent: PALETTE.gold, anchor: 'center', float: true };
+    return { idle: 'sankofa', talk: 'sankofa', blink: 'sankofa', scale: 6, accent: 0xa090f0, anchor: 'center', float: true };
   }
   return {
     idle: mentorTextureKey(speaker),

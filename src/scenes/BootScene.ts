@@ -4,6 +4,7 @@ import { PALETTE, darken } from '../config/palette';
 import { LEVELS } from '../data/levels';
 import { paintGrid } from '../art/pixel';
 import { PLAYER_COLOR_MAP, PLAYER_POSES, PLAYER_RUN_KEYS, buildPoseGrid, playerTextureKey } from '../art/playerArt';
+import { makeCollectibleTextures } from '../art/collectibleArt';
 import { makeHudTextures } from '../art/hudArt';
 import { makeMentorTextures } from '../art/mentorArt';
 import { makeEdgeTextures, makeTileTextures } from '../art/tileArt';
@@ -31,7 +32,7 @@ export class BootScene extends Phaser.Scene {
     makeHudTextures(draw);
     makeMentorTextures(draw);
     this.makePortalTextures();
-    this.makeCollectibleTextures();
+    makeCollectibleTextures(draw);
     this.makeEnemyTextures();
     this.makeNpcTextures();
     this.makeCheckpointTextures();
@@ -81,29 +82,6 @@ export class BootScene extends Phaser.Scene {
     };
     this.draw('portal-locked', 48, 64, (g) => paintArch(g, 0x6b6b6b, 0x2a2a2a, 0x3a3a3a));
     this.draw('portal-open', 48, 64, (g) => paintArch(g, 0x9a8a78, 0xffc94a, 0xfff4d0));
-  }
-
-  private makeCollectibleTextures(): void {
-    // Sankofa: coração estilizado (aproximação do símbolo Adinkra)
-    this.draw('sankofa', 20, 20, (g) => {
-      g.fillStyle(darken(PALETTE.gold, 25)).fillCircle(6, 7, 6).fillCircle(14, 7, 6).fillTriangle(0, 9, 20, 9, 10, 20);
-      g.fillStyle(PALETTE.gold).fillCircle(6, 7, 4).fillCircle(14, 7, 4).fillTriangle(3, 9, 17, 9, 10, 17);
-      g.fillStyle(darken(PALETTE.gold, 25)).fillRect(9, 5, 2, 6);
-    });
-
-    this.draw('alforria', 18, 22, (g) => {
-      g.fillStyle(0xb89b6a).fillRect(0, 0, 18, 22);
-      g.fillStyle(0xe8d5a3).fillRect(1, 1, 16, 20);
-      g.fillStyle(0x8a6a3a).fillRect(3, 5, 12, 1).fillRect(3, 9, 12, 1).fillRect(3, 13, 8, 1);
-      g.fillStyle(PALETTE.red).fillCircle(13, 17, 3);
-    });
-
-    this.draw('papel', 18, 22, (g) => {
-      g.fillStyle(PALETTE.white).fillRect(0, 0, 18, 22);
-      g.fillStyle(0xb0c4de).fillRect(2, 7, 14, 1).fillRect(2, 11, 14, 1).fillRect(2, 15, 14, 1);
-      g.fillStyle(0xc8c8c8).fillTriangle(12, 0, 18, 0, 18, 6);
-      g.fillStyle(0x9a9a9a).fillTriangle(12, 0, 12, 6, 18, 6);
-    });
   }
 
   private makeEnemyTextures(): void {

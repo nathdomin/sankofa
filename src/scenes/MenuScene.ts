@@ -25,8 +25,8 @@ export class MenuScene extends Phaser.Scene {
     this.updateBackdrop = addMenuBackdrop(this);
 
     // símbolo Sankofa grande, com halo, à direita
-    const cx = 790;
-    const cy = 270;
+    const cx = 715; // centro do espaço livre à direita do texto
+    const cy = 272;
     const halo = this.add.graphics().setDepth(0);
     for (let r = 170; r > 36; r -= 14) halo.fillStyle(0xffd36a, 0.035).fillCircle(cx, cy, r);
     const heart = this.add.image(cx, cy, 'sankofa').setScale(10).setDepth(2);
