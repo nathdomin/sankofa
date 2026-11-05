@@ -44,8 +44,8 @@ export function outline(grid: PixelGrid, ch: string): void {
   for (const [x, y] of marks) grid[y][x] = ch;
 }
 
-/** Pinta a grade agrupando pixels iguais em sequência para gerar menos retângulos */
-export function paintGrid(g: Phaser.GameObjects.Graphics, grid: PixelGrid, colors: ColorMap, ox = 0, oy = 0): void {
+/** Pinta a grade agrupando pixels iguais em sequência para gerar menos retângulos; `scale` aumenta cada pixel */
+export function paintGrid(g: Phaser.GameObjects.Graphics, grid: PixelGrid, colors: ColorMap, ox = 0, oy = 0, scale = 1): void {
   grid.forEach((row, y) => {
     let x = 0;
     while (x < row.length) {
@@ -55,7 +55,7 @@ export function paintGrid(g: Phaser.GameObjects.Graphics, grid: PixelGrid, color
       if (ch !== EMPTY) {
         const color = colors[ch];
         if (color === undefined) throw new Error(`Cor não definida para '${ch}'`);
-        g.fillStyle(color).fillRect(ox + x, oy + y, end - x, 1);
+        g.fillStyle(color).fillRect(ox + x * scale, oy + y * scale, (end - x) * scale, scale);
       }
       x = end;
     }

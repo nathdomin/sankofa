@@ -91,6 +91,8 @@ export const GAME = {
   deathFadeMs: 250,
   // aviso na tela (portal trancado, portal aberto)
   noticeMs: 1500,
+  // faixa "Fase concluída!" antes da carta histórica
+  levelCompleteMs: 2400,
 } as const;
 
 export const CAMERA = {

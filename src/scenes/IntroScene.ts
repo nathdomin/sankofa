@@ -1,11 +1,11 @@
 import Phaser from 'phaser';
 import { BAND_H } from '../art/hudArt';
-import { PORTRAIT, mentorTextureKey } from '../art/mentorArt';
 import { PALETTE, darken, toCss } from '../config/palette';
 import { CAMERA } from '../config/physics';
 import { LEVELS, type LevelConfig } from '../data/levels';
 import { INTRO_TEXTS, MENTORS, type Mentor } from '../data/texts';
 import { DialogueBox } from '../systems/DialogueBox';
+import { Portrait } from '../systems/Portrait';
 import { goToScene } from '../systems/transitions';
 
 export interface IntroSceneData {
@@ -52,11 +52,9 @@ export class IntroScene extends Phaser.Scene {
       .text(width / 2, 94, this.config.era, { fontFamily: 'monospace', fontSize: '22px', color: toCss(PALETTE.cream), ...stroke })
       .setOrigin(0.5);
 
-    // retrato em moldura
-    const px = 60;
-    const py = 140;
-    this.add.rectangle(px - 6, py - 6, PORTRAIT.w + 12, PORTRAIT.h + 12, PALETTE.gold).setOrigin(0);
-    this.add.image(px, py, mentorTextureKey(this.config.mentorId)).setOrigin(0);
+    // retrato animado do mentor: respira, pisca e mexe a boca enquanto fala
+    const portrait = new Portrait(this, 60, 140);
+    portrait.show(this.config.mentorId);
 
     // caixa de fala do mentor
     new DialogueBox(
@@ -65,6 +63,7 @@ export class IntroScene extends Phaser.Scene {
       this.mentor.lines.map((text) => ({ speaker: this.mentor.name, text })),
       undefined,
       () => goToScene(this, 'Game', { levelIndex: this.levelIndex }),
+      (typing) => portrait.setTalking(typing),
     );
 
     const hint = this.add

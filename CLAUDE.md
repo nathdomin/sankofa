@@ -48,7 +48,7 @@ O jogador atravessa 3 fases, cada uma ligada a uma personalidade negra brasileir
    │  ├─ playerArt.ts         # poses do player em pixel art
    │  ├─ tileArt.ts           # tiles de chão/bloco por fase
    │  ├─ hudArt.ts            # faixa decorativa e ícone de vida do HUD
-   │  ├─ mentorArt.ts         # retratos placeholder (silhuetas) dos mentores
+   │  ├─ mentorArt.ts         # retratos em pixel art dos mentores (3 quadros: parado, falando, piscando)
    │  └─ themes/
    │     ├─ quilombo.ts       # céu, parallax e enfeites da fase 1
    │     ├─ saopaulo.ts       # casario, sobrados, lampiões, prédios e faculdade da fase 2
@@ -84,6 +84,7 @@ O jogador atravessa 3 fases, cada uma ligada a uma personalidade negra brasileir
       ├─ sceneInput.ts        # teclas de confirmar/navegar nos menus
       ├─ OptionList.ts        # lista de opções (GameOver, Pausa)
       ├─ DialogueBox.ts       # caixa de fala com texto digitado (Intro e Story)
+      ├─ Portrait.ts          # retrato animado de quem fala (respira, pisca, mexe a boca)
       ├─ MenuBackdrop.ts      # fundo comum do menu, do seletor de fases e da ajuda
       ├─ Scenery.ts           # parallax, landmarks e vegetação a partir do tema da fase
       └─ GameState.ts         # vidas, fase atual, pontuação (singleton que emite eventos para a HUD)
@@ -282,12 +283,13 @@ Boot → Menu → Story(prólogo) → [Intro → Game(+HUD) → Card → Story(l
 - **MenuScene:** layout enxuto: título "SANKOFA" e subtítulo à esquerda (separados pela faixa de padrão africano), três opções ("Jogar", "Escolher fase", "Como jogar"; ↑↓ + Enter ou mouse, com barra dourada na ativa), o símbolo Sankofa grande flutuando à direita e uma linha curta no rodapé ("Dia da Consciência Negra · 20 de novembro"). O fundo (`MenuBackdrop`: cenário da fase 1 em movimento lento e véu escuro à esquerda) é comum ao menu, ao seletor e à ajuda.
 - **HelpScene:** "Como jogar", com os controles em teclas desenhadas e duas dicas; Enter, Esc ou clique voltam.
 - **LevelSelectScene:** tela "Escolher fase" aberta pelo menu (mesmo estilo do menu, com a época sob o nome da fase): lista as 3 fases (todas liberadas) e "Voltar"; ↑↓ + Enter, mouse ou teclas 1, 2 e 3; Esc volta. Começa com vidas e pontuação zeradas e passa pela Intro; **segurar Shift ao escolher pula a Intro** e vai direto ao jogo (atalho de teste). Se não quiser expor na versão final, é só tirar o botão do menu.
-- **StoryScene:** cena de história com caixa de fala (`DialogueBox`, a mesma da Intro), retrato de quem fala (o sprite do protagonista, o símbolo Sankofa ou a silhueta de um mentor) e fundo por clima: presente ao entardecer (prólogo), viagem no tempo com poeira dourada (ligações) e presente ao amanhecer (epílogo). Os textos ficam em `STORIES` (`texts.ts`); recebe `{ storyId, next }`. O jogo começa pelo prólogo (botão Jogar); a escolha de fase não passa por ele.
-- **IntroScene:** fundo na paleta da fase, nome da fase + época, retrato placeholder do mentor (silhueta estilizada, **não tentar desenhar o rosto da pessoa real**) e 2–3 falas curtas avançadas com Enter/Espaço.
+- **StoryScene:** cena de história com caixa de fala (`DialogueBox`, a mesma da Intro), retrato animado de quem fala (`Portrait`: o sprite do protagonista, o símbolo Sankofa ou o retrato de um mentor) e fundo por clima: presente ao entardecer (prólogo), viagem no tempo com poeira dourada (ligações) e presente ao amanhecer (epílogo). Os textos ficam em `STORIES` (`texts.ts`); recebe `{ storyId, next }`. O jogo começa pelo prólogo (botão Jogar); a escolha de fase não passa por ele.
+- **IntroScene:** fundo na paleta da fase, nome da fase + época, retrato animado do mentor (pixel art em busto, 200×240: **respira, pisca e mexe a boca enquanto o texto é digitado**, via `Portrait` + gancho `onTyping` da `DialogueBox`) e 2–3 falas curtas avançadas com Enter/Espaço.
 - **HudScene:** vidas, contador do coletável (`3/5` quando há `required`, ou só o número quando não há) e nome da fase.
 - **PauseScene / GameOverScene:** no estilo do menu (ver acima). Pausa: "Continuar" e "Menu", Esc/P retomam. Game Over: subtítulo do Sankofa, "Tentar de novo (fase atual)" e "Menu".
-- **CardScene:** carta histórica em formato de cartão centralizado (seção 8), com "Pressione Enter para continuar".
-- **VictoryScene:** mensagem final sobre o significado de **Sankofa** ("voltar e buscar o que ficou para trás": conhecer o passado para construir o futuro), pontuação total e créditos.
+- **Faixa "FASE CONCLUÍDA!"** (GameScene, ao tocar no portal aberto): faixa que abre na vertical com o nome da fase, flash e chuva de faíscas douradas saindo do portal; depois de `GAME.levelCompleteMs` vai para a carta.
+- **CardScene:** carta histórica em formato de cartão, que sobe com um quique: retrato animado do mentor, nome e datas, texto, placar da fase (coletáveis pegos e pontos), três corações de progresso da jornada e "Pressione Enter para continuar".
+- **VictoryScene:** linha do tempo com os três mentores (retratos pequenos ligados por Sankofas, entrando em sequência), mensagem final sobre o significado de **Sankofa** ("voltar e buscar o que ficou para trás": conhecer o passado para construir o futuro), pontuação total e créditos.
 
 Transições com `fadeOut`/`fadeIn` da câmera (300 ms).
 
@@ -366,7 +368,7 @@ Ordem sugerida (cada passo deixa o jogo jogável):
 - [ ] Rolê, se houver tempo (seção 3.1)
 - [x] Coletáveis + portal trancado/aberto
 - [x] HudScene (inclui a faixa decorativa de padrão geométrico na borda)
-- [x] Menu, Intro e GameOver (Intro → Game → GameOver | Menu; retrato do mentor é uma silhueta placeholder)
+- [x] Menu, Intro e GameOver (Intro → Game → GameOver | Menu; os retratos dos mentores eram silhuetas e ganharam rosto e animação no Marco 3)
 - [x] Card e Victory (layout simples, polimento no Marco 3); o portal leva à Card, que segue para a Intro da próxima fase ou, na última, para a Victory. Créditos já trazem Nathan Domingues; pendente incluir os demais integrantes da equipe, se houver (`VICTORY_TEXTS` em `texts.ts`)
 - [x] Fase 2 (São Paulo): 140 tiles, 5 cartas, 5 NPCs libertados pelo coletável mais próximo, túnel de 1 tile obrigatório (esquiva), sacada baixa opcional com a carta 3, 3 Esquecimentos e 4 Desinformações; sem arte de cenário própria (só a paleta)
 - [x] Fase 3 (Canindé → cidade moderna): 150 tiles, 10 folhas (8 obrigatórias), diário no HUD ("Diário: 5/8 páginas") e aviso ao completar; varal baixo opcional, viaduto de 1 tile obrigatório (esquiva), prédio de 5 tiles obrigatório (aú), sequência de inimigos para a meia-lua; sem arte de cenário própria
@@ -380,7 +382,7 @@ Ordem sugerida (cada passo deixa o jogo jogável):
 - [ ] Temas de cenário: `saopaulo` **aprovado** e `caninde` **aprovado**, seguindo o modelo de `art/themes/quilombo.ts`. O `Scenery.ts` já é dirigido por tema (`THEME_FX`: sol e pólen opcionais; `transition` na fase para o fundo mudar de cenário; marcos com variantes; `building` pinta a fachada de prédios sobre os tiles sólidos, com a altura vinda do mapa)
 - [ ] Padrões decorativos, animações e tweens
 - [x] História do protagonista (feita e **aprovada**; nome, tom, gancho e final definidos pelo usuário): prólogo antes da fase 1, ligações entre as fases 1→2 e 2→3 e epílogo antes da `VictoryScene`, tudo na `StoryScene`. Textos em `STORIES`, revisáveis pelo grupo. Ilustrações do protagonista só se sobrar tempo
-- [ ] Polir as telas de fim de fase (hoje layout simples): aviso "Fase concluída!", `CardScene` e `VictoryScene`. O **fluxo funcional** (portal → Card → próxima fase → Victory) continua no Marco 2
+- [x] Polir as telas de fim de fase (feito e **aprovado**): faixa "FASE CONCLUÍDA!", `CardScene` e `VictoryScene` (ver seção 7). Junto veio o **retrato dos mentores com rosto e animação** (`mentorArt.ts` + `Portrait.ts`), pedido pelo usuário. O **fluxo funcional** (portal → Card → próxima fase → Victory) continua no Marco 2
 - [ ] **Design e animações do protagonista** (vem logo depois das telas de fim de fase): hoje o Aiyê é um sprite 40×50 com poucas poses (parado, corrida de 2 frames, subindo, caindo e estrela do aú) e os movimentos de capoeira são só tweens de rotação e squash. Objetivos: refinar o desenho (silhueta, proporção, rosto, cabelo, roupa e cordão, mantendo as cores de `PLAYER_COLORS`), mais frames e fluidez na corrida, ginga parada com mais personalidade, e poses/animações próprias para os golpes e a esquiva (ver o item de poses abaixo, que passa a ser feito aqui). Respeitar a regra do `Player` (a hitbox 22×40 não muda com a arte) e o retrato do protagonista nas cenas de história, que usa o mesmo sprite. **O usuário aprova antes do commit**
 - [ ] Design dos coletáveis (hoje placeholders): Sankofa mais fiel ao símbolo Adinkra em vez do coração simples, e brilho/partículas ao coletar; carta de alforria e folha de papel também
 - [x] Redesign do menu principal (feito, aprovado: menu enxuto à esquerda com o símbolo à direita, controles movidos para "Como jogar", seletor de fases e ajuda no mesmo estilo; Pausa e Game Over alinhados ao mesmo estilo: título grande e faixa à esquerda, opções com barra dourada; a Pausa escurece o jogo parado com o véu à esquerda e o Game Over usa o fundo do menu mais escuro, com o símbolo apagado). Pedido original: tinha informação demais (título, subtítulo, botão, dica, controles, seletor e frase) e o visual não era moderno. Objetivos: menos elementos na tela (os controles podem ir para uma tela de ajuda ou para a Pausa), hierarquia clara, botões mais limpos, composição e animação de fundo mais atuais; manter a identidade (Sankofa, faixa de padrão africano, paleta). Aproveitar para alinhar a `LevelSelectScene` e as telas de Pausa/GameOver ao mesmo estilo. **O usuário aprova antes do commit**
@@ -424,4 +426,4 @@ Combos e novos golpes de capoeira (armada, queixada), mecânica de ritmo com ber
 - Nada de estereótipos nem de sofrimento como mecânica "divertida". O foco é **resistência, conhecimento e conquista**.
 - Inimigos são sempre conceitos abstratos.
 - Não usar nenhum asset, som, nome ou personagem da Nintendo. Só o estilo de gameplay é referência.
-- Personalidades reais aparecem só como mentores em silhueta estilizada, com falas claramente inspiradas e não apresentadas como citações.
+- Personalidades reais aparecem só como mentores, em **retratos de pixel art estilizados e respeitosos**, inspirados no que se sabe da aparência (Luiz Gama: barba e traje do século XIX; Carolina Maria de Jesus: lenço na cabeça e caderno; **Zumbi dos Palmares não tem retrato da época**, então o dele é imaginado a partir das representações tradicionais: líder guerreiro, lança e contas). Nada de caricatura. As falas são claramente inspiradas e não apresentadas como citações. Rever os retratos com o professor/grupo na revisão geral.

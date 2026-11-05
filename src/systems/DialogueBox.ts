@@ -33,6 +33,8 @@ export class DialogueBox {
     private readonly lines: readonly DialogueLine[],
     private readonly onLine: ((line: DialogueLine, index: number) => void) | undefined,
     private readonly onDone: () => void,
+    /** Avisa quando o texto começa e termina de ser digitado (o retrato mexe a boca nesse intervalo) */
+    private readonly onTyping?: (typing: boolean) => void,
   ) {
     scene.add.rectangle(panel.x, panel.y, panel.w, panel.h, PALETTE.black, 0.7).setOrigin(0).setStrokeStyle(4, PALETTE.gold);
     this.name = scene.add
@@ -75,6 +77,7 @@ export class DialogueBox {
     this.name.setText(line.speaker);
     this.counter.setText(`${this.index + 1}/${this.lines.length}`);
     this.speech.setText('');
+    this.onTyping?.(true);
     let shown = 0;
     this.typer = this.scene.time.addEvent({
       delay: TYPE_MS,
@@ -82,7 +85,10 @@ export class DialogueBox {
       callback: () => {
         shown++;
         this.speech.setText(line.text.slice(0, shown));
-        if (shown >= line.text.length) this.typer = null;
+        if (shown >= line.text.length) {
+          this.typer = null;
+          this.onTyping?.(false);
+        }
       },
     });
   }
@@ -90,6 +96,7 @@ export class DialogueBox {
   private finishTyping(): void {
     this.typer?.remove(false);
     this.typer = null;
+    this.onTyping?.(false);
     this.speech.setText(this.lines[this.index].text);
   }
 }

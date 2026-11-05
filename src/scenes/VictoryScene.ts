@@ -1,8 +1,10 @@
 import Phaser from 'phaser';
 import { BAND_H } from '../art/hudArt';
-import { PALETTE, toCss } from '../config/palette';
+import { PALETTE, darken, toCss } from '../config/palette';
 import { CAMERA } from '../config/physics';
-import { VICTORY_TEXTS } from '../data/texts';
+import { MENTOR_ACCENT, PORTRAIT, mentorTextureKey } from '../art/mentorArt';
+import { LEVELS } from '../data/levels';
+import { MENTORS, VICTORY_TEXTS } from '../data/texts';
 import { gameState } from '../systems/GameState';
 import { CONFIRM_KEYS, onKeys } from '../systems/sceneInput';
 import { goToScene } from '../systems/transitions';
@@ -44,24 +46,49 @@ export class VictoryScene extends Phaser.Scene {
       lineSpacing: 10,
     };
 
-    // etapa 1: o significado do Sankofa e a pontuação
-    const heart = this.add.image(width / 2, 90, 'sankofa').setScale(4);
-    this.tweens.add({ targets: heart, y: 82, duration: 1200, ease: 'Sine.easeInOut', yoyo: true, repeat: -1 });
+    // etapa 1: a jornada (três mentores numa linha do tempo), o significado do Sankofa e a pontuação
     const title = this.add
-      .text(width / 2, 170, VICTORY_TEXTS.title, {
+      .text(width / 2, 58, VICTORY_TEXTS.title, {
         fontFamily: 'monospace',
-        fontSize: '64px',
+        fontSize: '56px',
         fontStyle: 'bold',
         color: toCss(PALETTE.gold),
         stroke: toCss(PALETTE.black),
         strokeThickness: 8,
       })
       .setOrigin(0.5);
-    const message = this.add.text(width / 2, 300, VICTORY_TEXTS.message.join('\n\n'), cream).setOrigin(0.5);
-    const score = this.add
-      .text(width / 2, 420, `${VICTORY_TEXTS.score}: ${gameState.score}`, { ...cream, fontSize: '32px', color: toCss(PALETTE.gold) })
-      .setOrigin(0.5);
-    this.messageGroup = this.add.container(0, 0, [heart, title, message, score]);
+    const items: Phaser.GameObjects.GameObject[] = [title];
+
+    // linha dourada ligando os retratos, com um Sankofa entre cada par
+    const centers = LEVELS.map((_l, i) => width / 2 + (i - (LEVELS.length - 1) / 2) * 250);
+    items.push(this.add.rectangle(width / 2, 166, centers[centers.length - 1] - centers[0], 4, PALETTE.gold, 0.8));
+    for (let i = 0; i < centers.length - 1; i++) items.push(this.add.image((centers[i] + centers[i + 1]) / 2, 166, 'sankofa').setScale(1.6));
+    LEVELS.forEach((level, i) => {
+      const cx = centers[i];
+      const accent = MENTOR_ACCENT[level.mentorId];
+      const w = PORTRAIT.w * 0.5;
+      const h = PORTRAIT.h * 0.5;
+      const top = 106;
+      items.push(this.add.rectangle(cx, top + h / 2, w + 8, h + 8, PALETTE.gold));
+      items.push(this.add.rectangle(cx, top + h / 2, w, h, darken(accent, 65)));
+      items.push(this.add.image(cx, top + h, mentorTextureKey(level.mentorId)).setOrigin(0.5, 1).setScale(0.5));
+      items.push(
+        this.add.text(cx, top + h + 24, MENTORS[level.mentorId].name, { fontFamily: 'monospace', fontSize: '16px', fontStyle: 'bold', color: toCss(PALETTE.gold), align: 'center', wordWrap: { width: 230 } }).setOrigin(0.5),
+      );
+      items.push(this.add.text(cx, top + h + 44, level.era, { fontFamily: 'monospace', fontSize: '14px', color: toCss(PALETTE.cream) }).setOrigin(0.5));
+    });
+
+    items.push(this.add.text(width / 2, 372, VICTORY_TEXTS.message.join('\n\n'), { ...cream, fontSize: '22px', lineSpacing: 8 }).setOrigin(0.5));
+    items.push(
+      this.add.text(width / 2, 452, `${VICTORY_TEXTS.score}: ${gameState.score}`, { ...cream, fontSize: '30px', color: toCss(PALETTE.gold) }).setOrigin(0.5),
+    );
+    this.messageGroup = this.add.container(0, 0, items);
+    // entrada em sequência: título, cada mentor, depois o texto e a pontuação
+    items.forEach((item, i) => {
+      const target = item as Phaser.GameObjects.GameObject & Phaser.GameObjects.Components.Alpha;
+      target.setAlpha(0);
+      this.tweens.add({ targets: target, alpha: 1, delay: 150 + i * 70, duration: 420 });
+    });
 
     // etapa 2: créditos (começam abaixo da tela e sobem)
     const credits = this.add

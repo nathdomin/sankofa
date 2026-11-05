@@ -1,12 +1,11 @@
 import Phaser from 'phaser';
 import { BAND_H } from '../art/hudArt';
 import { gradientAt, type GradientStop } from '../art/colors';
-import { PORTRAIT, mentorTextureKey } from '../art/mentorArt';
-import { playerTextureKey } from '../art/playerArt';
 import { PALETTE, toCss } from '../config/palette';
 import { CAMERA } from '../config/physics';
 import { INTRO_TEXTS, MENTORS, SPEAKER_NAMES, STORIES, type Speaker, type StoryId, type StoryMood, type StoryScript } from '../data/texts';
 import { DialogueBox, type DialogueLine } from '../systems/DialogueBox';
+import { Portrait } from '../systems/Portrait';
 import { goToScene } from '../systems/transitions';
 
 export interface StorySceneData {
@@ -44,7 +43,6 @@ const SKIES: Record<StoryMood, readonly GradientStop[]> = {
 export class StoryScene extends Phaser.Scene {
   private script!: StoryScript;
   private next!: StorySceneData['next'];
-  private portrait!: Phaser.GameObjects.Image;
 
   constructor() {
     super('Story');
@@ -74,18 +72,16 @@ export class StoryScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setDepth(2);
 
-    // retrato em moldura, trocado conforme quem fala
-    const { x, y } = PORTRAIT_POS;
-    this.add.rectangle(x - 6, y - 6, PORTRAIT.w + 12, PORTRAIT.h + 12, PALETTE.gold).setOrigin(0).setDepth(1);
-    this.add.rectangle(x, y, PORTRAIT.w, PORTRAIT.h, PALETTE.black, 0.55).setOrigin(0).setDepth(1);
-    this.portrait = this.add.image(x + PORTRAIT.w / 2, y + PORTRAIT.h / 2, playerTextureKey('idle')).setDepth(2);
+    // retrato animado, trocado conforme quem fala
+    const portrait = new Portrait(this, PORTRAIT_POS.x, PORTRAIT_POS.y);
 
     new DialogueBox(
       this,
       PANEL,
       this.script.lines.map((line) => ({ speaker: this.speakerName(line.speaker), text: line.text })),
-      (_line: DialogueLine, index: number) => this.showSpeaker(this.script.lines[index].speaker),
+      (_line: DialogueLine, index: number) => portrait.show(this.script.lines[index].speaker),
       () => goToScene(this, this.next.scene, this.next.data),
+      (typing) => portrait.setTalking(typing),
     );
 
     const hint = this.add
@@ -97,22 +93,6 @@ export class StoryScene extends Phaser.Scene {
 
   private speakerName(speaker: Speaker): string {
     return speaker === 'protagonista' || speaker === 'sankofa' ? SPEAKER_NAMES[speaker] : MENTORS[speaker].name;
-  }
-
-  /** Protagonista: sprite do jogador; Sankofa: o símbolo; mentor: retrato (silhueta) */
-  private showSpeaker(speaker: Speaker): void {
-    const cx = PORTRAIT_POS.x + PORTRAIT.w / 2;
-    const cy = PORTRAIT_POS.y + PORTRAIT.h / 2;
-    this.portrait.setPosition(cx, cy).setAngle(0);
-    this.tweens.killTweensOf(this.portrait);
-    if (speaker === 'protagonista') {
-      this.portrait.setTexture(playerTextureKey('idle')).setScale(4.8);
-    } else if (speaker === 'sankofa') {
-      this.portrait.setTexture('sankofa').setScale(9);
-      this.tweens.add({ targets: this.portrait, y: cy - 8, duration: 1200, ease: 'Sine.easeInOut', yoyo: true, repeat: -1 });
-    } else {
-      this.portrait.setTexture(mentorTextureKey(speaker)).setScale(1);
-    }
   }
 
   private paintBackground(mood: StoryMood): void {

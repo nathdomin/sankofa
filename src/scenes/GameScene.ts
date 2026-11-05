@@ -264,20 +264,55 @@ export class GameScene extends Phaser.Scene {
     this.finished = true;
     this.player.setControlsEnabled(false);
 
+    this.showLevelComplete();
+
+    // depois da faixa, vai para a carta histórica da fase
+    this.time.delayedCall(GAME.levelCompleteMs, () => goToScene(this, 'Card', { levelIndex: this.levelIndex } satisfies CardSceneData));
+  }
+
+  /** Faixa "FASE CONCLUÍDA!" entrando pelo lado, com chuva de faíscas douradas saindo do portal */
+  private showLevelComplete(): void {
     const cam = this.cameras.main;
+    const cx = cam.width / 2;
+    const cy = cam.height / 2 - 20;
+    const depth = 100;
+
+    // faísca dourada subindo do portal
     this.add
-      .text(cam.width / 2, cam.height / 2, 'Fase concluída!', {
-        fontFamily: 'monospace',
-        fontSize: '40px',
-        color: toCss(PALETTE.gold),
-        stroke: toCss(PALETTE.black),
-        strokeThickness: 6,
+      .particles(this.portal.x, this.portal.y - 32, 'mote', {
+        lifespan: { min: 900, max: 1800 },
+        speed: { min: 60, max: 260 },
+        angle: { min: 200, max: 340 },
+        gravityY: 220,
+        scale: { start: 2, end: 0.5 },
+        alpha: { start: 1, end: 0 },
+        blendMode: Phaser.BlendModes.ADD,
+        emitting: false,
       })
+      .setDepth(depth - 1)
+      .explode(60);
+
+    const band = this.add.rectangle(cx, cy, cam.width, 132, PALETTE.black, 0.78).setScrollFactor(0).setDepth(depth);
+    const edgeTop = this.add.tileSprite(cx, cy - 66 + 8, cam.width, 16, 'hud-band').setScrollFactor(0).setDepth(depth);
+    const edgeBottom = this.add.tileSprite(cx, cy + 66 - 8, cam.width, 16, 'hud-band').setScrollFactor(0).setDepth(depth);
+    const title = this.add
+      .text(cx, cy - 8, PORTAL_TEXTS.levelComplete, { fontFamily: 'monospace', fontSize: '56px', fontStyle: 'bold', color: toCss(PALETTE.gold), stroke: toCss(PALETTE.black), strokeThickness: 8 })
       .setOrigin(0.5)
       .setScrollFactor(0)
-      .setDepth(100);
+      .setDepth(depth + 1);
+    const subtitle = this.add
+      .text(cx, cy + 36, `${this.config.title} · ${this.config.era}`, { fontFamily: 'monospace', fontSize: '20px', color: toCss(PALETTE.cream) })
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(depth + 1);
 
-    // depois do aviso, vai para a carta histórica da fase
-    this.time.delayedCall(GAME.noticeMs, () => goToScene(this, 'Card', { levelIndex: this.levelIndex } satisfies CardSceneData));
+    // a faixa abre na vertical e o título cresce com um quique
+    band.setScale(1, 0.05);
+    for (const e of [edgeTop, edgeBottom, title, subtitle]) e.setAlpha(0);
+    this.tweens.add({ targets: band, scaleY: 1, duration: 260, ease: 'Quad.easeOut' });
+    this.tweens.add({ targets: [edgeTop, edgeBottom, subtitle], alpha: 1, delay: 220, duration: 260 });
+    title.setScale(0.4);
+    this.tweens.add({ targets: title, alpha: 1, scale: 1, delay: 180, duration: 420, ease: 'Back.easeOut' });
+    cam.flash(260, 255, 240, 200);
   }
 }

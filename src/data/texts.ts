@@ -195,6 +195,7 @@ export const GAME_OVER_TEXTS = {
 
 export const PORTAL_TEXTS = {
   opened: 'O portal abriu!',
+  levelComplete: 'FASE CONCLUÍDA!',
 } as const;
 
 // Fase 3: o contador do HUD vira um diário que vai sendo preenchido
