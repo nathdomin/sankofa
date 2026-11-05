@@ -45,10 +45,10 @@ export const CAPOEIRA = {
     trail: { radii: [26, 34], lineWidth: 4, fadeMs: 200 },
   },
   // squashY/tiltDeg: só visual; enterMs = tempo de abaixar
-  esquiva: { speedFactor: 0.4, hitbox: { w: 22, h: 22 }, squashY: 0.55, tiltDeg: 8, enterMs: 80 },
+  esquiva: { speedFactor: 0.4, hitbox: { w: 22, h: 22 } },
   role: { speed: 420, durationMs: 250, cooldownMs: 700 },
-  // parado: respiração sutil, o corpo sobe e desce sobre os pés (sem inclinar para os lados)
-  ginga: { breathScaleY: 1.03, breathCycleMs: 1600 },
+  // parado: ginga em quadros (o peso passa de uma perna para a outra); cada quadro dura frameMs
+  ginga: { frameMs: 360 },
 } as const;
 
 export const ENEMY = {

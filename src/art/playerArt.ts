@@ -15,47 +15,57 @@ export const PLAYER_COLOR_MAP: ColorMap = {
   s: c.skin, S: c.skinShadow, l: c.skinLight,
   w: c.eyeWhite, p: c.pupil, b: c.brow, m: c.mouth, t: c.eyeWhite,
   y: c.shirt, Y: c.shirtShadow, L: c.shirtLight,
+  a: c.trim, A: c.trimShadow,
   g: c.cord, G: c.cordShadow,
   c: c.pants, C: c.pantsShadow, D: c.pantsFar,
   o: c.outline,
 };
 
-// Cabeça 14x16 olhando para a direita (o flipX espelha)
+// Cabeça 15x13 olhando para a direita (o flipX espelha): cabelo black power volumoso, rosto menor
 const HEAD = [
-  '....hhhhhh....',
-  '..hhhhHHhhhh..',
-  '.hhhHHhhhhhhh.',
-  '.hhhhhhhhhHHh.',
-  'hhhhhhhhhhhhhh',
-  'hhhhhhhhhhhhhh',
-  'hhhhsllllllllh',
-  'hhhssbbbssbbbs',
-  'hhSsswwpsswwps',
-  'hhSsswwpsswwps',
-  '.hSssssssslsss',
-  '.hSsssssssSSss',
-  '..Ssssssmttms.',
-  '..SSssssmmsss.',
-  '...SSsssssss..',
-  '.....SSSSSS...',
+  '....hhhhhhh....',
+  '..hhhhHHHhhhh..',
+  '.hhhhHHhhhhhhh.',
+  'hhhhhhhhhhhhHhh',
+  'hhhhhsllllllllh',
+  'hhhhssbbbssbbbs',
+  'hhhSsswwpsswwps',
+  'hhhSsswwpsswwps',
+  '.hhSsssssssSSss',
+  '...Ssssssmttms.',
+  '...SSssssmmsss.',
+  '....SSsssssss..',
+  '......SSSSSS...',
 ];
 
 const HEAD_BLINK = HEAD.map((row, i) => {
-  if (i === 8) return row.replace(/[wp]/g, 's');
-  if (i === 9) return row.replace(/[wp]/g, 'b');
+  if (i === 6) return row.replace(/[wp]/g, 's');
+  if (i === 7) return row.replace(/[wp]/g, 'b');
   return row;
 });
+
+// dor: olhos apertados, sobrancelhas para baixo e a boca aberta
+const HEAD_HURT = HEAD.map((row, i) => {
+  if (i === 6) return 'hhhSssbbsssbbss';
+  if (i === 7) return row.replace(/[wp]/g, 's');
+  if (i === 9) return '...Ssssssmmmms.';
+  if (i === 10) return '...SSsssmttmss.';
+  return row;
+});
+
+type Face = 'normal' | 'blink' | 'hurt';
+const FACES: Record<Face, string[]> = { normal: HEAD, blink: HEAD_BLINK, hurt: HEAD_HURT };
 
 const CHEST_PRINT = ['gg.gg', 'ggggg', '.ggg.', '..g..'];
 
 // Medidas do esqueleto (canvas 40x50)
 const BODY = {
-  headX: 13, headY: 1,
-  torsoX: 13, torsoY: 17, torsoW: 14, torsoH: 12,
+  headX: 12, headY: 1,
+  torsoX: 14, torsoY: 15, torsoW: 12, torsoH: 11,
   // quadris 1px à esquerda do centro: o pé aponta para a frente e precisa de espaço
-  hipY: 31, nearHipX: 21, farHipX: 17,
-  shoulderY: 19, nearShoulderX: 25, farShoulderX: 14,
-  thigh: 8, shin: 8, foot: 6,
+  hipY: 28, nearHipX: 21, farHipX: 18,
+  shoulderY: 17, nearShoulderX: 22, farShoulderX: 18,
+  thigh: 9, shin: 8, foot: 5,
   upperArm: 6, foreArm: 5,
   groundY: 48, // última linha do pé encostando no chão
 } as const;
@@ -71,7 +81,9 @@ interface PoseSpec {
   /** desloca o pé mais baixo até o chão (poses no chão) */
   grounded: boolean;
   lean?: number;
-  blink?: boolean;
+  face?: Face;
+  /** Abaixa cabeça, tronco, braços e quadris (px): poses agachadas */
+  drop?: number;
 }
 
 interface Point { x: number; y: number }
@@ -94,13 +106,13 @@ function limb(g: PixelGrid, a: Point, b: Point, w: number, ch: string, dx: numbe
 
 interface LegGeometry { hip: Point; knee: Point; ankle: Point; heel: Point; toe: Point; footDeg: number; shinDeg: number }
 
-function legGeometry(hipX: number, leg: Leg): LegGeometry {
-  const hip = { x: hipX, y: BODY.hipY };
+function legGeometry(hipX: number, leg: Leg, dy = 0): LegGeometry {
+  const hip = { x: hipX, y: BODY.hipY + dy };
   const knee = toward(hip, BODY.thigh, leg.thigh);
   const ankle = toward(knee, BODY.shin, leg.shin);
   // o pé aponta para a frente, perpendicular à canela, com o calcanhar um pouco atrás
   const footDeg = leg.shin + 90;
-  const heel = toward(ankle, -1.5, footDeg);
+  const heel = toward(ankle, -1, footDeg);
   const toe = toward(ankle, BODY.foot, footDeg);
   return { hip, knee, ankle, heel, toe, footDeg, shinDeg: leg.shin };
 }
@@ -127,7 +139,7 @@ function drawLeg(g: PixelGrid, geo: LegGeometry, far: boolean, dx: number, dy: n
     drawFoot(g, geo, far, extra, dx, dy);
     limb(g, geo.hip, geo.knee, 5 + extra, pantsCh, dx, dy);
     limb(g, geo.knee, geo.ankle, 4 + extra, pantsCh, dx, dy);
-    limb(g, hem, hem, 6 + extra, pantsCh, dx, dy);
+    limb(g, hem, hem, 5 + extra, pantsCh, dx, dy);
   };
   // a perna da frente ganha contorno próprio para se destacar da de trás
   if (!far) paint(2, 'o');
@@ -137,11 +149,14 @@ function drawLeg(g: PixelGrid, geo: LegGeometry, far: boolean, dx: number, dy: n
 const angleOf = (a: Point, b: Point): number => (Math.atan2(b.x - a.x, b.y - a.y) * 180) / Math.PI;
 
 function drawArm(g: PixelGrid, shoulderX: number, arm: Arm, far: boolean, dx: number, dy: number): void {
-  const shoulder = { x: shoulderX, y: BODY.shoulderY };
+  const shoulder = { x: shoulderX, y: BODY.shoulderY + dy };
   const elbow = toward(shoulder, BODY.upperArm, arm.upper);
   const hand = toward(elbow, BODY.foreArm, arm.fore);
-  limb(g, shoulder, toward(shoulder, 3, arm.upper), 4, far ? 'Y' : 'L', dx, dy); // manga
-  limb(g, toward(shoulder, 3, arm.upper), elbow, 3, far ? 'S' : 's', dx, dy);
+  // manga curta: borda de sombra na camiseta, para ela continuar presa ao corpo quando o braço balança
+  const cuff = toward(shoulder, 3.5, arm.upper);
+  limb(g, shoulder, cuff, 4, 'Y', dx, dy);
+  if (!far) limb(g, shoulder, cuff, 3, 'L', dx - 0.5, dy - 0.5);
+  limb(g, toward(cuff, 1, arm.upper), elbow, 3, far ? 'S' : 's', dx, dy);
   limb(g, elbow, hand, 3, far ? 'S' : 's', dx, dy);
   limb(g, hand, hand, 3, far ? 's' : 'l', dx, dy);
 }
@@ -151,17 +166,27 @@ function drawTorso(g: PixelGrid, dx: number, dy: number): void {
   rect(g, x + dx, y + dy, w, h, 'y');
   rect(g, x + dx, y + dy, 2, h, 'L');
   rect(g, x + w - 3 + dx, y + dy, 3, h, 'Y');
-  rect(g, x + dx, y + h - 1 + dy, w, 1, 'Y');
-  rect(g, x + 4 + dx, y + dy, 6, 1, 's');
-  rect(g, x + 5 + dx, y + 1 + dy, 4, 1, 's');
-  rect(g, x + 6 + dx, y + 2 + dy, 2, 1, 'S');
-  stamp(g, CHEST_PRINT, x + 4 + dx, y + 4 + dy);
+  // barra dourada da camiseta
+  rect(g, x + dx, y + h - 1 + dy, w, 1, 'a');
+  stamp(g, CHEST_PRINT, x + 4 + dx, y + 5 + dy);
   // gancho da calça e cordão verde com o nó na lateral
   rect(g, x + 2 + dx, y + h + 2 + dy, w - 4, 2, 'c');
   rect(g, x + dx, y + h + dy, w, 2, 'g');
   rect(g, x + dx, y + h + 1 + dy, w, 1, 'G');
   rect(g, x + w - 4 + dx, y + h - 1 + dy, 3, 4, 'g');
   rect(g, x + w - 3 + dx, y + h + 1 + dy, 1, 2, 'G');
+}
+
+/** Pescoço (sob o queixo) e decote com gola dourada; vai por cima das mangas para elas não o cobrirem */
+function drawNeck(g: PixelGrid, dx: number, dy: number): void {
+  const { torsoX: x, torsoY: y } = BODY;
+  rect(g, x + 4 + dx, y - 1 + dy, 4, 2, 's');
+  rect(g, x + 4 + dx, y - 1 + dy, 4, 1, 'S');
+  rect(g, x + 3 + dx, y + 1 + dy, 6, 1, 's');
+  rect(g, x + 4 + dx, y + 2 + dy, 4, 1, 's');
+  rect(g, x + 5 + dx, y + 3 + dy, 2, 1, 'S');
+  rect(g, x + 2 + dx, y + 1 + dy, 1, 1, 'a');
+  rect(g, x + 9 + dx, y + 1 + dy, 1, 1, 'a');
 }
 
 const SPARE_ROWS = 12;
@@ -171,14 +196,16 @@ export function buildPoseGrid(pose: PoseSpec): PixelGrid {
   // desenha numa grade mais alta para nada ser cortado antes de aterrar
   const work = createGrid(w, h + SPARE_ROWS);
   const dx = pose.lean ?? 0;
+  const dy = pose.drop ?? 0;
 
   // de trás para a frente: braço de trás, perna de trás, perna da frente, tronco, braço da frente, cabeça
-  drawArm(work, BODY.farShoulderX, pose.farArm, true, dx, 0);
-  drawLeg(work, legGeometry(BODY.farHipX, pose.far), true, 0, 0);
-  drawLeg(work, legGeometry(BODY.nearHipX, pose.near), false, 0, 0);
-  drawTorso(work, dx, 0);
-  drawArm(work, BODY.nearShoulderX, pose.nearArm, false, dx, 0);
-  stamp(work, pose.blink ? HEAD_BLINK : HEAD, BODY.headX + dx, BODY.headY);
+  drawArm(work, BODY.farShoulderX, pose.farArm, true, dx, dy);
+  drawLeg(work, legGeometry(BODY.farHipX, pose.far, dy), true, 0, 0);
+  drawLeg(work, legGeometry(BODY.nearHipX, pose.near, dy), false, 0, 0);
+  drawTorso(work, dx, dy);
+  drawArm(work, BODY.nearShoulderX, pose.nearArm, false, dx, dy);
+  drawNeck(work, dx, dy);
+  stamp(work, FACES[pose.face ?? 'normal'], BODY.headX + dx, BODY.headY + dy);
 
   // no chão, desce o desenho até o pixel mais baixo tocar a linha do chão
   let shift = 0;
@@ -206,13 +233,13 @@ export const RUN_FRAMES = 8;
 function runPose(frame: number): PoseSpec {
   const phase = (frame / RUN_FRAMES) * Math.PI * 2;
   const leg = (p: number): Leg => {
-    const thigh = 32 * Math.sin(p);
+    const thigh = 28 * Math.sin(p);
     // joelho dobra bastante quando a perna volta para a frente
-    const shin = thigh - (6 + 50 * Math.max(0, Math.cos(p)));
+    const shin = thigh - (8 + 62 * Math.max(0, Math.cos(p)));
     return { thigh, shin };
   };
   const arm = (p: number): Arm => {
-    const upper = -40 * Math.sin(p);
+    const upper = -34 * Math.sin(p);
     return { upper, fore: upper + 55 };
   };
   return {
@@ -234,9 +261,64 @@ const IDLE: PoseSpec = {
   grounded: true,
 };
 
+// ginga parada: o peso passa de uma perna para a outra, com os braços trocando de guarda
+const GINGA_MID: PoseSpec = {
+  near: { thigh: 5, shin: -1 },
+  far: { thigh: -5, shin: 1 },
+  nearArm: { upper: 12, fore: 75 },
+  farArm: { upper: -6, fore: 40 },
+  grounded: true,
+  drop: 1,
+};
+const GINGA_B: PoseSpec = {
+  near: { thigh: -14, shin: -6 },
+  far: { thigh: 16, shin: 8 },
+  nearArm: { upper: -18, fore: -4 },
+  farArm: { upper: 30, fore: 125 },
+  grounded: true,
+};
+
+/** Ordem dos quadros da ginga parada (cada um tem a variante com os olhos fechados: sufixo "b") */
+export const GINGA_FRAMES = ['gingaA', 'gingaM', 'gingaB', 'gingaM'] as const;
+
 export const PLAYER_POSES: Readonly<Record<string, PoseSpec>> = {
   idle: IDLE,
-  idleBlink: { ...IDLE, blink: true },
+  idleBlink: { ...IDLE, face: 'blink' },
+  gingaA: IDLE,
+  gingaAb: { ...IDLE, face: 'blink' },
+  gingaM: GINGA_MID,
+  gingaMb: { ...GINGA_MID, face: 'blink' },
+  gingaB: GINGA_B,
+  gingaBb: { ...GINGA_B, face: 'blink' },
+  // esquiva: agachado com os joelhos dobrados e a guarda alta
+  crouch: {
+    near: { thigh: 84, shin: -6 },
+    far: { thigh: 60, shin: -40 },
+    nearArm: { upper: 50, fore: 130 },
+    farArm: { upper: -35, fore: -10 },
+    grounded: true,
+    drop: 9,
+    lean: 1,
+  },
+  // meia-lua: perna da frente varrendo na horizontal, braços abertos para o equilíbrio
+  kick: {
+    near: { thigh: 100, shin: 98 },
+    far: { thigh: -12, shin: -14 },
+    nearArm: { upper: -50, fore: -75 },
+    farArm: { upper: 55, fore: 80 },
+    grounded: false,
+    lean: -1,
+  },
+  // dano: jogado para trás, braços para o alto e cara de dor
+  hurt: {
+    near: { thigh: -20, shin: -40 },
+    far: { thigh: 20, shin: 5 },
+    nearArm: { upper: -125, fore: -150 },
+    farArm: { upper: -105, fore: -135 },
+    grounded: false,
+    lean: -1,
+    face: 'hurt',
+  },
   // subindo: joelho da frente erguido, braços puxando para cima
   jumpUp: {
     near: { thigh: 75, shin: 5 },

@@ -140,7 +140,7 @@ A identidade do jogo é o personagem se mover como capoeirista. Cada movimento t
 - `hurt` tem prioridade sobre tudo. `meiaLua` e `role` não podem ser interrompidos até terminar.
 
 #### Ginga (automática, visual)
-- **Parado:** respiração sutil, com tween em `scaleY` (1.0↔1.03, ciclo de 1600 ms, `yoyo`, `repeat: -1`); o corpo sobe e desce sobre os pés, **sem inclinar para os lados** (a inclinação foi testada e descartada). O tween espera o squash da aterrissagem terminar.
+- **Parado:** ginga em quadros: o peso passa de uma perna para a outra e os braços trocam de guarda, num ciclo de 4 quadros (`gingaA → gingaM → gingaB → gingaM`, `CAPOEIRA.ginga.frameMs` = 360 ms cada), com piscar (variantes com sufixo `b`). Substituiu a respiração por `scaleY`; **sem inclinar para os lados**.
 - **Andando:** sem tween; animação de corrida de 2 frames com `timeScale` proporcional à velocidade.
 - **Squash & stretch:** estica ao pular e achata ao aterrissar (valores em `PLAYER` no `physics.ts`).
 - Ao sair do estado, o tween para e o visual volta a `angle = 0`, `scale = 1`.
@@ -159,7 +159,7 @@ A identidade do jogo é o personagem se mover como capoeirista. Cada movimento t
 #### Esquiva / cocorinha, tecla ↓/S (segurar)
 - Só no chão. Abaixa: hitbox muda para 22×22 e a velocidade máxima cai para 40%.
 - Permite passar por **vãos de 1 tile de altura** (32 px), como telhados baixos, varais e galhos.
-- **Visual:** `scaleY` 0.55 no `visual` (origem já fica nos pés) e leve inclinação para o lado de frente.
+- **Visual:** pose própria `crouch` (agachado, joelhos dobrados, guarda alta); sem squash nem inclinação.
 - Ao soltar, **só levanta se houver espaço acima**: checar se os tiles acima da hitbox estão livres. Se estiver bloqueado, continua abaixado até sair do vão.
 
 #### Rolê (rolamento), tecla K/Shift
@@ -327,7 +327,7 @@ Transições com `fadeOut`/`fadeIn` da câmera (300 ms).
 
 ## 9. Visual placeholder (gerado na BootScene)
 
-- **Player:** pixel art 40×50 desenhada em texto em `src/art/playerArt.ts`; cor de pele marrom (`#6b4226`), camiseta amarela (`#f2b705`), calça branca de capoeira (`#f5e6c8`) com cordão verde na cintura (`#1e7a3c`). Poses: parado (+ piscar), corrida (2 frames), subindo, caindo e aú (estrela). Os movimentos de capoeira usam **tweens** (rotação, squash) sobre essas poses; uma pose nova só se o tween não bastar. Cores do player em `PLAYER_COLORS` (`palette.ts`).
+- **Player:** pixel art 40×50 montada por "esqueleto" (ângulos de coxa, canela, braço e antebraço; `drop` agacha o corpo) em `src/art/playerArt.ts`; visual de capoeirista: cabelo black power, proporções esguias (cabeça menor, pernas e braços mais longos), pele marrom (`#6b4226`), abadá com camiseta branca de barra dourada (`#f2b705`) e estampa de coração Sankofa verde, calça creme e cordão verde na cintura (`#1e7a3c`). Poses: ginga (3 quadros + piscar), corrida (8 quadros), subindo, caindo, aú (estrela), `crouch` (esquiva), `kick` (meia-lua, com a rotação de 360° do tween) e `hurt` (cara de dor). O squash de pulo/aterrissagem continua em tween no `visual`. Cores em `PLAYER_COLORS` (`palette.ts`).
 - **Sankofa:** coração estilizado dourado (aproximação simples do símbolo Adinkra) com leve flutuação (tween em `y`).
 - **Carta de alforria:** retângulo bege com linhas.
 - **Folha de papel:** retângulo branco com dobra no canto.
@@ -363,7 +363,7 @@ Paleta global em `palette.ts`: dourado `#f2b705`, verde `#1e7a3c`, vermelho `#c0
 Ordem sugerida (cada passo deixa o jogo jogável):
 - [x] `GameState` (vidas, fase, pontuação) + vidas, invencibilidade, checkpoint e buracos
 - [x] Inimigos (patrulha, stomp, dano, Esquecimento imune a stomp)
-- [x] Meia-lua de compasso (com hit-stop); usa por ora a pose de estrela do aú como placeholder
+- [x] Meia-lua de compasso (com hit-stop); a pose `kick` substituiu a estrela do aú no Marco 3
 - [x] Esquiva (sem teste em fase ainda: a fase 1 não tem vãos baixos)
 - [ ] Rolê, se houver tempo (seção 3.1)
 - [x] Coletáveis + portal trancado/aberto
@@ -383,11 +383,11 @@ Ordem sugerida (cada passo deixa o jogo jogável):
 - [ ] Padrões decorativos, animações e tweens
 - [x] História do protagonista (feita e **aprovada**; nome, tom, gancho e final definidos pelo usuário): prólogo antes da fase 1, ligações entre as fases 1→2 e 2→3 e epílogo antes da `VictoryScene`, tudo na `StoryScene`. Textos em `STORIES`, revisáveis pelo grupo. Ilustrações do protagonista só se sobrar tempo
 - [x] Polir as telas de fim de fase (feito e **aprovado**): faixa "FASE CONCLUÍDA!", `CardScene` e `VictoryScene` (ver seção 7). Junto veio o **retrato dos mentores com rosto e animação** (`mentorArt.ts` + `Portrait.ts`), pedido pelo usuário. O **fluxo funcional** (portal → Card → próxima fase → Victory) continua no Marco 2
-- [ ] **Design e animações do protagonista** (vem logo depois das telas de fim de fase): hoje o Aiyê é um sprite 40×50 com poucas poses (parado, corrida de 2 frames, subindo, caindo e estrela do aú) e os movimentos de capoeira são só tweens de rotação e squash. Objetivos: refinar o desenho (silhueta, proporção, rosto, cabelo, roupa e cordão, mantendo as cores de `PLAYER_COLORS`), mais frames e fluidez na corrida, ginga parada com mais personalidade, e poses/animações próprias para os golpes e a esquiva (ver o item de poses abaixo, que passa a ser feito aqui). Respeitar a regra do `Player` (a hitbox 22×40 não muda com a arte) e o retrato do protagonista nas cenas de história, que usa o mesmo sprite. **O usuário aprova antes do commit**
+- [x] **Design e animações do protagonista** (feito, aguardando aprovação): ginga parada em quadros, poses próprias de esquiva (`crouch`), meia-lua (`kick`) e dano (`hurt`, com cara de dor), e **novo visual** (cabelo black power, corpo mais esguio, abadá branco com acabamento dourado e cordão verde), mantendo a hitbox. A corrida já tinha 8 quadros. O `PoseSpec` ganhou `drop` (agachar) e `face`. O retrato do protagonista nas histórias continua usando `idle`
 - [ ] Design dos coletáveis (hoje placeholders): Sankofa mais fiel ao símbolo Adinkra em vez do coração simples, e brilho/partículas ao coletar; carta de alforria e folha de papel também
 - [x] Redesign do menu principal (feito, aprovado: menu enxuto à esquerda com o símbolo à direita, controles movidos para "Como jogar", seletor de fases e ajuda no mesmo estilo; Pausa e Game Over alinhados ao mesmo estilo: título grande e faixa à esquerda, opções com barra dourada; a Pausa escurece o jogo parado com o véu à esquerda e o Game Over usa o fundo do menu mais escuro, com o símbolo apagado). Pedido original: tinha informação demais (título, subtítulo, botão, dica, controles, seletor e frase) e o visual não era moderno. Objetivos: menos elementos na tela (os controles podem ir para uma tela de ajuda ou para a Pausa), hierarquia clara, botões mais limpos, composição e animação de fundo mais atuais; manter a identidade (Sankofa, faixa de padrão africano, paleta). Aproveitar para alinhar a `LevelSelectScene` e as telas de Pausa/GameOver ao mesmo estilo. **O usuário aprova antes do commit**
 - [ ] Design dos NPCs (hoje placeholder de retângulos, igual para os 5 e sem rosto): pixel art com 5 variações (cabelo, roupa, rosto), estado preso (postura curvada, corrente nos pulsos) e livre (colorido, braços para cima, brilho ao libertar), com dignidade e sem estereótipos. **Decisão do usuário: fazer depois de finalizar o level design das 3 fases**
-- [ ] (feito dentro do item "Design e animações do protagonista", acima) Poses próprias dos movimentos de capoeira, hoje placeholders: esquiva (agachado em vez de só achatar o `scaleY`), meia-lua (bananeira em vez da pose de estrela do aú) e rolê (se for implementado)
+- [x] (feito dentro do item "Design e animações do protagonista", acima) Poses próprias dos movimentos de capoeira: esquiva (`crouch`) e meia-lua (`kick`) prontas; rolê só se for implementado
 - [ ] Refazer o level design das **3 fases**, deixando-as mais bonitas e mais desafiadoras. Hoje os mapas são funcionais e simples (fase 2: ruas, quatro telhados e um túnel; fase 3: trechos retos com um viaduto e um prédio). Objetivos:
   - **Mais bonitas:** variedade de alturas e silhuetas, composição pensada em camadas (primeiro plano, plataformas, fundo), marcos visuais por trecho (paliçadas e cabanas, casarões e sacadas, barracos e varais, a biblioteca ao fim), coletáveis posicionados para guiar o olhar; combinar com os temas de cenário das fases 2 e 3
   - **Mais desafiadoras, mas justas:** curva de dificuldade crescente dentro de cada fase e entre as fases (a fase 1 continua fácil para a apresentação), combinações de movimentos (aú + meia-lua, esquiva entre inimigos), plataformas móveis ou sequências de precisão só se couberem no prazo, sem pulos cegos nem mortes injustas

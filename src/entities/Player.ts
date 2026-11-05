@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { CAPOEIRA, GAME, PLAYER, TILE_SIZE, WORLD } from '../config/physics';
 import { PALETTE } from '../config/palette';
+import { GINGA_FRAMES, playerTextureKey } from '../art/playerArt';
 
 export type PlayerState = 'idle' | 'run' | 'jump' | 'au' | 'meiaLua' | 'esquiva' | 'role' | 'hurt';
 
@@ -322,9 +323,6 @@ export class Player extends Phaser.GameObjects.Zone {
 
   private enterState(state: PlayerState): void {
     switch (state) {
-      case 'idle':
-        this.startBreathing();
-        break;
       case 'au': {
         // gira no sentido do movimento: horário para a direita
         const vx = this.arcadeBody.velocity.x;
@@ -351,19 +349,10 @@ export class Player extends Phaser.GameObjects.Zone {
       case 'meiaLua':
         this.startMeiaLua();
         break;
-      case 'esquiva': {
-        const e = CAPOEIRA.esquiva;
+      case 'esquiva':
         this.squashTween?.stop(); // não disputar o scaleY com o squash de pulo/aterrissagem
-        this.setHitboxHeight(e.hitbox.h);
-        // squash com a origem nos pés; a inclinação segue o lado em que olha (em updateVisual)
-        this.stateTween = this.scene.tweens.add({
-          targets: this.visual,
-          scaleY: e.squashY,
-          duration: e.enterMs,
-          ease: 'Quad.easeOut',
-        });
+        this.setHitboxHeight(CAPOEIRA.esquiva.hitbox.h);
         break;
-      }
       // role entra no Marco 2
       default:
         break;
@@ -436,20 +425,6 @@ export class Player extends Phaser.GameObjects.Zone {
     });
   }
 
-  private startBreathing(): void {
-    const g = CAPOEIRA.ginga;
-    this.stateTween = this.scene.tweens.add({
-      targets: this.visual,
-      scaleY: g.breathScaleY,
-      duration: g.breathCycleMs / 2,
-      // espera o squash da aterrissagem terminar para não disputar o scaleY
-      delay: PLAYER.squashMs,
-      ease: 'Sine.easeInOut',
-      yoyo: true,
-      repeat: -1,
-    });
-  }
-
   private updateVisual(time: number, delta: number): void {
     this.blinkElapsed = (this.blinkElapsed + delta) % PLAYER.blinkEveryMs;
     const blinking = this.blinkElapsed < PLAYER.blinkMs;
@@ -469,7 +444,6 @@ export class Player extends Phaser.GameObjects.Zone {
       if (v.texture.key !== texture) v.setTexture(texture);
     }
     v.setFlipX(this.facing < 0);
-    if (this.current === 'esquiva') v.setAngle(this.facing * CAPOEIRA.esquiva.tiltDeg);
     this.syncVisual();
   }
 
@@ -482,11 +456,16 @@ export class Player extends Phaser.GameObjects.Zone {
       case 'jump':
         return rising ? 'player-jumpUp' : 'player-fall';
       case 'hurt':
-        return 'player-fall';
+        return playerTextureKey('hurt');
       case 'meiaLua':
-        return 'player-au';
-      default:
-        return blinking ? 'player-idleBlink' : 'player-idle';
+        return playerTextureKey('kick');
+      case 'esquiva':
+        return playerTextureKey('crouch');
+      default: {
+        // ginga parada: percorre os quadros no tempo; piscar troca pelo quadro de olhos fechados
+        const frame = GINGA_FRAMES[Math.floor(this.scene.time.now / CAPOEIRA.ginga.frameMs) % GINGA_FRAMES.length];
+        return playerTextureKey(blinking ? `${frame}b` : frame);
+      }
     }
   }
 
