@@ -13,6 +13,8 @@ export interface DialoguePanel {
   y: number;
   w: number;
   h: number;
+  /** profundidade da caixa (padrão 0); a Intro põe acima do cenário da fase */
+  depth?: number;
 }
 
 const TYPE_MS = 22; // tempo por letra da fala
@@ -37,10 +39,12 @@ export class DialogueBox {
     /** Avisa quando o texto começa e termina de ser digitado (o retrato mexe a boca nesse intervalo) */
     private readonly onTyping?: (typing: boolean) => void,
   ) {
-    scene.add.rectangle(panel.x, panel.y, panel.w, panel.h, PALETTE.black, 0.7).setOrigin(0).setStrokeStyle(4, PALETTE.gold);
+    const depth = panel.depth ?? 0;
+    scene.add.rectangle(panel.x, panel.y, panel.w, panel.h, PALETTE.black, 0.7).setOrigin(0).setStrokeStyle(4, PALETTE.gold).setDepth(depth);
     this.name = scene.add
       .text(panel.x + 24, panel.y + 18, '', { fontFamily: 'monospace', fontSize: '24px', fontStyle: 'bold', color: toCss(PALETTE.gold) })
-      .setOrigin(0);
+      .setOrigin(0)
+      .setDepth(depth + 1);
     this.speech = scene.add
       .text(panel.x + 24, panel.y + 66, '', {
         fontFamily: 'monospace',
@@ -49,10 +53,12 @@ export class DialogueBox {
         wordWrap: { width: panel.w - 48 },
         lineSpacing: 8,
       })
-      .setOrigin(0);
+      .setOrigin(0)
+      .setDepth(depth + 1);
     this.counter = scene.add
       .text(panel.x + panel.w - 20, panel.y + panel.h - 16, '', { fontFamily: 'monospace', fontSize: '16px', color: toCss(PALETTE.cream) })
-      .setOrigin(1, 1);
+      .setOrigin(1, 1)
+      .setDepth(depth + 1);
 
     onKeys(scene, CONFIRM_KEYS, () => this.advance());
     scene.input.on('pointerdown', () => this.advance());
