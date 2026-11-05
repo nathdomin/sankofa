@@ -58,6 +58,7 @@ function placeTileVisual(
   tx: number,
   ty: number,
   isSolidAt: (tx: number, ty: number) => boolean,
+  hasLip: (tx: number) => boolean,
 ): void {
   const x = tx * TILE_SIZE;
   const y = ty * TILE_SIZE;
@@ -78,14 +79,15 @@ function placeTileVisual(
   // lâminas de grama acima do chão: na frente dos enfeites, atrás do player
   if (isTop) scene.add.image(x, y - FRINGE_H + 1, tileKeys.fringe(id, variant)).setOrigin(0, 0).setDepth(2);
 
-  // sombra nas laterais expostas e grama dobrando na quina
+  // sombra nas laterais expostas e grama dobrando na quina (prédios pintados têm quina reta, sem grama saindo)
+  const lip = isTop && hasLip(tx);
   if (!isSolidAt(tx - 1, ty)) {
     scene.add.image(x, y, tileKeys.edgeLeft).setOrigin(0, 0).setDepth(1);
-    if (isTop) scene.add.image(x - LIP_W, y, tileKeys.lip(id)).setOrigin(0, 0).setDepth(1);
+    if (lip) scene.add.image(x - LIP_W, y, tileKeys.lip(id)).setOrigin(0, 0).setDepth(1);
   }
   if (!isSolidAt(tx + 1, ty)) {
     scene.add.image(x + TILE_SIZE - EDGE_W, y, tileKeys.edgeRight).setOrigin(0, 0).setDepth(1);
-    if (isTop) scene.add.image(x + TILE_SIZE, y, tileKeys.lip(id)).setOrigin(0, 0).setFlipX(true).setDepth(1);
+    if (lip) scene.add.image(x + TILE_SIZE, y, tileKeys.lip(id)).setOrigin(0, 0).setFlipX(true).setDepth(1);
   }
 }
 
@@ -102,6 +104,14 @@ export function buildLevel(scene: Phaser.Scene, level: LevelConfig): BuiltLevel 
 
   // para o visual, as bordas laterais do mapa contam como sólidas (sem sombra/grama na borda)
   const solidOrBorder = (tx: number, ty: number): boolean => tx < 0 || tx >= cols || isSolidAt(tx, ty);
+
+  // colunas cobertas por fachadas de prédio (landmark `building`): a quina do telhado fica reta
+  const buildingCols = new Set<number>();
+  for (const lm of level.landmarks) {
+    if (lm.kind !== 'building') continue;
+    for (let i = 0; i < (lm.width ?? 1); i++) buildingCols.add(lm.x + i);
+  }
+  const hasLip = (tx: number): boolean => !buildingCols.has(tx);
 
   const solids = scene.physics.add.staticGroup();
   const built: BuiltLevel = {
@@ -124,7 +134,7 @@ export function buildLevel(scene: Phaser.Scene, level: LevelConfig): BuiltLevel 
       const solid = SOLID_CHARS.has(ch);
 
       if (solid) {
-        placeTileVisual(scene, id, ch, tx, ty, solidOrBorder);
+        placeTileVisual(scene, id, ch, tx, ty, solidOrBorder, hasLip);
         if (runStart < 0) runStart = tx;
       } else if (runStart >= 0) {
         // um corpo estático por sequência horizontal de tiles sólidos

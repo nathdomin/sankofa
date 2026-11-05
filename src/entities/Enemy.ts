@@ -43,7 +43,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
     if (body.blocked.left) this.dir = 1;
     else if (body.blocked.right) this.dir = -1;
-    else if (body.blocked.down && this.edgeAhead()) this.dir = this.dir === 1 ? -1 : 1;
+    else if (body.blocked.down && (this.edgeAhead() || this.lowCeilingAhead())) this.dir = this.dir === 1 ? -1 : 1;
 
     body.setVelocityX(this.dir * ENEMY[this.kind].speed);
   }
@@ -62,6 +62,18 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       ease: 'Quad.easeOut',
       onComplete: () => this.destroy(),
     });
+  }
+
+  /**
+   * Passagem baixa à frente (vão de 1 tile, como o túnel da esquiva): o inimigo cabe nela, mas não entra,
+   * senão ficaria no caminho de quem está passando abaixado, sem como desviar
+   */
+  private lowCeilingAhead(): boolean {
+    const body = this.arcadeBody;
+    const aheadX = this.dir === 1 ? body.right + 1 : body.left - 1;
+    const tx = Math.floor(aheadX / TILE_SIZE);
+    const feetRow = Math.floor((body.bottom - 1) / TILE_SIZE);
+    return this.isSolidAt(tx, feetRow - 1);
   }
 
   /** Não há chão logo à frente, na beira da plataforma */

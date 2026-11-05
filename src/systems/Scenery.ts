@@ -1,7 +1,9 @@
 import Phaser from 'phaser';
 import { TILE_SIZE } from '../config/physics';
 import type { LevelConfig, Landmark, LandmarkKind, SceneryTheme } from '../data/levels';
+import { PARALLAX } from '../art/parallax';
 import { DECOR_VARIANTS, SUN } from '../art/themes/quilombo';
+import { SUN_CANINDE, paintBuilding as paintCanindeBuilding } from '../art/themes/caninde';
 import { SUN_SAOPAULO, paintBuilding } from '../art/themes/saopaulo';
 
 // Profundidades: fundo < construções < árvores < tiles (0) < enfeites de chão < player (10) < primeiro plano
@@ -30,9 +32,6 @@ const SEAT = { tree: 8, bush: 7, rock: 5, small: 3 } as const;
 // balanço da vegetação rasteira
 const WIND = { minAngle: 3, maxAngle: 7, minMs: 900, maxMs: 1700 } as const;
 
-// quanto cada camada anda em relação à câmera (1 = junto com o chão)
-const PARALLAX = { clouds: 0.04, birds: 0.08, far: 0.1, hills: 0.2, mid: 0.32, near: 0.5, foreground: 1.3 } as const;
-
 const AMBIENT = {
   cloudDriftPxPerSec: 6,
   sunPulseMs: 3200,
@@ -50,16 +49,23 @@ interface ThemeFx {
 const THEME_FX: Record<SceneryTheme, ThemeFx> = {
   quilombo: { sun: SUN, motes: true },
   saopaulo: { sun: SUN_SAOPAULO, motes: false },
-  caninde: { motes: false },
+  caninde: { sun: SUN_CANINDE, motes: false },
 };
 
 // Saída de fumaça de cada marco, a partir do centro (dx) e do topo (dy) da imagem
 const CHIMNEY: Partial<Record<LandmarkKind, { dx: number; dy: number }>> = {
   hut: { dx: 10, dy: 12 },
   townhouse: { dx: 30, dy: 2 },
+  barraco: { dx: 44, dy: 18 },
 };
 
-export type ParallaxUpdater = (cam: Phaser.Cameras.Scene2D.Camera, delta: number) => void;
+interface Swappable {
+  base: Phaser.GameObjects.TileSprite;
+  city?: Phaser.GameObjects.TileSprite;
+  factor: number;
+}
+
+export type ParallaxUpdater =(cam: Phaser.Cameras.Scene2D.Camera, delta: number) => void;
 
 interface Bird {
   sprite: Phaser.GameObjects.Sprite;
@@ -102,10 +108,33 @@ export function addParallax(scene: Phaser.Scene, level: LevelConfig): ParallaxUp
   };
   const clouds = layer(`clouds-${theme}`, DEPTH.clouds, 0);
   const far = layer(`far-${theme}`, DEPTH.far);
-  const hills = layer(`hills-${theme}`, DEPTH.hills);
-  const mid = layer(`mid-${theme}`, DEPTH.mid);
-  const near = layer(`near-${theme}`, DEPTH.near);
-  const fg = layer(`fg-${theme}`, DEPTH.foreground);
+  // Fases com `transition` (favela -> cidade): hills/mid/near são texturas compridas, desenhadas já
+  // misturando os dois cenários (barracos viram prédios aos poucos) e movidas só pelo scrollFactor.
+  // O primeiro plano troca por dissolução, num trecho mais largo.
+  const { transition } = level;
+  const longLayer = (name: string, depth: number, factor: number): void => {
+    const key = `${name}-${theme}`;
+    const frame = scene.textures.getFrame(key);
+    scene.add.image(0, height - frame.height, key).setOrigin(0).setScrollFactor(factor).setDepth(depth);
+  };
+  const swaps: Swappable[] = [];
+  const addLayer = (name: string, depth: number, factor: number): void => {
+    if (transition && name !== 'fg') {
+      longLayer(name, depth, factor);
+      return;
+    }
+    const city = transition && scene.textures.exists(`${name}-${theme}-city`);
+    swaps.push({
+      base: layer(`${name}-${theme}`, depth),
+      city: city ? layer(`${name}-${theme}-city`, depth + 0.1).setAlpha(0).setVisible(false) : undefined,
+      factor,
+    });
+  };
+  addLayer('hills', DEPTH.hills, PARALLAX.hills);
+  addLayer('mid', DEPTH.mid, PARALLAX.mid);
+  addLayer('near', DEPTH.near, PARALLAX.near);
+  addLayer('fg', DEPTH.foreground, PARALLAX.foreground);
+  const fgFade = transition ? { from: transition.from - 4, to: transition.to + 8 } : undefined;
 
   // pólen dourado flutuando na luz do fim de tarde
   if (fx.motes) {
@@ -133,10 +162,19 @@ export function addParallax(scene: Phaser.Scene, level: LevelConfig): ParallaxUp
     cloudDrift += AMBIENT.cloudDriftPxPerSec * dt;
     clouds.tilePositionX = cam.scrollX * PARALLAX.clouds + cloudDrift;
     far.tilePositionX = cam.scrollX * PARALLAX.far;
-    hills.tilePositionX = cam.scrollX * PARALLAX.hills;
-    mid.tilePositionX = cam.scrollX * PARALLAX.mid;
-    near.tilePositionX = cam.scrollX * PARALLAX.near;
-    fg.tilePositionX = cam.scrollX * PARALLAX.foreground;
+
+    // 0 = só o primeiro plano da favela, 1 = só o da cidade (curva suave)
+    const raw = fgFade ? Phaser.Math.Clamp((cam.scrollX + width / 2 - fgFade.from * TILE_SIZE) / ((fgFade.to - fgFade.from) * TILE_SIZE), 0, 1) : 0;
+    const city = raw * raw * (3 - 2 * raw);
+    for (const s of swaps) {
+      s.base.tilePositionX = cam.scrollX * s.factor;
+      // a favela só some quando a cidade já cobre tudo, para o céu não aparecer no meio da troca
+      s.base.setVisible(!s.city || city < 1);
+      if (s.city) {
+        s.city.tilePositionX = cam.scrollX * s.factor;
+        s.city.setAlpha(city).setVisible(city > 0);
+      }
+    }
 
     const span = width + 40;
     for (const b of birds) {
@@ -192,7 +230,7 @@ function surfaceRow(map: string[], tx: number): number {
 /** Prédio pintado sobre os tiles sólidos: a altura vem do mapa (da primeira linha sólida da coluna até o fim do bloco) */
 function placeBuilding(scene: Phaser.Scene, level: LevelConfig, lm: Landmark): void {
   const { map, theme } = level;
-  const painters: Partial<Record<SceneryTheme, typeof paintBuilding>> = { saopaulo: paintBuilding };
+  const painters: Partial<Record<SceneryTheme, typeof paintBuilding>> = { saopaulo: paintBuilding, caninde: paintCanindeBuilding };
   const paint = painters[theme];
   if (!paint) return;
   let top = 0;

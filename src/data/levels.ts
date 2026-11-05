@@ -9,7 +9,7 @@ export interface LevelPalette {
 
 export type SceneryTheme = 'quilombo' | 'saopaulo' | 'caninde';
 
-export type LandmarkKind = 'palisade' | 'hut' | 'townhouse' | 'lamp' | 'faculty' | 'building';
+export type LandmarkKind = 'palisade' | 'hut' | 'townhouse' | 'lamp' | 'faculty' | 'building' | 'barraco' | 'varal' | 'library';
 
 /** Elemento de cenário posicionado à mão; x em tiles, apoiado no chão daquela coluna */
 export interface Landmark {
@@ -32,6 +32,8 @@ export interface LevelConfig {
   diary?: boolean;
   palette: LevelPalette;
   theme: SceneryTheme;
+  /** Trecho do mapa (em tiles, pela posição da câmera) em que o fundo vira de um cenário para o outro (favela → cidade) */
+  transition?: { from: number; to: number };
   landmarks: Landmark[];
   map: string[];
 }
@@ -137,28 +139,48 @@ export const LEVELS: readonly LevelConfig[] = [
     collectible: { texture: 'papel', name: 'página', namePlural: 'páginas' },
     required: 8,
     diary: true,
-    // sem tema de cenário ainda (Marco 3): só a paleta; blocos laranja = barracos, cinza-azulado = cidade
-    palette: { sky: 0xbfe3f5, ground: 0x6f7f8f, block: 0xe0562f, accent: 0x7f9bb0 },
+    // chão de concreto com mato nas frestas; os blocos são telhas de zinco com viga laranja
+    palette: { sky: 0xbfe3f5, ground: 0x7a7f86, block: 0xe0562f, accent: 0x6f9a62 },
     theme: 'caninde',
-    landmarks: [],
+    transition: { from: 60, to: 94 },
+    landmarks: [
+      { kind: 'barraco', x: 5, variant: 0 },
+      { kind: 'varal', x: 14 },
+      { kind: 'barraco', x: 19, variant: 2 },
+      { kind: 'barraco', x: 33, variant: 1 },
+      { kind: 'varal', x: 38 },
+      { kind: 'barraco', x: 41, variant: 3 },
+      { kind: 'barraco', x: 53, variant: 0 },
+      { kind: 'barraco', x: 63, variant: 2 },
+      { kind: 'building', x: 70, width: 6, variant: 0 },
+      { kind: 'lamp', x: 77 },
+      { kind: 'lamp', x: 88 },
+      { kind: 'building', x: 94, width: 8, variant: 1 },
+      { kind: 'building', x: 105, width: 7, variant: 3 },
+      { kind: 'building', x: 116, width: 8, variant: 2 },
+      { kind: 'lamp', x: 128 },
+      { kind: 'building', x: 133, width: 6, variant: 1 },
+      { kind: 'lamp', x: 140 },
+      { kind: 'library', x: 145 },
+    ],
     map: [
-      '............................................................................................XXXXXX....................................................',
-      '............................................................................................XXXXXX....................................................',
-      '............................................................................................XXXXXX....................................................',
-      '............................................................................................XXXXXX....................................................',
-      '............................................................................................XXXXXX....................................................',
-      '............................................................................................XXXXXX....................................................',
-      '....................................................................................C.......XXXXXX..............................C.....................',
-      '............................................................................................XXXXXX....................................................',
-      '.................................................................C..........................XXXXXX....................................................',
-      '..........................................................................XXXXXXXXXXX.......XXXXXX...........................XXXXXXX..................',
-      '.........C....................................C...........................XXXXXXXXXXX.......XXXXXX..........C...........C....XXXXXXX..................',
-      '........BBB..................................................XXXXXXXXXX...XXXXXXXXXXX.......XXXXXX...........................XXXXXXX........C.........',
-      '....................BBBBBB...................................XXXXXXXXXX...XXXXXXXXXXX.......XXXXXX...........................XXXXXXX.......BBB........',
-      '...P..................C.....E...........E...F....E..K........XXXXXXXXXX...XXXXXXXXXXX...F......C.......E..............K...F..XXXXXXX......E.....G.....',
-      'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX...XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX...XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.....XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
-      'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX...XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX...XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.....XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
-      'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX...XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX...XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.....XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+      '......................................................................XXXXXX..........................................................................',
+      '......................................................................XXXXXX..........................................................................',
+      '......................................................................XXXXXX..........................................................................',
+      '......................................................................XXXXXX..........................................................................',
+      '......................................................................XXXXXX..........................................................................',
+      '......................................................................XXXXXX..........................................................................',
+      '......................................................................XXXXXX..........................................................................',
+      '......................................................................XXXXXX...........................................C...............C..............',
+      '....................................................C.................XXXXXX.....................................C....BBBB............................',
+      '...................................................BBBB...............XXXXXX...........................C....F........................XXXXXX...........',
+      '.........C............................................................XXXXXX................C............XXXXXXX........E............XXXXXX...........',
+      '........BBB.................C.........................E...............XXXXXX.....................E.......XXXXXXX....XXXXXXXX.........XXXXXX......G....',
+      '......................BBBBB...................K.XXXXXXXXXX............XXXXXX..................XXXXXXXX...XXXXXXX....XXXXXXXX.........XXXXXX...XXXXXXXX',
+      '...P....................C..........E......F..XXXXXXXXXXXXX........F.....C......K..E...F.......XXXXXXXX...XXXXXXX....XXXXXXXX.....K...XXXXXX..XXXXXXXXX',
+      'XXXXXXXXXXXXXXXXXXXXXXXXXXX...XXXXXXXXXXXXXXXXXXXXXXXXXXXX...XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX...XXXXXXXX...XXXXXXX....XXXXXXXX...XXXXXX......XXXXXXXXXXX',
+      'XXXXXXXXXXXXXXXXXXXXXXXXXXX...XXXXXXXXXXXXXXXXXXXXXXXXXXXX...XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX...XXXXXXXX...XXXXXXX....XXXXXXXX...XXXXXX......XXXXXXXXXXX',
+      'XXXXXXXXXXXXXXXXXXXXXXXXXXX...XXXXXXXXXXXXXXXXXXXXXXXXXXXX...XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX...XXXXXXXX...XXXXXXX....XXXXXXXX...XXXXXX......XXXXXXXXXXX',
     ],
   },
 ];

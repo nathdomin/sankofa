@@ -42,6 +42,7 @@ O jogador atravessa 3 fases, cada uma ligada a uma personalidade negra brasileir
 └─ src/
    ├─ main.ts                 # config do Phaser e registro das cenas
    ├─ art/                    # desenho das texturas geradas em código (usado pela BootScene)
+   │  ├─ parallax.ts          # fatores de parallax das camadas (usados pelo Scenery e pela arte)
    │  ├─ pixel.ts             # grade de pixels em texto → Graphics
    │  ├─ colors.ts            # gradientes e utilitários de cor
    │  ├─ playerArt.ts         # poses do player em pixel art
@@ -50,7 +51,8 @@ O jogador atravessa 3 fases, cada uma ligada a uma personalidade negra brasileir
    │  ├─ mentorArt.ts         # retratos placeholder (silhuetas) dos mentores
    │  └─ themes/
    │     ├─ quilombo.ts       # céu, parallax e enfeites da fase 1
-   │     └─ saopaulo.ts       # casario, sobrados, lampiões, prédios e faculdade da fase 2
+   │     ├─ saopaulo.ts       # casario, sobrados, lampiões, prédios e faculdade da fase 2
+   │     └─ caninde.ts        # favela que vira cidade (fundo misto), barracos, varais e biblioteca da fase 3
    ├─ config/
    │  ├─ physics.ts           # constantes de movimento
    │  └─ palette.ts           # cores do jogo
@@ -181,7 +183,7 @@ Todos os valores ficam em `src/config/physics.ts` (`WORLD`, `PLAYER`, `CAPOEIRA`
 
 ### Inimigos (conceitos abstratos, nunca pessoas)
 Inimigos representam ideias, não grupos de pessoas. Visual: "nuvens" ou "manchas" escuras com olhos simples.
-- **Desinformação**: anda de um lado para o outro e vira ao bater em parede ou na beira da plataforma
+- **Desinformação**: anda de um lado para o outro e vira ao bater em parede, na beira da plataforma ou numa passagem baixa (vão de 1 tile, que o inimigo não entra, para não ficar no caminho de quem passa abaixado)
 - **Esquecimento** (fases 2 e 3): igual, porém mais rápido e com "pontas" no topo. **Não pode ser derrotado pulando em cima** (causa dano); só com a meia-lua. Também dá para desviar dele com o rolê.
 
 ---
@@ -219,7 +221,7 @@ export interface LevelConfig {
 }
 ```
 
-`LevelBuilder` lê e valida o mapa (linhas do mesmo tamanho, exatamente 1 `P` e 1 `G`) e devolve os pontos de spawn; quem cria as entidades é a `GameScene`. **Colisão de sólidos via static group**, com um corpo por sequência horizontal de tiles sólidos.
+`LevelBuilder` lê e valida o mapa (linhas do mesmo tamanho, exatamente 1 `P` e 1 `G`) e devolve os pontos de spawn; quem cria as entidades é a `GameScene`. **Colisão de sólidos via static group**, com um corpo por sequência horizontal de tiles sólidos. Nas colunas cobertas por um marco `building`, o telhado tem quina reta (sem a grama que dobra para fora do prédio).
 
 `Scenery` desenha parallax e enfeites a partir do `theme`. Se as texturas do tema não existirem, ele não desenha nada e a fase fica só com a cor do céu da paleta (fallback aceitável).
 
@@ -254,7 +256,8 @@ Cada fase: ~**120–160 tiles de largura** × **17 tiles de altura** (544 px). C
 - Paleta: céu azul-acinzentado, pedra cinza, telhados terracota.
 
 ### Fase 3: Canindé → cidade moderna · Século XX · Mentor: Carolina Maria de Jesus
-- **Cenário:** começa na favela do Canindé (barracos coloridos, varais) e termina numa cidade moderna com uma grande biblioteca/livraria (o portal).
+- **Cenário:** começa na favela do Canindé (barracos coloridos de tábua e zinco, varais, tapumes) e termina numa cidade moderna com uma grande biblioteca (o portal: porta de vidro com o livro dourado). O fundo vai da favela à cidade aos poucos (`transition` no `LevelConfig`, em tiles): `hills/mid/near-caninde` são texturas compridas em que barracos e prédios se misturam com chance crescente, movidas só pelo `scrollFactor` (largura calculada por `longWidth` em `themes/caninde.ts`, usando `PARALLAX` de `art/parallax.ts`); o primeiro plano (tapume → guarda-corpo) troca por dissolução suave.
+- **Mapa (150 tiles):** viela inicial segura, telhado de zinco baixo opcional (esquiva, página 2), degrau e laje de barraco, **viaduto de concreto com passagem de 1 tile (esquiva obrigatória)**, rua com Esquecimentos, sequência de 3 prédios de alturas diferentes com vãos de 3–4 tiles, rua com checkpoint e **prédio de 5 tiles (aú obrigatório)**, escada até o patamar da biblioteca. 9 inimigos (5 Desinformações, 4 Esquecimentos), 3 checkpoints, 10 páginas (4 delas em lugares opcionais).
 - **Coletável:** **folhas de papel** (branco). `required: 8`, com 10 no mapa (folga).
 - **Mecânica especial:** o HUD mostra um diário que vai sendo preenchido (ex.: "Diário: 5/8 páginas"). Ao completar, mostrar o aviso "O diário está completo! Siga até a biblioteca."
 - **Inimigos:** mistura dos dois, um pouco mais desafiadora, mas justa.
@@ -322,7 +325,7 @@ Transições com `fadeOut`/`fadeIn` da câmera (300 ms).
 - **NPC:** silhueta simples cinza (preso) que vira colorida (livre).
 - **Portal:** arco; apagado quando trancado, brilhante quando aberto. Cada tema pode ter o seu (`portal-<tema>-locked|open`; sem arte própria, cai no arco padrão): na fase 2 é a porta da faculdade (pilastres, frontão e friso de padrão africano).
 - **Plataformas flutuantes (`B`):** por padrão, troncos amarrados; cada tema pode trocar (`THEME_BLOCKS` em `tileArt.ts`): na fase 2 são sacadas de sobrado (tampo de pedra, grade de ferro e mísulas).
-- **Fundo:** parallax com formas simples (morros, casas, prédios) na paleta da fase. A fase 1 (tema `quilombo`) já tem céu em gradiente, 6 camadas, sol, nuvens, pássaros, pólen, árvores, paliçadas e cabanas. As fases 2 e 3 começam **sem tema** (só a cor do céu) e só ganham arte própria no Marco 3.
+- **Fundo:** parallax com formas simples (morros, casas, prédios) na paleta da fase. A fase 1 (tema `quilombo`) já tem céu em gradiente, 6 camadas, sol, nuvens, pássaros, pólen, árvores, paliçadas e cabanas. As fases 2 (`saopaulo`) e 3 (`caninde`) ganharam arte própria no Marco 3, no mesmo modelo (ver seção 11).
 - **Detalhe de identidade:** faixa decorativa com padrões geométricos inspirados em tecidos africanos na borda do HUD e no menu.
 
 Paleta global em `palette.ts`: dourado `#f2b705`, verde `#1e7a3c`, vermelho `#c0392b`, terra `#7a4a2a`, preto `#1a1a1a`, creme `#f5e6c8`.
@@ -366,7 +369,7 @@ Ordem sugerida (cada passo deixa o jogo jogável):
 > **Regra de escopo:** nada de arte de cenário nova no Marco 2. Placeholder simples basta até o fluxo completo funcionar.
 
 ### Marco 3: Visual e identidade (meta: até 15/11)
-- [ ] Temas de cenário: `saopaulo` **aprovado** e `caninde` pendente, seguindo o modelo de `art/themes/quilombo.ts`. O `Scenery.ts` já é dirigido por tema (`THEME_FX`: sol e pólen opcionais; marcos com variantes; `building` pinta a fachada de prédios sobre os tiles sólidos, com a altura vinda do mapa)
+- [ ] Temas de cenário: `saopaulo` **aprovado** e `caninde` feito (aguardando aprovação), seguindo o modelo de `art/themes/quilombo.ts`. O `Scenery.ts` já é dirigido por tema (`THEME_FX`: sol e pólen opcionais; `transition` na fase para o fundo mudar de cenário; marcos com variantes; `building` pinta a fachada de prédios sobre os tiles sólidos, com a altura vinda do mapa)
 - [ ] Padrões decorativos, animações e tweens
 - [ ] História do protagonista (a definir com o grupo: nome, tom, motivação): prólogo curto antes da fase 1 (o estudante capoeirista encontra o Sankofa e volta no tempo), falas de ligação entre as fases e epílogo na `VictoryScene` (volta ao presente). Reaproveita a caixa de fala da `IntroScene`; ilustrações ou retrato do protagonista só se sobrar tempo
 - [ ] Polir as telas de fim de fase (hoje layout simples): aviso "Fase concluída!", `CardScene` e `VictoryScene`. O **fluxo funcional** (portal → Card → próxima fase → Victory) continua no Marco 2
@@ -377,7 +380,7 @@ Ordem sugerida (cada passo deixa o jogo jogável):
 - [ ] Refazer o level design das **3 fases**, deixando-as mais bonitas e mais desafiadoras. Hoje os mapas são funcionais e simples (fase 2: ruas, quatro telhados e um túnel; fase 3: trechos retos com um viaduto e um prédio). Objetivos:
   - **Mais bonitas:** variedade de alturas e silhuetas, composição pensada em camadas (primeiro plano, plataformas, fundo), marcos visuais por trecho (paliçadas e cabanas, casarões e sacadas, barracos e varais, a biblioteca ao fim), coletáveis posicionados para guiar o olhar; combinar com os temas de cenário das fases 2 e 3
   - **Mais desafiadoras, mas justas:** curva de dificuldade crescente dentro de cada fase e entre as fases (a fase 1 continua fácil para a apresentação), combinações de movimentos (aú + meia-lua, esquiva entre inimigos), plataformas móveis ou sequências de precisão só se couberem no prazo, sem pulos cegos nem mortes injustas
-  - **Andamento:** fase 1 **aprovada** (colinas, ponte quebrada, 8 inimigos, 2 checkpoints); fase 2 refeita com tema de São Paulo (150 tiles, 2 túneis baixos obrigatórios, rota alta de sacadas, 4 telhados, escadaria até a faculdade, 8 inimigos, portal da faculdade e sacadas de ferro; **aprovada**, exceto o design dos NPCs, que fica para o item próprio); fase 3 pendente
+  - **Andamento:** fase 1 **aprovada** (colinas, ponte quebrada, 8 inimigos, 2 checkpoints); fase 2 refeita com tema de São Paulo (150 tiles, 2 túneis baixos obrigatórios, rota alta de sacadas, 4 telhados, escadaria até a faculdade, 8 inimigos, portal da faculdade e sacadas de ferro; **aprovada**, exceto o design dos NPCs, que fica para o item próprio); fase 3 refeita com tema do Canindé e cidade moderna (aguardando aprovação)
   - **Processo:** rodar `node tools/reachability.mjs <fase>` a cada mudança (inclusive `NOAU=1` e `NOCROUCH=1` para saber o que cada movimento exige); manter coletáveis obrigatórios alcançáveis; **o usuário testa e aprova cada fase antes do commit**
 - [ ] Ajuste fino do game feel e da dificuldade
 - [x] Pausa (Esc/P): `PauseScene` por cima da GameScene parada, com "Continuar" e "Menu"

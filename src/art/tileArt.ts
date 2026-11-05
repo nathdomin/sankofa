@@ -3,6 +3,7 @@ import { TILE_SIZE } from '../config/physics';
 import { darken, lighten } from '../config/palette';
 import type { LevelPalette, SceneryTheme } from '../data/levels';
 import { lerpColor } from './colors';
+import { paintZinc } from './themes/caninde';
 import { paintSacada } from './themes/saopaulo';
 
 export type Draw = (key: string, w: number, h: number, paint: (g: Phaser.GameObjects.Graphics) => void) => void;
@@ -102,6 +103,7 @@ function paintFringe(g: Phaser.GameObjects.Graphics, rng: Phaser.Math.RandomData
 /** Plataforma flutuante (`B`) própria de cada tema; sem entrada, usa os troncos amarrados */
 const THEME_BLOCKS: Partial<Record<SceneryTheme, (g: Phaser.GameObjects.Graphics, p: LevelPalette) => void>> = {
   saopaulo: paintSacada,
+  caninde: paintZinc,
 };
 
 export function makeTileTextures(draw: Draw, id: number, p: LevelPalette, theme: SceneryTheme): void {
