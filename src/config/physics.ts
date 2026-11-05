@@ -92,6 +92,16 @@ export const NPC = {
   hops: 2,
   balloonMs: 1000,
   balloonRisePx: 14,
+  // depois de libertada, balança de leve
+  cheerPx: 2,
+  cheerMs: 420,
+  // brilho ao libertar: clarão, faíscas e elos da corrente caindo
+  flashMs: 420,
+  burstCount: 16,
+  burstSpeed: { min: 70, max: 190 },
+  burstLifeMs: 600,
+  linkCount: 6,
+  linkLifeMs: 800,
 } as const;
 
 export const GAME = {

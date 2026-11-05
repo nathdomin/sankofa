@@ -7,6 +7,7 @@ import { PLAYER_COLOR_MAP, PLAYER_POSES, PLAYER_RUN_KEYS, buildPoseGrid, playerT
 import { makeCollectibleTextures } from '../art/collectibleArt';
 import { makeHudTextures } from '../art/hudArt';
 import { makeMentorTextures } from '../art/mentorArt';
+import { makeNpcTextures } from '../art/npcArt';
 import { makeEdgeTextures, makeTileTextures } from '../art/tileArt';
 import { makeQuilomboArt } from '../art/themes/quilombo';
 import { makeCanindeArt } from '../art/themes/caninde';
@@ -34,7 +35,7 @@ export class BootScene extends Phaser.Scene {
     this.makePortalTextures();
     makeCollectibleTextures(draw);
     this.makeEnemyTextures();
-    this.makeNpcTextures();
+    makeNpcTextures(draw);
     this.makeCheckpointTextures();
 
     this.scene.start('Menu');
@@ -105,17 +106,6 @@ export class BootScene extends Phaser.Scene {
       g.fillStyle(darken(body, 25)).fillRect(3, 25, 22, 3);
       eyes(g, 16);
     });
-  }
-
-  private makeNpcTextures(): void {
-    const paintNpc = (g: Phaser.GameObjects.Graphics, skin: number, shirt: number, pants: number): void => {
-      g.fillStyle(skin).fillRect(6, 0, 9, 10);
-      g.fillStyle(shirt).fillRect(4, 11, 13, 14);
-      g.fillStyle(skin).fillRect(1, 12, 3, 10).fillRect(17, 12, 3, 10);
-      g.fillStyle(pants).fillRect(5, 25, 5, 15).fillRect(11, 25, 5, 15);
-    };
-    this.draw('npc-preso', 21, 40, (g) => paintNpc(g, 0x8a8a8a, 0x6e6e6e, 0x5a5a5a));
-    this.draw('npc-livre', 21, 40, (g) => paintNpc(g, 0x5a3820, PALETTE.red, PALETTE.green));
   }
 
   private makeCheckpointTextures(): void {

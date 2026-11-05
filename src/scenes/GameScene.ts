@@ -96,7 +96,7 @@ export class GameScene extends Phaser.Scene {
       this.physics.add.overlap(this.player, item, () => this.collect(item));
     });
 
-    this.npcs = this.level.npcs.map((point) => new Npc(this, point.x, point.y));
+    this.npcs = this.level.npcs.map((point, i) => new Npc(this, point.x, point.y, i));
 
     const { goal } = this.level;
     this.portal = this.physics.add.staticImage(goal.x, goal.y, this.portalTexture(false)).setOrigin(0.5, 1).refreshBody();
