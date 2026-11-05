@@ -4,6 +4,7 @@ import { BootScene } from './scenes/BootScene';
 import { CardScene } from './scenes/CardScene';
 import { GameOverScene } from './scenes/GameOverScene';
 import { GameScene } from './scenes/GameScene';
+import { HelpScene } from './scenes/HelpScene';
 import { HudScene } from './scenes/HudScene';
 import { IntroScene } from './scenes/IntroScene';
 import { LevelSelectScene } from './scenes/LevelSelectScene';
@@ -33,7 +34,7 @@ const config: Phaser.Types.Core.GameConfig = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [BootScene, MenuScene, LevelSelectScene, StoryScene, IntroScene, GameScene, HudScene, CardScene, VictoryScene, GameOverScene, PauseScene],
+  scene: [BootScene, MenuScene, LevelSelectScene, HelpScene, StoryScene, IntroScene, GameScene, HudScene, CardScene, VictoryScene, GameOverScene, PauseScene],
 };
 
 declare global {

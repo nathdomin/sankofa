@@ -144,13 +144,28 @@ export const STORIES: Record<StoryId, StoryScript> = {
 export const LINK_STORY: Readonly<Record<number, StoryId>> = { 0: 'elo1', 1: 'elo2' };
 
 export const MENU_TEXTS = {
-  title: 'Sankofa',
+  title: 'SANKOFA',
   subtitle: 'Caminhos da Resistência',
   play: 'Jogar',
-  hint: 'Enter ou Espaço',
-  levels: 'Escolher fase (F)',
-  controls: 'Setas ou A/D: mover  |  Espaço: pular (duas vezes no ar)  |  J: meia-lua  |  ↓: esquiva',
-  tagline: 'Um jogo sobre o Dia da Consciência Negra – 20 de novembro',
+  levels: 'Escolher fase',
+  help: 'Como jogar',
+  tagline: 'Dia da Consciência Negra · 20 de novembro',
+} as const;
+
+export const HELP_TEXTS = {
+  title: 'Como jogar',
+  controls: [
+    { action: 'Mover', keys: ['← →', 'A D'] },
+    { action: 'Pular (e pular de novo no ar: aú)', keys: ['Espaço', '↑', 'W'] },
+    { action: 'Meia-lua de compasso (golpe)', keys: ['J', 'X'] },
+    { action: 'Esquiva (segurar)', keys: ['↓', 'S'] },
+    { action: 'Pausar', keys: ['Esc', 'P'] },
+  ],
+  tips: [
+    'O Esquecimento só cai com a meia-lua. A Desinformação também cai com um pulo em cima.',
+    'Passagens baixas pedem a esquiva.',
+  ],
+  back: 'Enter ou Esc: voltar',
 } as const;
 
 export const INTRO_TEXTS = {
@@ -160,19 +175,19 @@ export const INTRO_TEXTS = {
 export const LEVEL_SELECT_TEXTS = {
   title: 'Escolher fase',
   back: 'Voltar',
-  hint: '↑ ↓ e Enter, ou as teclas 1, 2 e 3',
-  shortcut: 'Segure Shift para pular a introdução  |  Esc: voltar',
+  hint: '↑ ↓ e Enter, ou as teclas 1, 2 e 3  ·  Esc: voltar',
+  shortcut: 'Segure Shift ao escolher para pular a introdução',
 } as const;
 
 export const PAUSE_TEXTS = {
-  title: 'Pausado',
+  title: 'PAUSADO',
   resume: 'Continuar',
   menu: 'Menu',
   hint: 'Esc ou P para continuar',
 } as const;
 
 export const GAME_OVER_TEXTS = {
-  title: 'Fim de jogo',
+  title: 'FIM DE JOGO',
   subtitle: 'Sankofa: volte e busque o que ficou para trás.',
   retry: 'Tentar de novo (fase atual)',
   menu: 'Menu',

@@ -63,6 +63,7 @@ O jogador atravessa 3 fases, cada uma ligada a uma personalidade negra brasileir
    │  ├─ BootScene.ts         # gera texturas placeholder
    │  ├─ MenuScene.ts
    │  ├─ LevelSelectScene.ts  # escolha de fase (Shift pula a Intro)
+   │  ├─ HelpScene.ts         # "Como jogar": controles e dicas
    │  ├─ StoryScene.ts        # cenas de história: prólogo, ligações entre fases e epílogo
    │  ├─ IntroScene.ts        # mentor apresenta a fase
    │  ├─ GameScene.ts         # gameplay
@@ -83,6 +84,7 @@ O jogador atravessa 3 fases, cada uma ligada a uma personalidade negra brasileir
       ├─ sceneInput.ts        # teclas de confirmar/navegar nos menus
       ├─ OptionList.ts        # lista de opções (GameOver, Pausa)
       ├─ DialogueBox.ts       # caixa de fala com texto digitado (Intro e Story)
+      ├─ MenuBackdrop.ts      # fundo comum do menu, do seletor de fases e da ajuda
       ├─ Scenery.ts           # parallax, landmarks e vegetação a partir do tema da fase
       └─ GameState.ts         # vidas, fase atual, pontuação (singleton que emite eventos para a HUD)
 ```
@@ -277,11 +279,13 @@ Boot → Menu → Story(prólogo) → [Intro → Game(+HUD) → Card → Story(l
 (a ligação só existe entre as fases 1→2 e 2→3; a escolha de fase pula o prólogo e as ligações)
 ```
 
-- **MenuScene:** título "Sankofa", subtítulo "Caminhos da Resistência", botão "Jogar", botão "Escolher fase" (tecla F) e uma linha curta "Um jogo sobre o Dia da Consciência Negra – 20 de novembro".
-- **LevelSelectScene:** tela "Escolher fase" aberta pelo menu: lista as 3 fases (todas liberadas) e "Voltar"; ↑↓ + Enter, mouse ou teclas 1, 2 e 3; Esc volta. Começa com vidas e pontuação zeradas e passa pela Intro; **segurar Shift ao escolher pula a Intro** e vai direto ao jogo (atalho de teste). Se não quiser expor na versão final, é só tirar o botão do menu.
+- **MenuScene:** layout enxuto: título "SANKOFA" e subtítulo à esquerda (separados pela faixa de padrão africano), três opções ("Jogar", "Escolher fase", "Como jogar"; ↑↓ + Enter ou mouse, com barra dourada na ativa), o símbolo Sankofa grande flutuando à direita e uma linha curta no rodapé ("Dia da Consciência Negra · 20 de novembro"). O fundo (`MenuBackdrop`: cenário da fase 1 em movimento lento e véu escuro à esquerda) é comum ao menu, ao seletor e à ajuda.
+- **HelpScene:** "Como jogar", com os controles em teclas desenhadas e duas dicas; Enter, Esc ou clique voltam.
+- **LevelSelectScene:** tela "Escolher fase" aberta pelo menu (mesmo estilo do menu, com a época sob o nome da fase): lista as 3 fases (todas liberadas) e "Voltar"; ↑↓ + Enter, mouse ou teclas 1, 2 e 3; Esc volta. Começa com vidas e pontuação zeradas e passa pela Intro; **segurar Shift ao escolher pula a Intro** e vai direto ao jogo (atalho de teste). Se não quiser expor na versão final, é só tirar o botão do menu.
 - **StoryScene:** cena de história com caixa de fala (`DialogueBox`, a mesma da Intro), retrato de quem fala (o sprite do protagonista, o símbolo Sankofa ou a silhueta de um mentor) e fundo por clima: presente ao entardecer (prólogo), viagem no tempo com poeira dourada (ligações) e presente ao amanhecer (epílogo). Os textos ficam em `STORIES` (`texts.ts`); recebe `{ storyId, next }`. O jogo começa pelo prólogo (botão Jogar); a escolha de fase não passa por ele.
 - **IntroScene:** fundo na paleta da fase, nome da fase + época, retrato placeholder do mentor (silhueta estilizada, **não tentar desenhar o rosto da pessoa real**) e 2–3 falas curtas avançadas com Enter/Espaço.
 - **HudScene:** vidas, contador do coletável (`3/5` quando há `required`, ou só o número quando não há) e nome da fase.
+- **PauseScene / GameOverScene:** no estilo do menu (ver acima). Pausa: "Continuar" e "Menu", Esc/P retomam. Game Over: subtítulo do Sankofa, "Tentar de novo (fase atual)" e "Menu".
 - **CardScene:** carta histórica em formato de cartão centralizado (seção 8), com "Pressione Enter para continuar".
 - **VictoryScene:** mensagem final sobre o significado de **Sankofa** ("voltar e buscar o que ficou para trás": conhecer o passado para construir o futuro), pontuação total e créditos.
 
@@ -377,10 +381,11 @@ Ordem sugerida (cada passo deixa o jogo jogável):
 - [ ] Padrões decorativos, animações e tweens
 - [x] História do protagonista (feita e **aprovada**; nome, tom, gancho e final definidos pelo usuário): prólogo antes da fase 1, ligações entre as fases 1→2 e 2→3 e epílogo antes da `VictoryScene`, tudo na `StoryScene`. Textos em `STORIES`, revisáveis pelo grupo. Ilustrações do protagonista só se sobrar tempo
 - [ ] Polir as telas de fim de fase (hoje layout simples): aviso "Fase concluída!", `CardScene` e `VictoryScene`. O **fluxo funcional** (portal → Card → próxima fase → Victory) continua no Marco 2
+- [ ] **Design e animações do protagonista** (vem logo depois das telas de fim de fase): hoje o Aiyê é um sprite 40×50 com poucas poses (parado, corrida de 2 frames, subindo, caindo e estrela do aú) e os movimentos de capoeira são só tweens de rotação e squash. Objetivos: refinar o desenho (silhueta, proporção, rosto, cabelo, roupa e cordão, mantendo as cores de `PLAYER_COLORS`), mais frames e fluidez na corrida, ginga parada com mais personalidade, e poses/animações próprias para os golpes e a esquiva (ver o item de poses abaixo, que passa a ser feito aqui). Respeitar a regra do `Player` (a hitbox 22×40 não muda com a arte) e o retrato do protagonista nas cenas de história, que usa o mesmo sprite. **O usuário aprova antes do commit**
 - [ ] Design dos coletáveis (hoje placeholders): Sankofa mais fiel ao símbolo Adinkra em vez do coração simples, e brilho/partículas ao coletar; carta de alforria e folha de papel também
-- [ ] Redesign do menu principal: hoje tem informação demais (título, subtítulo, botão, dica, controles, seletor e frase) e o visual não é moderno. Objetivos: menos elementos na tela (os controles podem ir para uma tela de ajuda ou para a Pausa), hierarquia clara, botões mais limpos, composição e animação de fundo mais atuais; manter a identidade (Sankofa, faixa de padrão africano, paleta). Aproveitar para alinhar a `LevelSelectScene` e as telas de Pausa/GameOver ao mesmo estilo. **O usuário aprova antes do commit**
+- [x] Redesign do menu principal (feito, aprovado: menu enxuto à esquerda com o símbolo à direita, controles movidos para "Como jogar", seletor de fases e ajuda no mesmo estilo; Pausa e Game Over alinhados ao mesmo estilo: título grande e faixa à esquerda, opções com barra dourada; a Pausa escurece o jogo parado com o véu à esquerda e o Game Over usa o fundo do menu mais escuro, com o símbolo apagado). Pedido original: tinha informação demais (título, subtítulo, botão, dica, controles, seletor e frase) e o visual não era moderno. Objetivos: menos elementos na tela (os controles podem ir para uma tela de ajuda ou para a Pausa), hierarquia clara, botões mais limpos, composição e animação de fundo mais atuais; manter a identidade (Sankofa, faixa de padrão africano, paleta). Aproveitar para alinhar a `LevelSelectScene` e as telas de Pausa/GameOver ao mesmo estilo. **O usuário aprova antes do commit**
 - [ ] Design dos NPCs (hoje placeholder de retângulos, igual para os 5 e sem rosto): pixel art com 5 variações (cabelo, roupa, rosto), estado preso (postura curvada, corrente nos pulsos) e livre (colorido, braços para cima, brilho ao libertar), com dignidade e sem estereótipos. **Decisão do usuário: fazer depois de finalizar o level design das 3 fases**
-- [ ] Poses próprias dos movimentos de capoeira, hoje placeholders: esquiva (agachado em vez de só achatar o `scaleY`), meia-lua (bananeira em vez da pose de estrela do aú) e rolê (se for implementado)
+- [ ] (feito dentro do item "Design e animações do protagonista", acima) Poses próprias dos movimentos de capoeira, hoje placeholders: esquiva (agachado em vez de só achatar o `scaleY`), meia-lua (bananeira em vez da pose de estrela do aú) e rolê (se for implementado)
 - [ ] Refazer o level design das **3 fases**, deixando-as mais bonitas e mais desafiadoras. Hoje os mapas são funcionais e simples (fase 2: ruas, quatro telhados e um túnel; fase 3: trechos retos com um viaduto e um prédio). Objetivos:
   - **Mais bonitas:** variedade de alturas e silhuetas, composição pensada em camadas (primeiro plano, plataformas, fundo), marcos visuais por trecho (paliçadas e cabanas, casarões e sacadas, barracos e varais, a biblioteca ao fim), coletáveis posicionados para guiar o olhar; combinar com os temas de cenário das fases 2 e 3
   - **Mais desafiadoras, mas justas:** curva de dificuldade crescente dentro de cada fase e entre as fases (a fase 1 continua fácil para a apresentação), combinações de movimentos (aú + meia-lua, esquiva entre inimigos), plataformas móveis ou sequências de precisão só se couberem no prazo, sem pulos cegos nem mortes injustas
