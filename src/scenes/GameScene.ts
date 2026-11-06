@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
-import { CAMERA, CAPOEIRA, COLLECTIBLE, ENEMY, GAME, TILE_SIZE, WORLD } from '../config/physics';
-import { PALETTE, toCss } from '../config/palette';
+import { CAMERA, CAPOEIRA, COLLECTIBLE, ENEMY, FEEL, GAME, TILE_SIZE, WORLD } from '../config/physics';
+import { PALETTE, lighten, toCss } from '../config/palette';
 import { LEVELS, type LevelConfig } from '../data/levels';
 import { Checkpoint } from '../entities/Checkpoint';
 import { Collectible } from '../entities/Collectible';
@@ -71,6 +71,7 @@ export class GameScene extends Phaser.Scene {
 
     this.respawnPoint = this.level.playerSpawn;
     this.player = new Player(this, this.respawnPoint.x, this.respawnPoint.y, this.level.isSolidAt);
+    this.player.setDustColor(lighten(this.config.palette.ground, 40));
     this.physics.add.collider(this.player, this.level.solids);
 
     this.level.checkpoints.forEach((point) => {
@@ -134,11 +135,31 @@ export class GameScene extends Phaser.Scene {
 
   update(time: number, delta: number): void {
     this.player.update(time, delta);
+    this.updateLookahead(delta);
     this.parallax(this.cameras.main, delta);
 
     if (!this.dying && this.player.arcadeBody.top > this.level.heightPx + WORLD.fallMargin) {
       this.die(gameState.loseLife());
     }
+  }
+
+  /** A câmera olha um pouco à frente de onde o jogador corre e, ao cair rápido, para baixo */
+  private updateLookahead(delta: number): void {
+    const body = this.player.arcadeBody;
+    const running = Math.abs(body.velocity.x) > 40;
+    const targetX = running ? -this.player.facingDir * CAMERA.lookaheadX : 0;
+    const targetY = body.velocity.y > CAMERA.lookDownSpeed ? -CAMERA.lookDownY : 0;
+    const k = 1 - Math.exp(-(delta / 1000) * CAMERA.lookaheadSmooth);
+    const cam = this.cameras.main;
+    cam.setFollowOffset(Phaser.Math.Linear(cam.followOffset.x, targetX, k), Phaser.Math.Linear(cam.followOffset.y, targetY, k));
+  }
+
+  /** Dano: tremor da câmera e clarão vermelho nas bordas */
+  private hurtFeedback(): void {
+    const cam = this.cameras.main;
+    cam.shake(FEEL.hurtShake.ms, FEEL.hurtShake.intensity);
+    const flash = this.add.rectangle(0, 0, cam.width, cam.height, PALETTE.red, FEEL.hurtFlash.alpha).setOrigin(0).setScrollFactor(0).setDepth(90);
+    this.tweens.add({ targets: flash, alpha: 0, duration: FEEL.hurtFlash.ms, onComplete: () => flash.destroy() });
   }
 
   private pauseGame(): void {
@@ -216,12 +237,15 @@ export class GameScene extends Phaser.Scene {
     if (stomp) {
       enemy.defeat();
       audio.play('stomp');
+      this.cameras.main.shake(FEEL.stompShake.ms, FEEL.stompShake.intensity);
+      this.hitStop(FEEL.stompHitStopMs);
       this.player.bounce(ENEMY.stompBounce);
       gameState.addScore(ENEMY.stompScore);
     } else if (!this.player.isInvincible) {
       // empurrão no dano; só volta ao checkpoint se foi a última vida
       if (gameState.loseLife()) this.player.hurt(enemy.x);
       else this.die(false);
+      this.hurtFeedback();
     }
   }
 
@@ -234,14 +258,39 @@ export class GameScene extends Phaser.Scene {
     gameState.addScore(m.score);
     this.cameras.main.shake(m.shakeMs, m.shakeIntensity);
 
+    this.hitStop(m.hitStopMs);
+  }
+
+  /** Congela a física por um instante, para o golpe "pesar" */
+  private hitStop(ms: number): void {
     if (this.physics.world.isPaused) return;
     this.physics.world.pause();
-    this.time.delayedCall(m.hitStopMs, () => this.physics.world.resume());
+    this.time.delayedCall(ms, () => this.physics.world.resume());
+  }
+
+  /** Faíscas douradas saindo do topo da bandeira ao ativar o checkpoint */
+  private checkpointSparks(flag: Checkpoint): void {
+    const sparks = this.add
+      .particles(flag.x + 10, flag.y - flag.height + 12, 'spark', {
+        lifespan: 600,
+        speed: { min: 40, max: 120 },
+        angle: { min: 200, max: 340 },
+        gravityY: 120,
+        scale: { start: 0.8, end: 0 },
+        alpha: { start: 1, end: 0 },
+        tint: [0xf2b705, 0x1e7a3c, 0xffe58a],
+        blendMode: Phaser.BlendModes.ADD,
+        emitting: false,
+      })
+      .setDepth(9);
+    sparks.explode(FEEL.checkpointSparks);
+    this.time.delayedCall(700, () => sparks.destroy());
   }
 
   private reachCheckpoint(flag: Checkpoint, point: SpawnPoint): void {
     if (!flag.activate()) return;
     audio.play('checkpoint');
+    this.checkpointSparks(flag);
     this.respawnPoint = point;
   }
 

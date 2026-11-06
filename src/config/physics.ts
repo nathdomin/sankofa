@@ -34,6 +34,22 @@ export const PLAYER = {
   squashMs: 140,
   blinkEveryMs: 2800,
   blinkMs: 130,
+  // poeira: ao pular, ao aterrissar depois de cair rápido, correndo e ao frear na virada
+  landDustSpeed: 280,
+  landSoundSpeed: 330,
+  runDustEveryMs: 170,
+  runDustMinSpeed: 150,
+  skidMinSpeed: 140,
+} as const;
+
+// "Game feel": respostas visuais a acertos e danos
+export const FEEL = {
+  hurtShake: { ms: 170, intensity: 0.007 },
+  // clarão vermelho nas bordas ao levar dano
+  hurtFlash: { alpha: 0.32, ms: 280 },
+  stompHitStopMs: 45,
+  stompShake: { ms: 70, intensity: 0.003 },
+  checkpointSparks: 12,
 } as const;
 
 export const CAPOEIRA = {
@@ -127,4 +143,9 @@ export const CAMERA = {
   deadzoneW: 160,
   deadzoneH: 120,
   fadeMs: 300,
+  // a câmera olha à frente do jogador (para onde ele corre) e para baixo ao cair rápido
+  lookaheadX: 64,
+  lookaheadSmooth: 3.2,
+  lookDownY: 56,
+  lookDownSpeed: 460,
 } as const;

@@ -177,6 +177,14 @@ A identidade do jogo é o personagem se mover como capoeirista. Cada movimento t
 - Ao terminar, aplica a mesma regra de "só levanta se houver espaço".
 - **Se o prazo apertar, o rolê é o primeiro movimento a ser cortado.**
 
+#### Acabamento ("game feel")
+Respostas visuais e sonoras que não mexem na física (a de pulo, corrida e colisão continua igual; os mapas e o `reachability` não mudam). Valores em `PLAYER`, `FEEL` e `CAMERA` (`physics.ts`):
+- **Poeira** nos pés (cor do chão da fase, mais clara): ao pular, ao aterrissar depois de cair rápido (mais um som de "pancada" suave), ao correr e ao frear numa virada brusca.
+- **Câmera olha à frente:** desloca-se suavemente para onde o jogador corre (`lookaheadX`) e, ao cair rápido, para baixo (`lookDownY`), para ver onde vai aterrissar. Para desligar, `lookaheadX: 0` e `lookDownY: 0`.
+- **Pisão** com tremor leve e hit-stop curto (45 ms), como a meia-lua, mas mais suave.
+- **Dano:** tremor da câmera e clarão vermelho nas bordas.
+- **Checkpoint:** faíscas douradas e verdes saindo da bandeira.
+
 #### Constantes
 Todos os valores ficam em `src/config/physics.ts` (`WORLD`, `PLAYER`, `CAPOEIRA`, `CAMERA`), que é a **fonte da verdade**. Os números deste documento são a intenção de design; se o código foi ajustado no playtest, vale o código.
 
@@ -411,7 +419,7 @@ Ordem sugerida (cada passo deixa o jogo jogável):
 - [x] **Sons do jogo** (feito, aguardando aprovação; ver seção 10): sistema de áudio em `src/systems/` (Web Audio API, sem arquivos externos, um único `AudioContext` criado após a primeira interação por causa da política de autoplay); efeitos de gameplay (pulo, aú, meia-lua, acerto, pisão, coleta com um som por tipo, libertar pessoa, dano, checkpoint, portal, fase concluída), sons de interface (mover, confirmar, voltar, texto das falas) e, se couber, um pano de fundo musical curto e suave gerado em código por fase. Tecla **M** muta tudo (com aviso na tela e valor lembrado), volume central em `physics.ts` ou `config/audio.ts`, sons baixos o bastante para não cansar. **Direção da música (pedido do usuário):** algo ligado ao tema da Consciência Negra, como samba ou capoeira, estilizado no estilo do jogo. **O usuário testa e aprova antes do commit**
 - [x] **Cenário da Intro igual ao da fase** (pedido do usuário; feito, aguardando aprovação): a apresentação do mentor mostra o cenário real de cada fase em vez de morros genéricos
 - [x] **Design dos inimigos e explicação no começo do jogo** (pedido do usuário; feito, aguardando aprovação): novo visual da Desinformação e do Esquecimento, com animação de andar e efeito ao serem derrotados; cena `EnemiesScene` depois do prólogo explicando o que cada um é e como vencer; aviso extra do Esquecimento na Intro do Luiz Gama
-- [ ] Ajuste fino do game feel e da dificuldade
+- [x] Ajuste fino do game feel e da dificuldade (feito, aguardando aprovação; ver "Acabamento" na seção 3.1): poeira, câmera que olha à frente, pisão e dano com mais peso, faíscas no checkpoint e som de aterrissagem. **A dificuldade dos mapas não foi alterada** (as 3 fases já foram aprovadas); só mexer se o usuário apontar um trecho injusto no teste
 - [x] Pausa (Esc/P): `PauseScene` por cima da GameScene parada, com "Continuar" e "Menu"
 - [ ] **Revisão geral** (último passo do Marco 3, depois de todos os outros): jogar o jogo inteiro do menu aos créditos, nas 3 fases, e fechar pendências antes do Marco 4. Checklist:
   - textos históricos (mentores, cartas) revisados com fontes confiáveis (Fundação Cultural Palmares, Museu Afro Brasil, professor) e sem nada apresentado como citação real

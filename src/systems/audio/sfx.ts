@@ -28,6 +28,10 @@ export const SFX = {
     tone(ctx, dest, { freq: 420, slideTo: 140, start: t, dur: 0.13, type: 'square', vol: 0.16 });
     noise(ctx, dest, { start: t, dur: 0.05, freq: 900, vol: 0.14 });
   },
+  land: (ctx, dest, t) => {
+    tone(ctx, dest, { freq: 130, slideTo: 60, start: t, dur: 0.12, type: 'sine', vol: 0.22, release: 0.1 });
+    noise(ctx, dest, { start: t, dur: 0.06, freq: 500, type: 'lowpass', vol: 0.14 });
+  },
   hurt: (ctx, dest, t) => {
     tone(ctx, dest, { freq: 330, slideTo: 80, start: t, dur: 0.34, type: 'sawtooth', vol: 0.16 });
     noise(ctx, dest, { start: t, dur: 0.14, freq: 700, vol: 0.15 });

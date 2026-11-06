@@ -34,6 +34,10 @@ export class Player extends Phaser.GameObjects.Zone {
   private readonly keys: PlayerKeys;
   private current: PlayerState = 'idle';
   private facing: 1 | -1 = 1;
+  private dustColor = 0xe8d8b8;
+  private dust: Phaser.GameObjects.Particles.ParticleEmitter | null = null;
+  private lastAirVy = 0;
+  private nextRunDustAt = 0;
   private lastGroundedAt = Number.NEGATIVE_INFINITY;
   private jumpBufferedAt = Number.NEGATIVE_INFINITY;
   private auAvailable = true;
@@ -88,6 +92,37 @@ export class Player extends Phaser.GameObjects.Zone {
 
   get isInvincible(): boolean {
     return this.scene.time.now < this.invincibleUntil;
+  }
+
+  get facingDir(): 1 | -1 {
+    return this.facing;
+  }
+
+  /** Cor da poeira (a do chão da fase, mais clara) */
+  setDustColor(color: number): void {
+    this.dustColor = color;
+    this.dust?.destroy();
+    this.dust = null;
+  }
+
+  /** Nuvenzinha de poeira nos pés */
+  private puff(count: number): void {
+    if (!this.dust) {
+      this.dust = this.scene.add
+        .particles(0, 0, 'pixel', {
+          lifespan: { min: 260, max: 440 },
+          speed: { min: 22, max: 80 },
+          angle: { min: 190, max: 350 },
+          gravityY: 120,
+          scale: { start: 0.9, end: 0 },
+          alpha: { start: 0.85, end: 0 },
+          tint: this.dustColor,
+          emitting: false,
+        })
+        .setDepth(9);
+    }
+    const body = this.arcadeBody;
+    this.dust.emitParticleAt(body.center.x, body.bottom - 1, count);
   }
 
   /** Dano de um inimigo em `sourceX`: empurra para longe dele e tira o controle por um instante */
@@ -159,8 +194,21 @@ export class Player extends Phaser.GameObjects.Zone {
       }
     }
 
+    this.groundDust(time, onGround, dir);
+    if (!onGround) this.lastAirVy = body.velocity.y;
     this.followAttackZone();
     this.updateVisual(time, delta);
+  }
+
+  /** Poeira ao correr e ao frear numa virada brusca */
+  private groundDust(time: number, onGround: boolean, dir: -1 | 0 | 1): void {
+    if (!onGround || time < this.nextRunDustAt || LOCKED_STATES.has(this.current) || this.current === 'esquiva') return;
+    const vx = this.arcadeBody.velocity.x;
+    const skid = dir !== 0 && vx * dir < 0 && Math.abs(vx) > PLAYER.skidMinSpeed;
+    if (skid) this.puff(4);
+    else if (this.current === 'run' && Math.abs(vx) > PLAYER.runDustMinSpeed) this.puff(1);
+    else return;
+    this.nextRunDustAt = time + PLAYER.runDustEveryMs;
   }
 
   /** Única porta de entrada para trocar de estado */
@@ -233,6 +281,7 @@ export class Player extends Phaser.GameObjects.Zone {
       this.setState('jump');
       this.squash(PLAYER.jumpStretchY);
       audio.play('jump');
+      this.puff(4);
       leftGround = true;
     } else if (pressed && !onGround && this.auAvailable) {
       body.setVelocityY(PLAYER.auVelocity);
@@ -254,7 +303,11 @@ export class Player extends Phaser.GameObjects.Zone {
       const landing = this.current === 'jump' || this.current === 'au';
       const moving = dir !== 0 || Math.abs(this.arcadeBody.velocity.x) > PLAYER.runAnimMinSpeed;
       this.setState(moving ? 'run' : 'idle');
-      if (landing) this.squash(PLAYER.landSquashY);
+      if (landing) {
+        this.squash(PLAYER.landSquashY);
+        if (this.lastAirVy > PLAYER.landDustSpeed) this.puff(8);
+        if (this.lastAirVy > PLAYER.landSoundSpeed) audio.play('land');
+      }
     } else if (this.current !== 'au') {
       this.setState('jump');
     }
