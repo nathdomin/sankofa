@@ -449,10 +449,10 @@ Ordem sugerida (cada passo deixa o jogo jogável):
 
 ### Marco 4: Som e entrega (meta: até 17/11, **congelamento**)
 - [ ] (movido para o passo "Sons do jogo" do Marco 3) Efeitos sonoros e mute
-- [ ] `npm run build` sem erros, testar o `dist/` servido localmente
-- [ ] Deploy (itch.io: zip do `dist/` como projeto HTML; ou Netlify)
+- [x] `npm run build` sem erros, testar o `dist/` servido localmente (feito em 06/11/2026: `vite preview` e também o zip extraído numa subpasta, que prova que o `base: './'` funciona em qualquer caminho; sem erros no console)
+- [ ] Deploy (itch.io: zip do `dist/` como projeto HTML; ou Netlify). **Zip pronto:** `release/sankofa-itch.zip` (não vai para o git; `index.html` na raiz do zip, 1,6 MB). Para refazer: `npm run build` e `tar -a -c -f release/sankofa-itch.zip -C dist index.html assets`. **No itch.io:** criar o projeto com *Kind of project: HTML*, enviar o zip e marcar "This file will be played in the browser"; em *Embed options* usar 960×540 (ou "click to launch in fullscreen", melhor para celular) e ligar "Mobile friendly" e o botão de tela cheia. Falta só o envio, que precisa da conta do grupo
   - **Link de teste (GitHub Pages):** https://nathdomin.github.io/sankofa/ (publicado em 06/11/2026). O Pages serve o branch `gh-pages`, que guarda só o conteúdo do `dist/`. **Para republicar:** `npm run build`; dentro de `dist/`, criar `.nojekyll`, `git init -b gh-pages`, commitar tudo e `git push -f https://github.com/nathdomin/sankofa.git gh-pages`; apagar o `dist/.git`. (Um deploy automático por GitHub Actions foi recusado porque o login do `gh` não tem a permissão `workflow`; dá para ativar com `gh auth refresh -s workflow`.) A versão final da apresentação continua indo para o itch.io.
-- [ ] Testar no Chrome e no Firefox, em telas 1366×768 e 1920×1080
+- [x] Testar no Chrome e no Firefox, em telas 1366×768 e 1920×1080 (feito em 06/11/2026 sobre o `dist/` por script: Edge, que usa o mesmo motor do Chrome, e Firefox 159, ambos em 1366×768 e 1920×1080. Em todos: WebGL ativo, canvas 16:9 sem cortes, menu → prólogo → inimigos → Intro → jogo, correr e pular, pausa e mudo funcionam, **sem nenhum erro no console**. O Chrome em si não está instalado nesta máquina; vale o grupo abrir uma vez nele)
 - [ ] Testar num celular Android (Chrome) e, se houver, num iPhone (Safari), deitado, já pelo link do deploy
 
 **Se o prazo apertar, cortar nesta ordem:**
