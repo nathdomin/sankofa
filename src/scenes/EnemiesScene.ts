@@ -1,9 +1,10 @@
 import Phaser from 'phaser';
+import { forInput, withoutKeys } from '../systems/TouchInput';
 import { BAND_H } from '../art/hudArt';
 import { ENEMY_ACCENT, ENEMY_SIZES, enemyTextureKey, type EnemyArtKind } from '../art/enemyArt';
 import { PALETTE, toCss } from '../config/palette';
 import { CAMERA } from '../config/physics';
-import { ENEMIES_TEXTS } from '../data/texts';
+import { ENEMIES_TEXTS, TOUCH_TEXTS } from '../data/texts';
 import { audio } from '../systems/audio/AudioManager';
 import { addMenuBackdrop } from '../systems/MenuBackdrop';
 import { CONFIRM_KEYS, onKeys } from '../systems/sceneInput';
@@ -55,7 +56,7 @@ export class EnemiesScene extends Phaser.Scene {
     this.card('esquecimento', x0 + CARD.w + CARD.gap);
 
     const hint = this.add
-      .text(width / 2, height - 44, ENEMIES_TEXTS.hint, { fontFamily: 'monospace', fontSize: '18px', color: toCss(PALETTE.cream), stroke: toCss(PALETTE.black), strokeThickness: 4 })
+      .text(width / 2, height - 44, forInput(ENEMIES_TEXTS.hint, TOUCH_TEXTS.continue), { fontFamily: 'monospace', fontSize: '18px', color: toCss(PALETTE.cream), stroke: toCss(PALETTE.black), strokeThickness: 4 })
       .setOrigin(0.5)
       .setDepth(3);
     this.tweens.add({ targets: hint, alpha: 0.4, duration: 800, yoyo: true, repeat: -1 });
@@ -107,7 +108,7 @@ export class EnemiesScene extends Phaser.Scene {
       .text(x + 24, y + CARD.h - 72, ENEMIES_TEXTS.howTitle, { fontFamily: 'monospace', fontSize: '15px', fontStyle: 'bold', color: toCss(PALETTE.gold) })
       .setDepth(3);
     this.add
-      .text(x + 24, y + CARD.h - 50, text.how, { fontFamily: 'monospace', fontSize: '15px', color: toCss(PALETTE.gold), wordWrap: { width: CARD.w - 48 } })
+      .text(x + 24, y + CARD.h - 50, withoutKeys(text.how), { fontFamily: 'monospace', fontSize: '15px', color: toCss(PALETTE.gold), wordWrap: { width: CARD.w - 48 } })
       .setDepth(3);
   }
 }

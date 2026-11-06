@@ -1,6 +1,10 @@
 import Phaser from 'phaser';
 import { WORLD } from './config/physics';
+import { TOUCH } from './config/touch';
 import { audio } from './systems/audio/AudioManager';
+import { setupMobile } from './systems/mobile';
+import { touchInput } from './systems/TouchInput';
+import { TouchControlsScene } from './scenes/TouchControlsScene';
 import { AudioUiScene } from './scenes/AudioUiScene';
 import { BootScene } from './scenes/BootScene';
 import { CardScene } from './scenes/CardScene';
@@ -37,7 +41,10 @@ const config: Phaser.Types.Core.GameConfig = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [BootScene, MenuScene, LevelSelectScene, HelpScene, StoryScene, EnemiesScene, IntroScene, GameScene, HudScene, CardScene, VictoryScene, GameOverScene, PauseScene, AudioUiScene],
+  // vários dedos ao mesmo tempo (correr e pular) nos botões de toque
+  input: { activePointers: TOUCH.activePointers },
+  // TouchControls fica acima do jogo e do HUD, abaixo da Pausa
+  scene: [BootScene, MenuScene, LevelSelectScene, HelpScene, StoryScene, EnemiesScene, IntroScene, GameScene, HudScene, TouchControlsScene, CardScene, VictoryScene, GameOverScene, PauseScene, AudioUiScene],
 };
 
 declare global {
@@ -49,6 +56,7 @@ declare global {
 
 audio.init();
 const game = new Phaser.Game(config);
+if (touchInput.enabled) setupMobile(game);
 // acesso pelo console para testes, só em desenvolvimento
 if (import.meta.env.DEV) {
   window.__sankofa = game;

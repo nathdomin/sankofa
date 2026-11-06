@@ -3,8 +3,11 @@ import { AUDIO } from '../config/audio';
 import { PALETTE, toCss } from '../config/palette';
 import { AUDIO_TEXTS } from '../data/texts';
 import { audio } from '../systems/audio/AudioManager';
+import { TOUCH } from '../config/touch';
+import { touchInput, withoutKeys } from '../systems/TouchInput';
 
-const ICON = { x: 930, y: 512, alpha: 0.5 } as const;
+// no celular o canto de baixo é dos botões: o alto-falante sobe, ao lado da pausa
+const ICON = touchInput.enabled ? { ...TOUCH.speaker, alpha: 0.8 } : { x: 930, y: 512, alpha: 0.5 };
 
 /**
  * Fica por cima de todas as cenas (é a última registrada): um alto-falante discreto no canto
@@ -33,10 +36,13 @@ export class AudioUiScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setAlpha(0);
     this.drawIcon();
+    // tocar (ou clicar) no alto-falante liga e desliga o som, como a tecla M
+    this.icon.setInteractive(new Phaser.Geom.Circle(0, 0, 26), Phaser.Geom.Circle.Contains);
+    this.icon.on('pointerdown', () => audio.toggleMute());
 
     const off = audio.onMuteChange((muted) => {
       this.drawIcon();
-      this.showToast(muted ? AUDIO_TEXTS.off : AUDIO_TEXTS.on);
+      this.showToast(withoutKeys(muted ? AUDIO_TEXTS.off : AUDIO_TEXTS.on));
     });
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, off);
   }

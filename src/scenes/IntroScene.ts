@@ -1,11 +1,12 @@
 import Phaser from 'phaser';
+import { forInput, withoutKeys } from '../systems/TouchInput';
 import { audio } from '../systems/audio/AudioManager';
 import { BAND_H } from '../art/hudArt';
 import { GINGA_FRAMES, playerTextureKey } from '../art/playerArt';
 import { PALETTE, toCss } from '../config/palette';
 import { CAMERA, CAPOEIRA } from '../config/physics';
 import { LEVELS, type LevelConfig } from '../data/levels';
-import { INTRO_TEXTS, MENTORS, type Mentor } from '../data/texts';
+import { INTRO_TEXTS, MENTORS, type Mentor, TOUCH_TEXTS } from '../data/texts';
 import { DialogueBox } from '../systems/DialogueBox';
 import { Portrait } from '../systems/Portrait';
 import { buildLevel } from '../systems/LevelBuilder';
@@ -76,14 +77,14 @@ export class IntroScene extends Phaser.Scene {
     new DialogueBox(
       this,
       PANEL,
-      this.mentor.lines.map((text) => ({ speaker: this.mentor.name, text })),
+      this.mentor.lines.map((text) => ({ speaker: this.mentor.name, text: withoutKeys(text) })),
       undefined,
       () => goToScene(this, 'Game', { levelIndex: this.levelIndex }),
       (typing) => portrait.setTalking(typing),
     );
 
     const hint = this.add
-      .text(width / 2, height - 52, INTRO_TEXTS.hint, { fontFamily: 'monospace', fontSize: '18px', color: toCss(PALETTE.cream), ...stroke })
+      .text(width / 2, height - 52, forInput(INTRO_TEXTS.hint, TOUCH_TEXTS.continue), { fontFamily: 'monospace', fontSize: '18px', color: toCss(PALETTE.cream), ...stroke })
       .setOrigin(0.5)
       .setDepth(101);
     this.tweens.add({ targets: hint, alpha: 0.25, duration: 700, yoyo: true, repeat: -1 });

@@ -1,11 +1,12 @@
 import Phaser from 'phaser';
+import { forInput } from '../systems/TouchInput';
 import { audio } from '../systems/audio/AudioManager';
 import { BAND_H } from '../art/hudArt';
 import { PALETTE, darken, toCss } from '../config/palette';
 import { CAMERA } from '../config/physics';
 import { MENTOR_ACCENT, PORTRAIT, mentorTextureKey } from '../art/mentorArt';
 import { LEVELS } from '../data/levels';
-import { MENTORS, VICTORY_TEXTS } from '../data/texts';
+import { MENTORS, VICTORY_TEXTS, TOUCH_TEXTS } from '../data/texts';
 import { gameState } from '../systems/GameState';
 import { CONFIRM_KEYS, onKeys } from '../systems/sceneInput';
 import { goToScene } from '../systems/transitions';
@@ -100,7 +101,7 @@ export class VictoryScene extends Phaser.Scene {
     this.creditsGroup.setData('text', credits);
 
     this.hint = this.add
-      .text(width / 2, height - 44, VICTORY_TEXTS.hint, {
+      .text(width / 2, height - 44, forInput(VICTORY_TEXTS.hint, TOUCH_TEXTS.continue), {
         fontFamily: 'monospace',
         fontSize: '18px',
         color: toCss(PALETTE.cream),
@@ -112,6 +113,7 @@ export class VictoryScene extends Phaser.Scene {
     this.tweens.add({ targets: this.hint, alpha: 0.25, duration: 700, yoyo: true, repeat: -1 });
 
     onKeys(this, CONFIRM_KEYS, () => this.advance());
+    this.input.on('pointerdown', () => this.advance());
   }
 
   private advance(): void {
@@ -123,7 +125,7 @@ export class VictoryScene extends Phaser.Scene {
   private startCredits(): void {
     this.stage = 'credits';
     this.messageGroup.setVisible(false);
-    this.hint.setText(VICTORY_TEXTS.hintMenu);
+    this.hint.setText(forInput(VICTORY_TEXTS.hintMenu, TOUCH_TEXTS.menu));
 
     const { height } = this.scale;
     const credits = this.creditsGroup.getData('text') as Phaser.GameObjects.Text;

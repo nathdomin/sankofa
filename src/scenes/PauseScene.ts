@@ -1,7 +1,8 @@
 import Phaser from 'phaser';
+import { forInput } from '../systems/TouchInput';
 import { BAND_H } from '../art/hudArt';
 import { PALETTE, toCss } from '../config/palette';
-import { PAUSE_TEXTS } from '../data/texts';
+import { PAUSE_TEXTS, TOUCH_TEXTS } from '../data/texts';
 import { addLeftScrim } from '../systems/MenuBackdrop';
 import { audio } from '../systems/audio/AudioManager';
 import { OptionList } from '../systems/OptionList';
@@ -40,7 +41,7 @@ export class PauseScene extends Phaser.Scene {
     );
 
     this.add
-      .text(LEFT, height - 44, PAUSE_TEXTS.hint, { fontFamily: 'monospace', fontSize: '16px', color: toCss(PALETTE.cream), stroke: toCss(PALETTE.black), strokeThickness: 4 })
+      .text(LEFT, height - 44, forInput(PAUSE_TEXTS.hint, TOUCH_TEXTS.pause), { fontFamily: 'monospace', fontSize: '16px', color: toCss(PALETTE.cream), stroke: toCss(PALETTE.black), strokeThickness: 4 })
       .setOrigin(0, 0.5)
       .setDepth(3);
 

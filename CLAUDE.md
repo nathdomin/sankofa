@@ -48,6 +48,7 @@ O jogador atravessa 3 fases, cada uma ligada a uma personalidade negra brasileir
    │  ├─ playerArt.ts         # poses do player em pixel art
    │  ├─ tileArt.ts           # tiles de chão/bloco por fase
    │  ├─ hudArt.ts            # faixa decorativa e ícone de vida do HUD
+   │  ├─ touchIcons.ts        # botões de toque do celular (setas, pulo, meia-lua, pausa), usados no jogo e na ajuda
    │  ├─ enemyArt.ts          # os dois inimigos em pixel art (2 quadros cada) e o pixel das partículas de derrota
    │  ├─ collectibleArt.ts    # Sankofa, carta de alforria, folha de papel e texturas de brilho (halo, faísca)
    │  ├─ npcArt.ts            # as 5 pessoas libertadas da fase 2 (preso e livre) e o elo de corrente
@@ -58,6 +59,7 @@ O jogador atravessa 3 fases, cada uma ligada a uma personalidade negra brasileir
    │     └─ caninde.ts        # favela que vira cidade (fundo misto), barracos, varais e biblioteca da fase 3
    ├─ config/
    │  ├─ physics.ts           # constantes de movimento
+   │  ├─ touch.ts             # posição e tamanho dos botões de toque
    │  └─ palette.ts           # cores do jogo
    ├─ data/
    │  ├─ levels.ts            # mapas ASCII + config de cada fase
@@ -73,6 +75,7 @@ O jogador atravessa 3 fases, cada uma ligada a uma personalidade negra brasileir
    │  ├─ IntroScene.ts        # mentor apresenta a fase
    │  ├─ GameScene.ts         # gameplay
    │  ├─ HudScene.ts          # roda em paralelo à GameScene
+   │  ├─ TouchControlsScene.ts # botões na tela do celular, por cima do jogo (só com toque)
    │  ├─ CardScene.ts         # carta histórica ao fim da fase
    │  ├─ PauseScene.ts        # pausa por cima da GameScene
    │  ├─ AudioUiScene.ts      # alto-falante no canto e aviso de som ligado/desligado (última cena registrada: fica por cima)
@@ -88,6 +91,8 @@ O jogador atravessa 3 fases, cada uma ligada a uma personalidade negra brasileir
       ├─ LevelBuilder.ts      # converte mapa ASCII em objetos
       ├─ transitions.ts       # goToScene: troca de cena com fade
       ├─ sceneInput.ts        # teclas de confirmar/navegar nos menus
+      ├─ TouchInput.ts        # estado dos botões de toque (lido pelo Player junto com o teclado) e detecção do celular
+      ├─ mobile.ts            # celular: tela cheia, trava deitada e aviso "gire o celular"
       ├─ OptionList.ts        # lista de opções (GameOver, Pausa)
       ├─ audio/               # AudioManager (singleton `audio`), MusicPlayer, synth, percussion e sfx (Web Audio, sem arquivos)
       ├─ DialogueBox.ts       # caixa de fala com texto digitado (Intro e Story)
@@ -111,6 +116,8 @@ O jogador atravessa 3 fases, cada uma ligada a uma personalidade negra brasileir
 | Confirmar / avançar texto | Enter ou Espaço |
 | Pausar | Esc ou P |
 | Mutar som | M |
+
+**No celular** (detectado por `(pointer: coarse)`; `?touch` na URL força os controles no PC e `?notouch` desliga): botões na tela durante o jogo: ◀ ▶ e ▼ (esquiva) à esquerda, pulo/aú e meia-lua à direita, pausa e alto-falante no canto de cima. Nos menus e nas falas, basta tocar. Os avisos trocam "Enter/Esc" por "Toque..." (`TOUCH_TEXTS`) e as teclas entre parênteses, como "(J)", somem das falas.
 
 ---
 
@@ -422,6 +429,13 @@ Ordem sugerida (cada passo deixa o jogo jogável):
 - [x] **Design dos inimigos e explicação no começo do jogo** (pedido do usuário; feito, aguardando aprovação): novo visual da Desinformação e do Esquecimento, com animação de andar e efeito ao serem derrotados; cena `EnemiesScene` depois do prólogo explicando o que cada um é e como vencer; aviso extra do Esquecimento na Intro do Luiz Gama
 - [x] Ajuste fino do game feel e da dificuldade (feito, aguardando aprovação; ver "Acabamento" na seção 3.1): poeira, câmera que olha à frente, pisão e dano com mais peso, faíscas no checkpoint e som de aterrissagem. **A dificuldade dos mapas não foi alterada** (as 3 fases já foram aprovadas); só mexer se o usuário apontar um trecho injusto no teste
 - [x] Pausa (Esc/P): `PauseScene` por cima da GameScene parada, com "Continuar" e "Menu"
+- [x] **Jogar no celular** (pedido do usuário depois da revisão geral; feito, aguardando aprovação): o jogo roda no navegador do celular, deitado, com toque. **O usuário testa e aprova antes do commit.**
+  - **Entrada unificada:** `touchInput` (`systems/TouchInput.ts`) guarda os comandos de toque (`left`, `right`, `jump`, `down`, `attack`) e o `Player` lê teclado **ou** toque (`cmdDown`/`cmdJustDown`/`cmdJustUp`). Física, estados e mapas não mudaram (o `reachability` continua valendo).
+  - **Botões na tela** (`TouchControlsScene`, lançada pela GameScene só no celular): ◀ ▶ grandes (dá para deslizar o dedo de um para o outro) e ▼ à esquerda; pulo/aú (grande) e meia-lua à direita; pausa no canto de cima. Multitoque (4 dedos) para correr e pular ao mesmo tempo. A cena lê todos os dedos a cada frame, então um botão nunca fica "grudado"; com o jogo pausado os botões somem e nada fica guardado. Posições em `config/touch.ts`.
+  - **Telas:** Card e Victory avançam com toque (menus, falas, ajuda e inimigos já aceitavam); o alto-falante virou botão (sobe para o canto de cima no celular); a ajuda mostra os botões de toque no lugar das teclas; o seletor de fases esconde o atalho Shift.
+  - **Navegador:** sem zoom nem rolagem por toque (`index.html`); a cada toque fora da tela cheia, tenta entrar nela e travar a tela deitada (Android; no iPhone a página roda com as barras do Safari); com o celular em pé aparece "Gire o celular para jogar" e o jogo pausa sozinho. O áudio também é liberado no `touchend` (exigência do iPhone).
+  - **Testado** por emulação de celular (Edge, 844×390 com toque): correr, pular, aú, meia-lua, esquiva, deslizar ◀→▶, correr + pular juntos, pausa, som, aviso de tela em pé, carta por toque, sem erros no console. No PC (fluxo completo do menu aos créditos) nada muda e não aparecem botões.
+  - **Para testar no celular de verdade:** `npx vite --host` e abrir no celular o endereço "Network" que aparece (mesma rede Wi-Fi). Falta conferir num aparelho real o tamanho e a posição dos botões.
 - [x] **Revisão geral** (feita em 06/11/2026, aguardando aprovação; **pendências para o grupo** no fim da lista; último passo do Marco 3, depois de todos os outros): jogar o jogo inteiro do menu aos créditos, nas 3 fases, e fechar pendências antes do Marco 4. Checklist:
   - textos históricos (mentores, cartas) revisados com fontes confiáveis (Fundação Cultural Palmares, Museu Afro Brasil, professor) e sem nada apresentado como citação real
   - créditos completos (incluir os demais integrantes da equipe, se houver) e frase do Dia da Consciência Negra conferida
@@ -438,6 +452,7 @@ Ordem sugerida (cada passo deixa o jogo jogável):
 - [ ] `npm run build` sem erros, testar o `dist/` servido localmente
 - [ ] Deploy (itch.io: zip do `dist/` como projeto HTML; ou Netlify)
 - [ ] Testar no Chrome e no Firefox, em telas 1366×768 e 1920×1080
+- [ ] Testar num celular Android (Chrome) e, se houver, num iPhone (Safari), deitado, já pelo link do deploy
 
 **Se o prazo apertar, cortar nesta ordem:**
 1. Rolê
@@ -449,7 +464,7 @@ Ordem sugerida (cada passo deixa o jogo jogável):
 
 ## 12. Fora do escopo (v2)
 
-Combos e novos golpes de capoeira (armada, queixada), mecânica de ritmo com berimbau, chefe final, controles touch/mobile, salvamento de progresso, assets definitivos em pixel art.
+Combos e novos golpes de capoeira (armada, queixada), mecânica de ritmo com berimbau, chefe final, salvamento de progresso, assets definitivos em pixel art. (Os controles de toque saíram desta lista: viraram o passo "Jogar no celular" do Marco 3.)
 
 ## 13. Cuidados de conteúdo
 

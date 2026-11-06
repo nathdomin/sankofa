@@ -232,6 +232,24 @@ export const AUDIO_TEXTS = {
   off: 'Som desligado (M)',
 } as const;
 
+// Celular: avisos que trocam "Enter/Esc" por toque, e a ajuda com os botões da tela
+export const TOUCH_TEXTS = {
+  rotate: 'Gire o celular para jogar',
+  continue: 'Toque para continuar',
+  back: 'Toque para voltar',
+  menu: 'Toque para voltar ao menu',
+  pause: 'Toque em Continuar para voltar ao jogo',
+  levelSelect: 'Toque numa fase para começar',
+  controls: [
+    { action: 'Mover', icons: ['left', 'right'] },
+    { action: 'Pular (e pular de novo no ar: aú)', icons: ['jump'] },
+    { action: 'Meia-lua de compasso (golpe)', icons: ['attack'] },
+    { action: 'Esquiva (segurar)', icons: ['down'] },
+    { action: 'Pausar', icons: ['pause'] },
+    { action: 'Som: toque no alto-falante', icons: [] },
+  ],
+} as const;
+
 export const NPC_TEXTS = {
   freed: 'Livre!',
 } as const;

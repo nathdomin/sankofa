@@ -1,10 +1,11 @@
 import Phaser from 'phaser';
+import { forInput, withoutKeys } from '../systems/TouchInput';
 import { audio } from '../systems/audio/AudioManager';
 import { BAND_H } from '../art/hudArt';
 import { gradientAt, type GradientStop } from '../art/colors';
 import { PALETTE, toCss } from '../config/palette';
 import { CAMERA } from '../config/physics';
-import { INTRO_TEXTS, MENTORS, SPEAKER_NAMES, STORIES, type Speaker, type StoryId, type StoryMood, type StoryScript } from '../data/texts';
+import { INTRO_TEXTS, MENTORS, SPEAKER_NAMES, STORIES, type Speaker, type StoryId, type StoryMood, type StoryScript, TOUCH_TEXTS } from '../data/texts';
 import { DialogueBox, type DialogueLine } from '../systems/DialogueBox';
 import { Portrait } from '../systems/Portrait';
 import { goToScene } from '../systems/transitions';
@@ -80,14 +81,14 @@ export class StoryScene extends Phaser.Scene {
     new DialogueBox(
       this,
       PANEL,
-      this.script.lines.map((line) => ({ speaker: this.speakerName(line.speaker), text: line.text })),
+      this.script.lines.map((line) => ({ speaker: this.speakerName(line.speaker), text: withoutKeys(line.text) })),
       (_line: DialogueLine, index: number) => portrait.show(this.script.lines[index].speaker),
       () => goToScene(this, this.next.scene, this.next.data),
       (typing) => portrait.setTalking(typing),
     );
 
     const hint = this.add
-      .text(width / 2, height - 52, INTRO_TEXTS.hint, { fontFamily: 'monospace', fontSize: '18px', color: toCss(PALETTE.cream), ...stroke })
+      .text(width / 2, height - 52, forInput(INTRO_TEXTS.hint, TOUCH_TEXTS.continue), { fontFamily: 'monospace', fontSize: '18px', color: toCss(PALETTE.cream), ...stroke })
       .setOrigin(0.5)
       .setDepth(6);
     this.tweens.add({ targets: hint, alpha: 0.25, duration: 700, yoyo: true, repeat: -1 });

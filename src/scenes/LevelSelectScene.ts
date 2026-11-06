@@ -1,9 +1,10 @@
 import Phaser from 'phaser';
+import { forInput, touchInput } from '../systems/TouchInput';
 import { audio } from '../systems/audio/AudioManager';
 import { PALETTE, toCss } from '../config/palette';
 import { CAMERA } from '../config/physics';
 import { LEVELS } from '../data/levels';
-import { LEVEL_SELECT_TEXTS } from '../data/texts';
+import { LEVEL_SELECT_TEXTS, TOUCH_TEXTS } from '../data/texts';
 import { gameState } from '../systems/GameState';
 import { addMenuBackdrop } from '../systems/MenuBackdrop';
 import { OptionList, type MenuOption } from '../systems/OptionList';
@@ -61,8 +62,9 @@ export class LevelSelectScene extends Phaser.Scene {
     onKeys(this, ['ESC'], () => this.back());
 
     const small: Phaser.Types.GameObjects.Text.TextStyle = { fontFamily: 'monospace', fontSize: '15px', color: toCss(PALETTE.cream), stroke: toCss(PALETTE.black), strokeThickness: 4 };
-    this.add.text(LEFT, height - 70, LEVEL_SELECT_TEXTS.hint, small).setOrigin(0, 0.5).setDepth(6);
-    this.add.text(LEFT, height - 46, LEVEL_SELECT_TEXTS.shortcut, small).setOrigin(0, 0.5).setDepth(6);
+    this.add.text(LEFT, height - 70, forInput(LEVEL_SELECT_TEXTS.hint, TOUCH_TEXTS.levelSelect), small).setOrigin(0, 0.5).setDepth(6);
+    // o atalho Shift só existe no teclado
+    if (!touchInput.enabled) this.add.text(LEFT, height - 46, LEVEL_SELECT_TEXTS.shortcut, small).setOrigin(0, 0.5).setDepth(6);
   }
 
   update(_time: number, delta: number): void {

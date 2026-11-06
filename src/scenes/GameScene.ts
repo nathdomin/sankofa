@@ -17,6 +17,8 @@ import { goToScene } from '../systems/transitions';
 import type { CardSceneData } from './CardScene';
 import type { GameOverSceneData } from './GameOverScene';
 import type { HudSceneData } from './HudScene';
+import type { TouchControlsData } from './TouchControlsScene';
+import { touchInput } from '../systems/TouchInput';
 
 export interface GameSceneData {
   levelIndex: number;
@@ -131,6 +133,20 @@ export class GameScene extends Phaser.Scene {
     // o HUD roda em paralelo, por cima desta cena
     this.scene.launch('Hud', { levelIndex: this.levelIndex } satisfies HudSceneData);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.scene.stop('Hud'));
+
+    // celular: botões na tela e pausa automática ao virar o aparelho em pé
+    if (touchInput.enabled) {
+      this.scene.launch('TouchControls', { onPause: () => this.pauseGame() } satisfies TouchControlsData);
+      const portrait = window.matchMedia('(orientation: portrait)');
+      const onRotate = (): void => {
+        if (portrait.matches) this.pauseGame();
+      };
+      portrait.addEventListener('change', onRotate);
+      this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+        portrait.removeEventListener('change', onRotate);
+        this.scene.stop('TouchControls');
+      });
+    }
   }
 
   update(time: number, delta: number): void {
@@ -163,7 +179,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private pauseGame(): void {
-    if (this.dying || this.finished) return;
+    if (this.dying || this.finished || !this.scene.isActive()) return;
     audio.setDuck(true);
     this.scene.launch('Pause');
     this.scene.pause();

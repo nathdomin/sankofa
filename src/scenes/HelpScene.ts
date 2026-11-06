@@ -1,8 +1,10 @@
 import Phaser from 'phaser';
+import { forInput, touchInput } from '../systems/TouchInput';
+import { drawTouchButton } from '../art/touchIcons';
 import { audio } from '../systems/audio/AudioManager';
 import { PALETTE, toCss } from '../config/palette';
 import { CAMERA } from '../config/physics';
-import { HELP_TEXTS } from '../data/texts';
+import { HELP_TEXTS, TOUCH_TEXTS } from '../data/texts';
 import { addMenuBackdrop } from '../systems/MenuBackdrop';
 import { CONFIRM_KEYS, onKeys } from '../systems/sceneInput';
 import { goToScene } from '../systems/transitions';
@@ -29,16 +31,8 @@ export class HelpScene extends Phaser.Scene {
       .setOrigin(0, 0.5)
       .setDepth(2);
 
-    HELP_TEXTS.controls.forEach((row, i) => {
-      const y = 170 + i * ROW_H;
-      this.add
-        .text(LEFT, y, row.action, { fontFamily: 'monospace', fontSize: '20px', color: toCss(PALETTE.cream), stroke: toCss(PALETTE.black), strokeThickness: 4 })
-        .setOrigin(0, 0.5)
-        .setDepth(2);
-      // teclas desenhadas à direita da coluna de ações
-      let x = LEFT + 392;
-      for (const key of row.keys) x += this.keyCap(x, y, key) + 8;
-    });
+    if (touchInput.enabled) this.touchRows();
+    else this.keyRows();
 
     HELP_TEXTS.tips.forEach((tip, i) => {
       this.add
@@ -48,7 +42,7 @@ export class HelpScene extends Phaser.Scene {
     });
 
     const hint = this.add
-      .text(LEFT, height - 44, HELP_TEXTS.back, { fontFamily: 'monospace', fontSize: '16px', color: toCss(PALETTE.cream), stroke: toCss(PALETTE.black), strokeThickness: 4 })
+      .text(LEFT, height - 44, forInput(HELP_TEXTS.back, TOUCH_TEXTS.back), { fontFamily: 'monospace', fontSize: '16px', color: toCss(PALETTE.cream), stroke: toCss(PALETTE.black), strokeThickness: 4 })
       .setOrigin(0, 0.5)
       .setDepth(6);
     this.tweens.add({ targets: hint, alpha: 0.4, duration: 800, yoyo: true, repeat: -1 });
@@ -62,6 +56,35 @@ export class HelpScene extends Phaser.Scene {
 
   update(_time: number, delta: number): void {
     this.updateBackdrop(delta);
+  }
+
+  private label(y: number, text: string): void {
+    this.add
+      .text(LEFT, y, text, { fontFamily: 'monospace', fontSize: '20px', color: toCss(PALETTE.cream), stroke: toCss(PALETTE.black), strokeThickness: 4 })
+      .setOrigin(0, 0.5)
+      .setDepth(2);
+  }
+
+  /** Celular: cada ação com o botão de toque que aparece no jogo */
+  private touchRows(): void {
+    TOUCH_TEXTS.controls.forEach((row, i) => {
+      const y = 170 + i * ROW_H;
+      this.label(y, row.action);
+      row.icons.forEach((icon, j) => {
+        const g = this.add.graphics().setPosition(LEFT + 392 + 17 + j * 44, y).setDepth(2);
+        drawTouchButton(g, icon, 17, false, 0.72);
+      });
+    });
+  }
+
+  private keyRows(): void {
+    HELP_TEXTS.controls.forEach((row, i) => {
+      const y = 170 + i * ROW_H;
+      this.label(y, row.action);
+      // teclas desenhadas à direita da coluna de ações
+      let x = LEFT + 392;
+      for (const key of row.keys) x += this.keyCap(x, y, key) + 8;
+    });
   }
 
   /** Tecla desenhada: devolve a largura ocupada */

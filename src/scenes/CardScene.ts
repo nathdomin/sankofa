@@ -1,10 +1,11 @@
 import Phaser from 'phaser';
+import { forInput } from '../systems/TouchInput';
 import { audio } from '../systems/audio/AudioManager';
 import { BAND_H } from '../art/hudArt';
 import { PALETTE, darken, toCss } from '../config/palette';
 import { CAMERA } from '../config/physics';
 import { LEVELS, type LevelConfig } from '../data/levels';
-import { CARDS, CARD_TEXTS, LINK_STORY, type HistoricalCard } from '../data/texts';
+import { CARDS, CARD_TEXTS, LINK_STORY, type HistoricalCard, TOUCH_TEXTS } from '../data/texts';
 import { gameState } from '../systems/GameState';
 import { Portrait } from '../systems/Portrait';
 import { CONFIRM_KEYS, onKeys } from '../systems/sceneInput';
@@ -101,7 +102,7 @@ export class CardScene extends Phaser.Scene {
     portrait.show(this.config.mentorId);
 
     const hint = this.add
-      .text(width / 2, CARD.y + CARD.h + 32, CARD_TEXTS.hint, { fontFamily: 'monospace', fontSize: '20px', color: toCss(PALETTE.cream), stroke: toCss(PALETTE.black), strokeThickness: 5 })
+      .text(width / 2, CARD.y + CARD.h + 32, forInput(CARD_TEXTS.hint, TOUCH_TEXTS.continue), { fontFamily: 'monospace', fontSize: '20px', color: toCss(PALETTE.cream), stroke: toCss(PALETTE.black), strokeThickness: 5 })
       .setOrigin(0.5)
       .setDepth(3);
     this.tweens.add({ targets: hint, alpha: 0.25, duration: 700, yoyo: true, repeat: -1 });
@@ -111,6 +112,7 @@ export class CardScene extends Phaser.Scene {
     this.tweens.add({ targets: card, y: 0, alpha: 1, duration: 520, ease: 'Back.easeOut' });
 
     onKeys(this, CONFIRM_KEYS, () => this.next());
+    this.input.on('pointerdown', () => this.next());
   }
 
   private next(): void {

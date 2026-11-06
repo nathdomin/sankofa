@@ -32,7 +32,8 @@ class AudioManager {
       this.ensure();
       void this.ctx?.resume();
     };
-    for (const type of ['keydown', 'pointerdown', 'touchstart'] as const) window.addEventListener(type, unlock, { passive: true });
+    // o iPhone só libera o áudio no fim do toque (touchend)
+    for (const type of ['keydown', 'pointerdown', 'touchstart', 'touchend', 'pointerup'] as const) window.addEventListener(type, unlock, { passive: true });
 
     window.addEventListener('keydown', (event) => {
       if (event.code === 'KeyM' && !event.repeat) this.toggleMute();

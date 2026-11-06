@@ -3,6 +3,8 @@ import { CAPOEIRA, GAME, PLAYER, TILE_SIZE, WORLD } from '../config/physics';
 import { PALETTE } from '../config/palette';
 import { CROUCH_FRAMES, GINGA_FRAMES, playerTextureKey } from '../art/playerArt';
 import { audio } from '../systems/audio/AudioManager';
+import { touchInput } from '../systems/TouchInput';
+import type { TouchCommand } from '../config/touch';
 
 export type PlayerState = 'idle' | 'run' | 'jump' | 'au' | 'meiaLua' | 'esquiva' | 'role' | 'hurt';
 
@@ -170,7 +172,7 @@ export class Player extends Phaser.GameObjects.Zone {
 
     const dir = this.controlsEnabled ? this.inputDir() : 0;
     // consome o JustDown todo frame para um aperto antigo não disparar o golpe depois
-    const attackPressed = this.controlsEnabled && anyJustDown(this.keys.attack);
+    const attackPressed = this.controlsEnabled && this.cmdJustDown('attack');
     // abaixado não ataca: levantar para o golpe poderia enfiar o corpo no teto
     if (attackPressed && !LOCKED_STATES.has(this.current) && this.current !== 'esquiva' && time >= this.attackReadyAt) {
       this.attackReadyAt = time + CAPOEIRA.meiaLua.cooldownMs;
@@ -186,8 +188,8 @@ export class Player extends Phaser.GameObjects.Zone {
       this.applyHorizontal(dir, delta / 1000);
       if (this.current === 'esquiva') {
         // sem pulo abaixado; consome os apertos para não virarem pulo atrasado ao levantar
-        anyJustDown(this.keys.jump);
-        anyJustUp(this.keys.jump);
+        this.cmdJustDown('jump');
+        this.cmdJustUp('jump');
       } else {
         if (this.controlsEnabled && this.handleJump(time, onGround)) onGround = false;
         this.resolveState(onGround, dir);
@@ -232,9 +234,9 @@ export class Player extends Phaser.GameObjects.Zone {
 
   private createKeys(): PlayerKeys {
     const kb = this.scene.input.keyboard;
-    if (!kb) throw new Error('Teclado indisponível');
     const K = Phaser.Input.Keyboard.KeyCodes;
-    const add = (...codes: number[]): Key[] => codes.map((code) => kb.addKey(code));
+    // sem teclado (alguns celulares), só os botões de toque comandam
+    const add = (...codes: number[]): Key[] => (kb ? codes.map((code) => kb.addKey(code)) : []);
     return {
       left: add(K.LEFT, K.A),
       right: add(K.RIGHT, K.D),
@@ -245,9 +247,26 @@ export class Player extends Phaser.GameObjects.Zone {
     };
   }
 
+  // teclado e botões de toque valem juntos (os dois lados são lidos para consumir as bordas)
+  private cmdDown(command: TouchCommand): boolean {
+    return anyDown(this.keys[command]) || touchInput.isDown(command);
+  }
+
+  private cmdJustDown(command: TouchCommand): boolean {
+    const key = anyJustDown(this.keys[command]);
+    const touch = touchInput.justDown(command);
+    return key || touch;
+  }
+
+  private cmdJustUp(command: TouchCommand): boolean {
+    const key = anyJustUp(this.keys[command]);
+    const touch = touchInput.justUp(command);
+    return key || touch;
+  }
+
   private inputDir(): -1 | 0 | 1 {
-    const left = anyDown(this.keys.left);
-    const right = anyDown(this.keys.right);
+    const left = this.cmdDown('left');
+    const right = this.cmdDown('right');
     if (left === right) return 0;
     return left ? -1 : 1;
   }
@@ -267,7 +286,7 @@ export class Player extends Phaser.GameObjects.Zone {
   /** Retorna true se saiu do chão neste frame */
   private handleJump(time: number, onGround: boolean): boolean {
     const body = this.arcadeBody;
-    const pressed = anyJustDown(this.keys.jump);
+    const pressed = this.cmdJustDown('jump');
     if (pressed) this.jumpBufferedAt = time;
 
     const canGroundJump = onGround || time - this.lastGroundedAt <= PLAYER.coyoteMs;
@@ -292,7 +311,7 @@ export class Player extends Phaser.GameObjects.Zone {
     }
 
     // pulo variável: soltar cedo corta a subida
-    if (anyJustUp(this.keys.jump) && body.velocity.y < 0) {
+    if (this.cmdJustUp('jump') && body.velocity.y < 0) {
       body.setVelocityY(body.velocity.y * PLAYER.jumpCutFactor);
     }
     return leftGround;
@@ -315,7 +334,7 @@ export class Player extends Phaser.GameObjects.Zone {
 
   /** Segurar ↓ no chão abaixa; só levanta quando soltar E houver espaço acima */
   private updateCrouch(onGround: boolean): void {
-    const wantsCrouch = this.controlsEnabled && anyDown(this.keys.down);
+    const wantsCrouch = this.controlsEnabled && this.cmdDown('down');
     if (this.current === 'esquiva') {
       if ((!wantsCrouch || !onGround) && this.canStand()) this.setState('idle');
     } else if (wantsCrouch && onGround) {
