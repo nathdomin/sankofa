@@ -60,9 +60,8 @@ export const CAPOEIRA = {
     // rastro dourado em arco: raios das duas faixas, espessura e duração do fade
     trail: { radii: [26, 34], lineWidth: 4, fadeMs: 200 },
   },
-  // squashY/tiltDeg: só visual; enterMs = tempo de abaixar
+  // esquiva: engatinha (hitbox baixa); stepMs = tempo de cada quadro do engatinhar
   esquiva: { speedFactor: 0.4, hitbox: { w: 22, h: 22 }, stepMs: 130, stepMinSpeed: 20 },
-  role: { speed: 420, durationMs: 250, cooldownMs: 700 },
   // parado: ginga em quadros (o peso passa de uma perna para a outra); cada quadro dura frameMs
   ginga: { frameMs: 360 },
 } as const;

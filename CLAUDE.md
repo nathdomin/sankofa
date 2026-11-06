@@ -112,7 +112,6 @@ O jogador atravessa 3 fases, cada uma ligada a uma personalidade negra brasileir
 | Pular / aú (pulo duplo) | Espaço, ↑ ou W |
 | Meia-lua de compasso (golpe) | J ou X |
 | Esquiva / cocorinha (segurar) | ↓ ou S |
-| Rolê (rolamento) | K ou Shift (**não implementado**: as teclas existem, mas não fazem nada; ver seção 3.1) |
 | Confirmar / avançar texto | Enter ou Espaço |
 | Pausar | Esc ou P |
 | Mutar som | M |
@@ -128,7 +127,7 @@ Protagonista **original** (não é nenhuma das personalidades históricas), cham
 Hitbox em pé: **22×40**. Sprite: **40×50** (maior que a hitbox para caber rosto e braços abertos). Abaixado: hitbox **22×22**, mantendo os pés no chão.
 
 **Arquitetura do Player:** `Player` é uma `Zone` que carrega só o corpo Arcade (a hitbox exata). O visual é um `Sprite` separado (`player.visual`, origem nos pés), reposicionado a cada frame por `syncVisual()`. Motivo: no Arcade o corpo acompanha o `scale` do game object, e os tweens de squash/rotação mudariam a hitbox. Regra:
-- Mudar hitbox (esquiva, rolê) → `arcadeBody.setSize()` mantendo a base no mesmo `y`.
+- Mudar hitbox (esquiva) → `arcadeBody.setSize()` mantendo a base no mesmo `y`.
 - Efeitos visuais (squash, rotação, piscar) → sempre no `visual`, nunca na `Zone`.
 
 Movimento (valores iniciais em `physics.ts`, ajustáveis):
@@ -149,9 +148,9 @@ O pulo duplo já vem liberado desde a fase 1 (o mentor apresenta o movimento).
 A identidade do jogo é o personagem se mover como capoeirista. Cada movimento tem **uma função clara** no gameplay. Não há combos complexos. Todas as constantes ficam em `physics.ts`.
 
 #### Máquina de estados do Player
-`idle (ginga) | run | jump | au | meiaLua | esquiva | role | hurt`
+`idle (ginga) | run | jump | au | meiaLua | esquiva | hurt` (o estado `role` foi removido do código junto com o rolê)
 - Transições controladas num único método `setState()`. A animação/tween de cada estado é iniciada **só na entrada do estado** (não a cada frame).
-- `hurt` tem prioridade sobre tudo. `meiaLua` e `role` não podem ser interrompidos até terminar.
+- `hurt` tem prioridade sobre tudo. `meiaLua` não pode ser interrompida até terminar.
 
 #### Ginga (automática, visual)
 - **Parado:** ginga em quadros: o peso passa de uma perna para a outra e os braços trocam de guarda, num ciclo de 4 quadros (`gingaA → gingaM → gingaB → gingaM`, `CAPOEIRA.ginga.frameMs` = 360 ms cada), com piscar (variantes com sufixo `b`). Substituiu a respiração por `scaleY`; **sem inclinar para os lados**.
@@ -281,7 +280,7 @@ Cada fase: ~**120–160 tiles de largura** × **17 tiles de altura** (544 px). C
 - **Coletável:** **cartas de alforria** (pergaminho bege). `required: 5`, com exatamente 5 no mapa.
 - **Mecânica especial:** existem 5 NPCs (`N`) na fase. Ao coletar uma carta, o NPC mais próximo ainda não libertado muda de cor (de cinza para colorido), pula e mostra um balão "Livre!". Simples: um evento de troca de textura e um tween.
 - **Inimigos:** Desinformação + Esquecimento (apresentar o primeiro Esquecimento sozinho, em terreno plano, para o jogador entender que precisa da meia-lua).
-- **Ensina:** **esquiva** (vãos de 1 tile sob telhados e sacadas) e **rolê**.
+- **Ensina:** **esquiva** (vãos de 1 tile sob telhados e sacadas).
 - Paleta: céu azul-acinzentado, pedra cinza, telhados terracota.
 
 ### Fase 3: Canindé → cidade moderna · Século XX · Mentor: Carolina Maria de Jesus
@@ -290,7 +289,7 @@ Cada fase: ~**120–160 tiles de largura** × **17 tiles de altura** (544 px). C
 - **Coletável:** **folhas de papel** (branco). `required: 8`, com 10 no mapa (folga).
 - **Mecânica especial:** o HUD mostra um diário que vai sendo preenchido (ex.: "Diário: 5/8 páginas"). Ao completar, mostrar o aviso "O diário está completo! Siga até a biblioteca."
 - **Inimigos:** mistura dos dois, um pouco mais desafiadora, mas justa.
-- **Desafio:** combina todos os movimentos (varais baixos para esquiva/rolê, sequências de inimigos para a meia-lua, pulos com aú).
+- **Desafio:** combina todos os movimentos (varais baixos para esquiva, sequências de inimigos para a meia-lua, pulos com aú).
 - Paleta: céu claro, cores vibrantes nos barracos, cinza-azulado na parte moderna.
 
 ---

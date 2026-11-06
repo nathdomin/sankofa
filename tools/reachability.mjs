@@ -4,7 +4,7 @@
 //   NOAU=1   desliga o aú (mostra o que sai só com pulo simples)
 //   NOCROUCH=1   desliga a esquiva (mostra o que exige passar abaixado)
 //   EXTRA="col,linha;col,linha"   testa coletáveis hipotéticos
-// Simula andar abaixado (esquiva), mas ignora inimigos e o rolê. Pouso e toque são aproximações: use como alerta.
+// Simula andar abaixado (esquiva), mas ignora inimigos. Pouso e toque são aproximações: use como alerta.
 import fs from 'node:fs';
 const root = new URL('../', import.meta.url);
 const src = fs.readFileSync(new URL('src/data/levels.ts', root), 'utf8');

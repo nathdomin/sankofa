@@ -6,7 +6,7 @@ import { audio } from '../systems/audio/AudioManager';
 import { touchInput } from '../systems/TouchInput';
 import type { TouchCommand } from '../config/touch';
 
-export type PlayerState = 'idle' | 'run' | 'jump' | 'au' | 'meiaLua' | 'esquiva' | 'role' | 'hurt';
+export type PlayerState = 'idle' | 'run' | 'jump' | 'au' | 'meiaLua' | 'esquiva' | 'hurt';
 
 type Key = Phaser.Input.Keyboard.Key;
 
@@ -16,11 +16,10 @@ interface PlayerKeys {
   jump: Key[];
   down: Key[];
   attack: Key[];
-  roll: Key[];
 }
 
 // Estados que só terminam por conta própria (timer/animação), sem a entrada do jogador
-const LOCKED_STATES: ReadonlySet<PlayerState> = new Set<PlayerState>(['meiaLua', 'role', 'hurt']);
+const LOCKED_STATES: ReadonlySet<PlayerState> = new Set<PlayerState>(['meiaLua', 'hurt']);
 
 const anyDown = (keys: Key[]): boolean => keys.some((k) => k.isDown);
 // map (e não some) para consumir o JustDown de todas as teclas do mesmo comando
@@ -243,7 +242,6 @@ export class Player extends Phaser.GameObjects.Zone {
       jump: add(K.SPACE, K.UP, K.W),
       down: add(K.DOWN, K.S),
       attack: add(K.J, K.X),
-      roll: add(K.K, K.SHIFT),
     };
   }
 
@@ -429,7 +427,6 @@ export class Player extends Phaser.GameObjects.Zone {
         this.squashTween?.stop(); // não disputar o scaleY com o squash de pulo/aterrissagem
         this.setHitboxHeight(CAPOEIRA.esquiva.hitbox.h);
         break;
-      // role entra no Marco 2
       default:
         break;
     }

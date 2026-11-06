@@ -16,7 +16,7 @@ import { makeSaoPauloArt } from '../art/themes/saopaulo';
 
 type Painter = (g: Phaser.GameObjects.Graphics) => void;
 
-// Gera todas as texturas placeholder. Assets reais podem substituir as mesmas chaves depois.
+// Gera todas as texturas em código. Assets reais podem substituir as mesmas chaves depois.
 export class BootScene extends Phaser.Scene {
   constructor() {
     super('Boot');
