@@ -3,7 +3,7 @@ import { darken, lighten } from '../../config/palette';
 import { TILE_SIZE } from '../../config/physics';
 import type { LevelConfig, LevelPalette } from '../../data/levels';
 import { gradientAt, lerpColor, periodicRidge, type GradientStop } from '../colors';
-import { PARALLAX } from '../parallax';
+import { LONG_CHUNK_PX, PARALLAX } from '../parallax';
 import type { Draw } from '../tileArt';
 import { BG_H, BG_W, CLOUDS_H, FAR_H, FG_H, HILLS_H, MID_H, NEAR_H } from './quilombo';
 
@@ -11,8 +11,8 @@ type G = Phaser.GameObjects.Graphics;
 type Rng = Phaser.Math.RandomDataGenerator;
 
 // Canindé (século XX): manhã clara sobre a favela de barracos coloridos de zinco e madeira;
-// no fim da fase o cenário vira a cidade moderna, com a biblioteca. As camadas `-city`
-// entram por cima das da favela (ver `crossfade` em Scenery.ts).
+// no fim da fase o cenário vira a cidade moderna, com a biblioteca. As camadas de fundo e o primeiro plano
+// são faixas compridas já misturadas ao longo do mapa (ver `transition` em levels.ts e Scenery.ts).
 export const SUN_CANINDE = { x: 200, y: 170, glowSize: 300 } as const;
 
 const SKY: readonly GradientStop[] = [
@@ -293,38 +293,78 @@ const NEAR_ROW: MixedRow = {
 
 // --- Primeiro plano ---
 
-/** Tapume de chapas onduladas de zinco, passando rápido */
-function paintFgFavela(g: G): void {
-  const rng = new Phaser.Math.RandomDataGenerator(['fg-caninde']);
-  const colors = [0x4f8fbf, 0x3f7f5a, 0xc0583a, 0xd9a93d, 0x8a929a] as const;
-  let x = 0;
-  while (x < BG_W) {
-    let w = rng.between(30, 50);
-    if (BG_W - (x + w) < 30) w = BG_W - x;
-    const top = FG_H - rng.between(30, 46);
-    const color = rng.pick([...colors]);
-    g.fillStyle(darken(color, 25)).fillRect(x, top, w, FG_H - top);
-    g.fillStyle(color).fillRect(x + 1, top, w - 2, FG_H - top);
-    for (let px = x + 2; px < x + w - 1; px += 4) {
-      g.fillStyle(darken(color, 16)).fillRect(px, top + 1, 1, FG_H - top - 1);
-      g.fillStyle(lighten(color, 14), 0.6).fillRect(px + 1, top + 1, 1, FG_H - top - 1);
-    }
-    g.fillStyle(lighten(color, 22)).fillRect(x, top, w, 2);
-    g.fillStyle(0x3a3d44).fillRect(x + 4, top + 5, 2, 2).fillRect(x + w - 6, top + 5, 2, 2); // pregos
-    x += w;
-  }
+interface FgPanel {
+  x: number;
+  w: number;
+  h: number;
+  color: number;
 }
 
-/** Guarda-corpo moderno de vidro e aço, com postes */
-function paintFgCity(g: G): void {
+interface FgPlan {
+  panels: FgPanel[];
+  /** x (da textura comprida) onde o guarda-corpo da cidade começa a aparecer */
+  railFrom: number;
+}
+
+/**
+ * Planeja o primeiro plano comprido: tapume de chapas de zinco que vai rareando e baixando (cada
+ * painel some com a chance da mistura) até só sobrar o guarda-corpo da cidade. O sorteio de cada painel
+ * é sempre feito, para o desenho não mudar de lugar quando muda a faixa de mistura.
+ */
+function planFg(texW: number, r: { x0: number; x1: number }): FgPlan {
+  const rng = new Phaser.Math.RandomDataGenerator(['fg-caninde']);
+  const colors = [0x4f8fbf, 0x3f7f5a, 0xc0583a, 0xd9a93d, 0x8a929a] as const;
+  const panels: FgPanel[] = [];
+  let railFrom = texW;
+  for (let x = 0; x < texW; ) {
+    const w = rng.between(30, 50);
+    const t = mixAt(x + w / 2, r);
+    const h = Math.round(rng.between(30, 46) * (1 - 0.3 * t));
+    const color = rng.pick([...colors]);
+    if (t >= 0.1 && railFrom === texW) railFrom = x;
+    if (rng.frac() >= t) panels.push({ x, w, h, color });
+    x += w;
+  }
+  return { panels, railFrom };
+}
+
+/** Tapume de chapas onduladas de zinco, passando rápido */
+function paintFgPanel(g: G, p: FgPanel, x0: number): void {
+  const x = p.x - x0;
+  const top = FG_H - p.h;
+  g.fillStyle(darken(p.color, 25)).fillRect(x, top, p.w, p.h);
+  g.fillStyle(p.color).fillRect(x + 1, top, p.w - 2, p.h);
+  for (let px = x + 2; px < x + p.w - 1; px += 4) {
+    g.fillStyle(darken(p.color, 16)).fillRect(px, top + 1, 1, p.h - 1);
+    g.fillStyle(lighten(p.color, 14), 0.6).fillRect(px + 1, top + 1, 1, p.h - 1);
+  }
+  g.fillStyle(lighten(p.color, 22)).fillRect(x, top, p.w, 2);
+  g.fillStyle(0x3a3d44).fillRect(x + 4, top + 5, 2, 2).fillRect(x + p.w - 6, top + 5, 2, 2); // pregos
+}
+
+/** Guarda-corpo moderno de vidro e aço, com postes, de `a` até `b` (x da textura comprida) */
+function paintFgRail(g: G, a: number, b: number, x0: number): void {
   const steel = 0x39465a;
-  g.fillStyle(steel).fillRect(0, FG_H - 8, BG_W, 8);
-  g.fillStyle(0x6d7f95).fillRect(0, FG_H - 8, BG_W, 2);
-  g.fillStyle(0x8fc7e0, 0.35).fillRect(0, FG_H - 40, BG_W, 32);
+  const left = a - x0;
+  const len = b - a;
+  g.fillStyle(steel).fillRect(left, FG_H - 8, len, 8);
+  g.fillStyle(0x6d7f95).fillRect(left, FG_H - 8, len, 2);
+  g.fillStyle(0x8fc7e0, 0.35).fillRect(left, FG_H - 40, len, 32);
   g.fillStyle(0xffffff, 0.18);
-  for (let x = 6; x < BG_W; x += 48) g.fillTriangle(x, FG_H - 40, x + 14, FG_H - 40, x - 6, FG_H - 8).fillTriangle(x + 14, FG_H - 40, x + 8, FG_H - 8, x - 6, FG_H - 8);
-  g.fillStyle(steel).fillRect(0, FG_H - 42, BG_W, 3);
-  for (let x = 0; x < BG_W; x += 96) g.fillRect(x, FG_H - 46, 5, 38).fillStyle(0x9db3c5).fillRect(x, FG_H - 46, 5, 2).fillStyle(steel);
+  for (let x = Math.ceil((a - 6) / 48) * 48 + 6; x < b; x += 48) {
+    g.fillTriangle(x - x0, FG_H - 40, x + 14 - x0, FG_H - 40, x - 6 - x0, FG_H - 8).fillTriangle(x + 14 - x0, FG_H - 40, x + 8 - x0, FG_H - 8, x - 6 - x0, FG_H - 8);
+  }
+  g.fillStyle(steel).fillRect(left, FG_H - 42, len, 3);
+  // um poste na ponta, onde o guarda-corpo começa, e os demais de 96 em 96
+  g.fillRect(left, FG_H - 46, 5, 38).fillStyle(0x9db3c5).fillRect(left, FG_H - 46, 5, 2).fillStyle(steel);
+  for (let x = Math.ceil(a / 96) * 96; x < b; x += 96) g.fillRect(x - x0, FG_H - 46, 5, 38).fillStyle(0x9db3c5).fillRect(x - x0, FG_H - 46, 5, 2).fillStyle(steel);
+}
+
+/** Um pedaço (de `x0` até `x0 + w`) do primeiro plano comprido: guarda-corpo atrás, tapume na frente */
+function paintFgChunk(g: G, plan: FgPlan, x0: number, w: number): void {
+  const from = Math.max(plan.railFrom, x0);
+  if (from < x0 + w) paintFgRail(g, from, x0 + w, x0);
+  for (const p of plan.panels) if (p.x < x0 + w && p.x + p.w > x0) paintFgPanel(g, p, x0);
 }
 
 // --- Elementos do cenário (marcos e enfeites) ---
@@ -584,8 +624,14 @@ export function makeCanindeArt(draw: Draw, level: LevelConfig): void {
   const nearW = longWidth(PARALLAX.near, levelPx);
   const nearR = mixRange(PARALLAX.near, transition);
   draw('near-caninde', nearW, NEAR_H, (g) => paintMixedRow(g, 'near-caninde', NEAR_BASE, nearW, NEAR_H, nearR, NEAR_ROW));
-  draw('fg-caninde', BG_W, FG_H, paintFgFavela);
-  draw('fg-caninde-city', BG_W, FG_H, paintFgCity);
+  // primeiro plano: faixa comprida em pedaços de LONG_CHUNK_PX (+2 px de sobra para não aparecer emenda)
+  const fgW = longWidth(PARALLAX.foreground, levelPx);
+  const fgPlan = planFg(fgW, mixRange(PARALLAX.foreground, { from: transition.from - 4, to: transition.to + 8 }));
+  for (let i = 0; i * LONG_CHUNK_PX < fgW; i++) {
+    const x0 = i * LONG_CHUNK_PX;
+    const w = Math.min(LONG_CHUNK_PX + 2, fgW - x0);
+    draw(`fg-caninde-${i}`, w, FG_H, (g) => paintFgChunk(g, fgPlan, x0, w));
+  }
 
   for (let v = 0; v < BARRACO_VARIANTS; v++) draw(`barraco-caninde-${v}`, 128, 128, (g) => paintBarracoLandmark(g, v));
   draw('varal-caninde', 96, 80, paintVaral);

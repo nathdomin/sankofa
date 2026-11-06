@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { TILE_SIZE } from '../config/physics';
 import type { LevelConfig, Landmark, LandmarkKind, SceneryTheme } from '../data/levels';
-import { PARALLAX } from '../art/parallax';
+import { LONG_CHUNK_PX, PARALLAX } from '../art/parallax';
 import { DECOR_VARIANTS, SUN } from '../art/themes/quilombo';
 import { SUN_CANINDE, paintBuilding as paintCanindeBuilding } from '../art/themes/caninde';
 import { SUN_SAOPAULO, paintBuilding } from '../art/themes/saopaulo';
@@ -59,9 +59,8 @@ const CHIMNEY: Partial<Record<LandmarkKind, { dx: number; dy: number }>> = {
   barraco: { dx: 44, dy: 18 },
 };
 
-interface Swappable {
-  base: Phaser.GameObjects.TileSprite;
-  city?: Phaser.GameObjects.TileSprite;
+interface Scrolling {
+  layer: Phaser.GameObjects.TileSprite;
   factor: number;
 }
 
@@ -108,33 +107,29 @@ export function addParallax(scene: Phaser.Scene, level: LevelConfig): ParallaxUp
   };
   const clouds = layer(`clouds-${theme}`, DEPTH.clouds, 0);
   const far = layer(`far-${theme}`, DEPTH.far);
-  // Fases com `transition` (favela -> cidade): hills/mid/near são texturas compridas, desenhadas já
-  // misturando os dois cenários (barracos viram prédios aos poucos) e movidas só pelo scrollFactor.
-  // O primeiro plano troca por dissolução, num trecho mais largo.
+  // Fases com `transition` (favela -> cidade): hills, mid, near e o primeiro plano são texturas compridas
+  // (o primeiro plano, em pedaços), desenhadas já misturando os dois cenários (barracos viram prédios, o
+  // tapume rareia até sobrar o guarda-corpo) e movidas só pelo scrollFactor.
   const { transition } = level;
   const longLayer = (name: string, depth: number, factor: number): void => {
-    const key = `${name}-${theme}`;
-    const frame = scene.textures.getFrame(key);
-    scene.add.image(0, height - frame.height, key).setOrigin(0).setScrollFactor(factor).setDepth(depth);
-  };
-  const swaps: Swappable[] = [];
-  const addLayer = (name: string, depth: number, factor: number): void => {
-    if (transition && name !== 'fg') {
-      longLayer(name, depth, factor);
-      return;
-    }
-    const city = transition && scene.textures.exists(`${name}-${theme}-city`);
-    swaps.push({
-      base: layer(`${name}-${theme}`, depth),
-      city: city ? layer(`${name}-${theme}-city`, depth + 0.1).setAlpha(0).setVisible(false) : undefined,
-      factor,
+    const whole = `${name}-${theme}`;
+    const keys: string[] = [];
+    if (scene.textures.exists(whole)) keys.push(whole);
+    else for (let i = 0; scene.textures.exists(`${whole}-${i}`); i++) keys.push(`${whole}-${i}`);
+    keys.forEach((key, i) => {
+      const frame = scene.textures.getFrame(key);
+      scene.add.image(i * LONG_CHUNK_PX, height - frame.height, key).setOrigin(0).setScrollFactor(factor).setDepth(depth);
     });
+  };
+  const scrolling: Scrolling[] = [];
+  const addLayer = (name: string, depth: number, factor: number): void => {
+    if (transition) longLayer(name, depth, factor);
+    else scrolling.push({ layer: layer(`${name}-${theme}`, depth), factor });
   };
   addLayer('hills', DEPTH.hills, PARALLAX.hills);
   addLayer('mid', DEPTH.mid, PARALLAX.mid);
   addLayer('near', DEPTH.near, PARALLAX.near);
   addLayer('fg', DEPTH.foreground, PARALLAX.foreground);
-  const fgFade = transition ? { from: transition.from - 4, to: transition.to + 8 } : undefined;
 
   // pólen dourado flutuando na luz do fim de tarde
   if (fx.motes) {
@@ -163,18 +158,7 @@ export function addParallax(scene: Phaser.Scene, level: LevelConfig): ParallaxUp
     clouds.tilePositionX = cam.scrollX * PARALLAX.clouds + cloudDrift;
     far.tilePositionX = cam.scrollX * PARALLAX.far;
 
-    // 0 = só o primeiro plano da favela, 1 = só o da cidade (curva suave)
-    const raw = fgFade ? Phaser.Math.Clamp((cam.scrollX + width / 2 - fgFade.from * TILE_SIZE) / ((fgFade.to - fgFade.from) * TILE_SIZE), 0, 1) : 0;
-    const city = raw * raw * (3 - 2 * raw);
-    for (const s of swaps) {
-      s.base.tilePositionX = cam.scrollX * s.factor;
-      // a favela só some quando a cidade já cobre tudo, para o céu não aparecer no meio da troca
-      s.base.setVisible(!s.city || city < 1);
-      if (s.city) {
-        s.city.tilePositionX = cam.scrollX * s.factor;
-        s.city.setAlpha(city).setVisible(city > 0);
-      }
-    }
+    for (const s of scrolling) s.layer.tilePositionX = cam.scrollX * s.factor;
 
     const span = width + 40;
     for (const b of birds) {
