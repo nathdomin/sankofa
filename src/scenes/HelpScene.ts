@@ -8,7 +8,7 @@ import { CONFIRM_KEYS, onKeys } from '../systems/sceneInput';
 import { goToScene } from '../systems/transitions';
 
 const LEFT = 84;
-const ROW_H = 46;
+const ROW_H = 40;
 
 /** "Como jogar": os controles em teclas desenhadas e duas dicas curtas */
 export class HelpScene extends Phaser.Scene {
@@ -30,7 +30,7 @@ export class HelpScene extends Phaser.Scene {
       .setDepth(2);
 
     HELP_TEXTS.controls.forEach((row, i) => {
-      const y = 176 + i * ROW_H;
+      const y = 170 + i * ROW_H;
       this.add
         .text(LEFT, y, row.action, { fontFamily: 'monospace', fontSize: '20px', color: toCss(PALETTE.cream), stroke: toCss(PALETTE.black), strokeThickness: 4 })
         .setOrigin(0, 0.5)

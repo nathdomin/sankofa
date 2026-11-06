@@ -1,7 +1,7 @@
 import type { MentorId } from './levels';
 
-// ATENÇÃO: textos históricos são rascunhos. Revisar com fontes confiáveis (Fundação Cultural
-// Palmares, Museu Afro Brasil, professor) antes da apresentação.
+// Textos históricos conferidos em 06/11/2026 contra fontes públicas (ver "Fontes" no CLAUDE.md):
+// datas, lugares e leis batem. Ainda vale uma leitura final do professor antes da apresentação.
 
 export interface Mentor {
   name: string;
@@ -53,9 +53,10 @@ export const CARDS: Record<MentorId, HistoricalCard> = {
   luizgama: {
     title: 'Luiz Gama (1830–1882)',
     body:
-      'Nasceu livre em Salvador, mas foi vendido como escravizado aos 10 anos. Aprendeu a ler, provou na ' +
-      'Justiça que tinha direito à liberdade e estudou Direito por conta própria. Atuando nos tribunais, ' +
-      'ajudou a libertar centenas de pessoas. Em 2015, a OAB o reconheceu oficialmente como advogado.',
+      'Nasceu livre em Salvador, mas foi vendido como escravizado aos 10 anos. Já adolescente, aprendeu a ler ' +
+      'e provou que era livre. Impedido de cursar Direito, estudou por conta própria e atuou nos tribunais ' +
+      'como rábula (advogado sem diploma), ajudando a libertar centenas de pessoas. Em 2015, a OAB lhe ' +
+      'concedeu, após a morte, o título de advogado.',
   },
   carolina: {
     title: 'Carolina Maria de Jesus (1914–1977)',
@@ -180,6 +181,7 @@ export const HELP_TEXTS = {
     { action: 'Meia-lua de compasso (golpe)', keys: ['J', 'X'] },
     { action: 'Esquiva (segurar)', keys: ['↓', 'S'] },
     { action: 'Pausar', keys: ['Esc', 'P'] },
+    { action: 'Som ligado/desligado', keys: ['M'] },
   ],
   tips: [
     'O Esquecimento só cai com a meia-lua. A Desinformação também cai com um pulo em cima.',
@@ -254,6 +256,9 @@ export const VICTORY_TEXTS = {
     '',
     'Desenvolvimento',
     'Nathan Domingues',
+    '',
+    'Arte, música e efeitos sonoros',
+    'criados em código',
     '',
     'Inspirado em',
     'Zumbi dos Palmares',

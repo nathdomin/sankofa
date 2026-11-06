@@ -107,7 +107,7 @@ O jogador atravessa 3 fases, cada uma ligada a uma personalidade negra brasileir
 | Pular / aú (pulo duplo) | Espaço, ↑ ou W |
 | Meia-lua de compasso (golpe) | J ou X |
 | Esquiva / cocorinha (segurar) | ↓ ou S |
-| Rolê (rolamento) | K ou Shift |
+| Rolê (rolamento) | K ou Shift (**não implementado**: as teclas existem, mas não fazem nada; ver seção 3.1) |
 | Confirmar / avançar texto | Enter ou Espaço |
 | Pausar | Esc ou P |
 | Mutar som | M |
@@ -169,7 +169,8 @@ A identidade do jogo é o personagem se mover como capoeirista. Cada movimento t
 - **Visual:** o personagem **engatinha** (`crouch`: tronco na horizontal, apoiado nas mãos e nos joelhos, ~24 px de altura, bem abaixo do vão de 1 tile); ao andar, os quadros `crouchW0`/`crouchW1` alternam braços e joelhos (`CAPOEIRA.esquiva.stepMs`); sem squash nem inclinação. O desenho vem de `buildCrawlGrid` (`playerArt.ts`), à parte do esqueleto em pé.
 - Ao soltar, **só levanta se houver espaço acima**: checar se os tiles acima da hitbox estão livres. Se estiver bloqueado, continua abaixado até sair do vão.
 
-#### Rolê (rolamento), tecla K/Shift
+#### Rolê (rolamento), tecla K/Shift — **NÃO IMPLEMENTADO** (cortado primeiro, como previsto; a esquiva cobre as passagens baixas)
+Projeto original, mantido só como referência para uma v2:
 - Só no chão. Avança **420 px/s por 250 ms** na direção em que o player olha.
 - **Invencível** durante o rolê e com hitbox baixa (como na esquiva), então passa por vãos baixos e por inimigos.
 - Cooldown: **700 ms**.
@@ -204,7 +205,7 @@ Todos os valores ficam em `src/config/physics.ts` (`WORLD`, `PLAYER`, `CAPOEIRA`
 ### Inimigos (conceitos abstratos, nunca pessoas)
 Inimigos representam ideias, não grupos de pessoas. Visual: "nuvens" ou "manchas" escuras com olhos simples.
 - **Desinformação**: anda de um lado para o outro e vira ao bater em parede, na beira da plataforma ou numa passagem baixa (vão de 1 tile, que o inimigo não entra, para não ficar no caminho de quem passa abaixado)
-- **Esquecimento** (fases 2 e 3): igual, porém mais rápido e com "pontas" no topo. **Não pode ser derrotado pulando em cima** (causa dano); só com a meia-lua. Também dá para desviar dele com o rolê.
+- **Esquecimento** (fases 2 e 3): igual, porém mais rápido e com "pontas" no topo. **Não pode ser derrotado pulando em cima** (causa dano); só com a meia-lua. Só dá para evitá-lo desviando ou matando com a meia-lua (o rolê não foi implementado).
 
 ---
 
@@ -388,7 +389,7 @@ Ordem sugerida (cada passo deixa o jogo jogável):
 - [x] Inimigos (patrulha, stomp, dano, Esquecimento imune a stomp)
 - [x] Meia-lua de compasso (com hit-stop); a pose `kick` substituiu a estrela do aú no Marco 3
 - [x] Esquiva (sem teste em fase ainda: a fase 1 não tem vãos baixos)
-- [ ] Rolê, se houver tempo (seção 3.1)
+- [ ] Rolê: **cortado** (primeiro item da lista de cortes; seção 3.1 fica só como referência)
 - [x] Coletáveis + portal trancado/aberto
 - [x] HudScene (inclui a faixa decorativa de padrão geométrico na borda)
 - [x] Menu, Intro e GameOver (Intro → Game → GameOver | Menu; os retratos dos mentores eram silhuetas e ganharam rosto e animação no Marco 3)
@@ -421,13 +422,16 @@ Ordem sugerida (cada passo deixa o jogo jogável):
 - [x] **Design dos inimigos e explicação no começo do jogo** (pedido do usuário; feito, aguardando aprovação): novo visual da Desinformação e do Esquecimento, com animação de andar e efeito ao serem derrotados; cena `EnemiesScene` depois do prólogo explicando o que cada um é e como vencer; aviso extra do Esquecimento na Intro do Luiz Gama
 - [x] Ajuste fino do game feel e da dificuldade (feito, aguardando aprovação; ver "Acabamento" na seção 3.1): poeira, câmera que olha à frente, pisão e dano com mais peso, faíscas no checkpoint e som de aterrissagem. **A dificuldade dos mapas não foi alterada** (as 3 fases já foram aprovadas); só mexer se o usuário apontar um trecho injusto no teste
 - [x] Pausa (Esc/P): `PauseScene` por cima da GameScene parada, com "Continuar" e "Menu"
-- [ ] **Revisão geral** (último passo do Marco 3, depois de todos os outros): jogar o jogo inteiro do menu aos créditos, nas 3 fases, e fechar pendências antes do Marco 4. Checklist:
+- [x] **Revisão geral** (feita em 06/11/2026, aguardando aprovação; **pendências para o grupo** no fim da lista; último passo do Marco 3, depois de todos os outros): jogar o jogo inteiro do menu aos créditos, nas 3 fases, e fechar pendências antes do Marco 4. Checklist:
   - textos históricos (mentores, cartas) revisados com fontes confiáveis (Fundação Cultural Palmares, Museu Afro Brasil, professor) e sem nada apresentado como citação real
   - créditos completos (incluir os demais integrantes da equipe, se houver) e frase do Dia da Consciência Negra conferida
   - consistência visual entre menu, seletor de fases, Intro, HUD, Pausa, GameOver, Card e Victory
   - dificuldade e game feel: nenhuma morte injusta, checkpoints bem colocados, fase 1 ainda acessível para a apresentação
   - `node tools/reachability.mjs` nas 3 fases (com `NOAU=1` e `NOCROUCH=1`), `npm run build` sem erros e teste automatizado percorrendo o jogo todo
   - limpeza: itens ou textos que citam recursos não implementados (ex.: rolê), TODOs soltos e o `CLAUDE.md` atualizado com o estado final
+  - **Resultado da revisão:** (1) textos históricos conferidos em fontes públicas (ver "Fontes" abaixo): o texto da carta do Luiz Gama foi corrigido (ele atuou como rábula, sem diploma, e o título da OAB veio em 2015, após a morte); datas e leis de Zumbi e dados de Carolina batem. (2) Fluxo completo testado por script, do menu aos créditos nas 3 fases, passando por Enemies, Intro, Pause, Card, ligações, epílogo, Victory e Game Over, **sem nenhum erro no console**. (3) `reachability`: as 3 fases com portal e coletáveis alcançáveis; sem aú só a fase 2 fecha (a 1 e a 3 exigem o aú, como o design pede); sem esquiva nenhuma fecha (a 2 e a 3 exigem a esquiva). (4) Consistência visual conferida em todas as telas (menu, seletor, ajuda, histórias, inimigos, Intro, HUD, Pausa, Game Over, Card e Victory): mesma faixa, mesma tipografia e mesmo estilo. (5) Limpeza: o rolê ficou documentado como não implementado, a ajuda ganhou a tecla M, os créditos ganharam a linha de arte e som, foi criado o favicon (acabou o erro 404 do console) e não há TODOs soltos no código.
+  - **Pendências que dependem do grupo:** (a) nomes dos demais integrantes da equipe para os créditos (`VICTORY_TEXTS.credits`, hoje só Nathan Domingues); (b) leitura final do professor sobre os textos históricos e sobre os retratos (principalmente o do Zumbi, imaginado); (c) decidir se o atalho Shift do seletor de fases e a opção "Escolher fase" ficam na versão final; (d) teste de jogo do grupo, em especial a dificuldade da fase 3.
+  - **Fontes consultadas (06/11/2026)** para os textos históricos: Zumbi, 20/11/1695 e feriado nacional (Lei 14.759/2023): [Wikipedia: National Day of Zumbi and Black Consciousness](https://en.wikipedia.org/wiki/National_Day_of_Zumbi_and_Black_Consciousness), [Correio Braziliense, 2024](https://www.correiobraziliense.com.br/brasil/2024/11/6983416-dia-da-consciencia-negra-sera-feriado-nacional-pela-primeira-vez.html), [Congresso em Foco](https://congressoemfoco.com.br/area/pais/dia-de-zumbi-e-da-consciencia-negra-a-historia-por-tras-do-novo-feriado-nacional). Luiz Gama (nasceu livre em 1830, vendido aos 10 anos, rábula, título da OAB em 2015): [Vermelho, 2015](https://vermelho.org.br/2015/11/04/reconhecimento-luiz-gama-recebe-titulo-de-advogado-da-oab/), [Migalhas](https://www.migalhas.com.br/depeso/347646/o-advogado-dos-escravos), [Jornal Opção](https://www.jornalopcao.com.br/ultimas-noticias/apos-133-anos-de-sua-morte-luiz-gama-recebe-titulo-de-advogado-50449/). Carolina Maria de Jesus (1914–1977, Canindé, *Quarto de Despejo* em 1960): [O Povo, 2024](https://www.opovo.com.br/noticias/brasil/2024/03/14/catadora-de-papel-e-escritora-carolina-de-jesus-faria-110-anos-hoje.html), [Toda Matéria](https://www.todamateria.com.br/carolina-maria-de-jesus/). São fontes jornalísticas e enciclopédicas; o número de pessoas libertadas por Luiz Gama varia (o texto diz "centenas") e o de idiomas de *Quarto de Despejo* também (o texto diz "mais de dez"). Para a apresentação, vale conferir com a Fundação Cultural Palmares, o Museu Afro Brasil e o professor.
 
 ### Marco 4: Som e entrega (meta: até 17/11, **congelamento**)
 - [ ] (movido para o passo "Sons do jogo" do Marco 3) Efeitos sonoros e mute
