@@ -12,6 +12,8 @@ export interface Mentor {
 export interface HistoricalCard {
   title: string;
   body: string;
+  /** Observação curta em letra pequena no pé do texto (ex.: o retrato é imaginado) */
+  note?: string;
 }
 
 export const MENTORS: Record<MentorId, Mentor> = {
@@ -47,8 +49,9 @@ export const CARDS: Record<MentorId, HistoricalCard> = {
     title: 'Zumbi dos Palmares',
     body:
       'Zumbi foi o último grande líder do Quilombo dos Palmares, na Serra da Barriga (atual Alagoas), ' +
-      'um dos maiores quilombos das Américas, que resistiu por décadas. Foi morto em 20 de novembro de 1695. ' +
+      'um dos maiores quilombos das Américas, que resistiu por mais de um século. Foi morto em 20 de novembro de 1695. ' +
       'Essa data deu origem ao Dia Nacional de Zumbi e da Consciência Negra, feriado nacional desde 2024.',
+    note: 'Retrato imaginado: não existe imagem de Zumbi feita em vida.',
   },
   luizgama: {
     title: 'Luiz Gama (1830–1882)',
@@ -258,7 +261,7 @@ export const CARD_TEXTS = {
   hint: 'Pressione Enter para continuar',
 } as const;
 
-// TODO: incluir os nomes dos demais integrantes da equipe, se houver, antes da apresentação
+// Créditos fechados pelo grupo: consta apenas Nathan Domingues
 export const VICTORY_TEXTS = {
   title: 'Sankofa',
   message: [

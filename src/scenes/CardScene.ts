@@ -74,11 +74,19 @@ export class CardScene extends Phaser.Scene {
         .setOrigin(0),
     );
 
+    if (this.card.note) {
+      card.add(
+        this.add
+          .text(TEXT_X, CARD.y + CARD.h - 112, this.card.note, { fontFamily: 'monospace', fontSize: '14px', fontStyle: 'italic', color: toCss(darken(PALETTE.earth, 5)), wordWrap: { width: CARD.x + CARD.w - 40 - TEXT_X } })
+          .setOrigin(0, 0.5),
+      );
+    }
+
     // placar da fase: coletáveis e pontos
     const total = this.config.map.join('').split('C').length - 1;
     const statsY = CARD.y + CARD.h - 80;
     card.add(this.add.rectangle(TEXT_X, statsY, CARD.x + CARD.w - 40 - TEXT_X, 2, darken(PALETTE.cream, 25)).setOrigin(0, 0.5));
-    card.add(this.add.image(TEXT_X + 14, statsY + 26, this.config.collectible.texture).setScale(1.4));
+    card.add(this.add.image(TEXT_X + 14, statsY + 26, this.config.collectible.texture));
     card.add(
       this.add
         .text(TEXT_X + 38, statsY + 26, `${gameState.collected} de ${total} ${this.config.collectible.namePlural}`, { fontFamily: 'monospace', fontSize: '20px', fontStyle: 'bold', color: toCss(darken(PALETTE.earth, 40)) })
