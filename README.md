@@ -4,7 +4,7 @@
 
 **[▶ Jogar agora](https://nathdomin.github.io/sankofa/)** (PC ou celular deitado, sem instalar nada)
 
-![Menu do jogo](docs/screenshots/menu.png)
+![Gameplay da fase 1: corrida, meia-lua de compasso e aú](docs/sankofa.gif)
 
 > 🇬🇧 *A 2D browser platformer about Black resistance in Brazilian history. A young capoeirista travels through three eras, learning from Zumbi dos Palmares, Luiz Gama and Carolina Maria de Jesus. Built with Phaser 3 + strict TypeScript; every sprite, background and song is generated in code, with no image or audio files. [Play it here](https://nathdomin.github.io/sankofa/).*
 
@@ -23,7 +23,7 @@ Ao fim de cada fase, uma carta histórica conta quem foi o mentor.
 | | |
 |---|---|
 | ![Fase 1](docs/screenshots/fase1.png) | ![Fase 2](docs/screenshots/fase2.png) |
-| ![Fase 3](docs/screenshots/fase3.png) | |
+| ![Fase 3](docs/screenshots/fase3.png) | ![Menu](docs/screenshots/menu.png) |
 
 ## Como jogar
 
