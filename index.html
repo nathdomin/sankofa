@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#1a1a1a" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAEGUlEQVR4AezWvY4dRRQE4GFThMgRCQkJERk5DnkbnoO3ITQ5GREJCYnl3LIc2/pWqvW5fbt7eu6dtROvVDrd56dOVc9qtQ/bDT/vXv/9vocbqO4eWTZQBf/4829bD3ruVnSQYMkAYVXwaIcevaP6c+R3DRBE2OpyvWZW++/tmxoghKC9Ja/+f7kFes2Ydb4Vq/NDAwgI2RNAeO3J3SyOWls9m1ud7xoIwerCM/uO7r4yMCP4758/N5gJ/v6HF7PytDbbPRq8MDAiIBq+/u6Xr8AZkFbB9ax2BKPd8jDiejKgye9d20go0ZCaM6jJEQ7OZyHcNAF9Pe4nA70iEkJ7NTk1Pc49zBbXfuL01tzqeWpglWTUxxyTo/oob05txdSjgXtegMAstPQo2t24cFaeXi71RwO5fO4YodVUcrTJB+4wNeATGtA4gxezSI8IznvAbUftq7nwyIHewN3cg4Oky5mwnLGjnNFi3qx74A5q4b74Av4NAE2BYSZzH0WEiN/+9WILZnNquCtfvTtDreMHu5K/MCDZ+3uOyELQ04Ma4b1am9OLs82P7kRD6uZzvjBQxfsSkEYLwTAkfzSaxZM5OyD3XtTfAo/eCwMSUAnrWS1ECAJ5n/WbX19u4C7KOadPNC8HLfcoJ98CD74rAyH1NYJ22B1BgAjkgXhRDtInyrewp+aiITm/Pj14oCsDhiohMtg2lT4Im6E/9TFb+e2GVAkntAc9FwYqkWLuIXQP1IM/vv1pa5HaLOKFWY+H8RVHPQ+ccakBGTgTKrb3mnMeoTXUu2c2O3IXaQpolOvh4gu0DSGOGfXknIPf3/y7BcmtxGqq7ffycjPx6o8GNHErMUMrvgrIOUYSZ3xn1B4NzIjy+q14M0SKFTEiyutpIT+DxwQPO+tTezKg2ZAk9ATLB1Vgcm3UE9RaNVTz9UxPvY/OTwY0GKom5HogSl6ECJIbQV+QHndn82Lg93/2lyd94oUBiR7ar9EuJATkK3pccnrBWb8IHi/wmHJ7uDJgEEkGW/HJWwy5i0QF7uot5Efw8mo0iCu4MmAIQTUhVxGRYhU46qn5ejZb77ecuwaOEDEBZggK3AP1IDl9OXuswOMlvxKHBhAh7ZHU5akTmLOoB5xb9PL2Qdu7dx8aMIiQCXCvIAJqjglIrp6Ta2eSvzVODSBlAnom1HuCCAf1QB/kflbcNZBFMdEzQliQ/sReHkcF7vQfjcsGEFsEWS7XIoIT23rueILkbomHDGRBFseImNqnjjcZiMgYEZmA1ET3wP05cJeBKogJILjN1/vZ59MMnC1sle95DKxuP6Hvi4G9Rxz9Xy8f7HHM6qd9gYjJv8SWOgfuQXKJmRXTsxpPMWBxxKwurn2ZFXHV2t75FAP58+lP6L3AtSe61j8AAAD///9i3vsAAAAGSURBVAMAJ3hv8mCzIVkAAAAASUVORK5CYII=" />
+    <title>Sankofa: Caminhos da Resistência</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #1a1a1a;
+        overflow: hidden;
+        /* celular: sem zoom de dois toques, sem rolar a página, sem selecionar texto */
+        touch-action: none;
+        overscroll-behavior: none;
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+      #game {
+        width: 100%;
+        height: 100%;
+      }
+      /* aviso "gire o celular": só no celular (classe touch, posta pelo jogo) e com a tela em pé */
+      #rotate {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 10;
+        background: #1a1a1a;
+        color: #f2b705;
+        font: bold 20px monospace;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 28px;
+        text-align: center;
+        padding: 0 24px;
+      }
+      #rotate .phone {
+        width: 44px;
+        height: 76px;
+        border: 4px solid #f5e6c8;
+        border-radius: 8px;
+        animation: turn 2s ease-in-out infinite;
+      }
+      @keyframes turn {
+        0%, 25% { transform: rotate(0deg); }
+        60%, 100% { transform: rotate(-90deg); }
+      }
+      @media (orientation: portrait) {
+        html.touch #rotate {
+          display: flex;
+        }
+      }
+    </style>
+    <script type="module" crossorigin src="./assets/index-3wqg2tTw.js"></script>
+  </head>
+  <body>
+    <div id="game"></div>
+    <div id="rotate"><div class="phone"></div><p></p></div>
+  </body>
+</html>
