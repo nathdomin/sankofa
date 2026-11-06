@@ -12,6 +12,8 @@ interface Look {
   accent: number;
   /** Base da imagem (os mentores e o protagonista ficam apoiados na borda de baixo; o símbolo, no centro) */
   anchor: 'bottom' | 'center';
+  /** Ajuste em px para o anchor 'center': centra o peso visual do desenho no círculo do fundo, não a caixa dele */
+  offset?: { x: number; y: number };
   /** Sem quadro de boca aberta: balança um pouco enquanto fala */
   bobWhenTalking?: boolean;
   /** Flutua devagar, em vez de respirar */
@@ -28,7 +30,7 @@ function lookFor(speaker: Speaker): Look {
     return { idle: playerTextureKey('idle'), talk: playerTextureKey('idle'), blink: playerTextureKey('idleBlink'), scale: 4.8, accent: PALETTE.green, anchor: 'bottom', bobWhenTalking: true };
   }
   if (speaker === 'sankofa') {
-    return { idle: 'sankofa', talk: 'sankofa', blink: 'sankofa', scale: 6, accent: 0xa090f0, anchor: 'center', float: true };
+    return { idle: 'sankofa-big', talk: 'sankofa-big', blink: 'sankofa-big', scale: 3, accent: 0xa090f0, anchor: 'center', offset: { x: 10, y: 3 }, float: true };
   }
   return {
     idle: mentorTextureKey(speaker),
@@ -88,7 +90,7 @@ export class Portrait {
 
     this.image.setTexture(look.idle).setScale(look.scale).setAngle(0);
     if (look.anchor === 'bottom') this.image.setOrigin(0.5, 1).setPosition(x + PORTRAIT.w / 2, y + PORTRAIT.h);
-    else this.image.setOrigin(0.5, 0.5).setPosition(x + PORTRAIT.w / 2, y + PORTRAIT.h / 2);
+    else this.image.setOrigin(0.5, 0.5).setPosition(x + PORTRAIT.w / 2 + (look.offset?.x ?? 0), y + PORTRAIT.h * 0.42 + (look.offset?.y ?? 0));
     this.restingY = this.image.y;
 
     if (look.float) {

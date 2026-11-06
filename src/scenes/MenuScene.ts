@@ -32,7 +32,7 @@ export class MenuScene extends Phaser.Scene {
     const cy = 272;
     const halo = this.add.graphics().setDepth(0);
     for (let r = 170; r > 36; r -= 14) halo.fillStyle(0xffd36a, 0.035).fillCircle(cx, cy, r);
-    const heart = this.add.image(cx, cy, 'sankofa').setScale(10).setDepth(2);
+    const heart = this.add.image(cx, cy, 'sankofa-big').setScale(5).setDepth(2);
     this.tweens.add({ targets: heart, y: cy - 12, duration: 1800, ease: 'Sine.easeInOut', yoyo: true, repeat: -1 });
     this.tweens.add({ targets: halo, alpha: { from: 0.7, to: 1 }, duration: 2400, ease: 'Sine.easeInOut', yoyo: true, repeat: -1 });
 

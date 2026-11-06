@@ -103,7 +103,7 @@ export const STORIES: Record<StoryId, StoryScript> = {
     mood: 'present-dusk',
     lines: [
       { speaker: 'protagonista', text: 'Amanhã é 20 de novembro e preciso apresentar um trabalho sobre a história negra do Brasil. Só que não sei por onde começar.' },
-      { speaker: 'protagonista', text: 'A roda de capoeira acabou e o berimbau já foi guardado. Foi quando vi, no chão, um símbolo dourado brilhando: um Sankofa.' },
+      { speaker: 'protagonista', text: 'A roda de capoeira acabou e o berimbau já foi guardado. Foi quando vi, no chão, um símbolo brilhando: um Sankofa.' },
       { speaker: 'sankofa', text: 'Sankofa: voltar e buscar o que ficou para trás.' },
       { speaker: 'protagonista', text: 'Toquei no símbolo e o mundo girou. Quando a luz se apagou, eu já não estava mais aqui…' },
     ],

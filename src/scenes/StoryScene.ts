@@ -106,7 +106,7 @@ export class StoryScene extends Phaser.Scene {
 
     if (mood === 'time') {
       // símbolo gigante e apagado girando devagar, com poeira dourada subindo
-      const big = this.add.image(width / 2, height / 2, 'sankofa').setScale(22).setAlpha(0.14).setDepth(0);
+      const big = this.add.image(width / 2, height / 2, 'sankofa-silhouette').setScale(11).setAlpha(0.1).setDepth(0);
       this.tweens.add({ targets: big, angle: 360, duration: 24000, repeat: -1 });
       this.add
         .particles(0, 0, 'mote', {

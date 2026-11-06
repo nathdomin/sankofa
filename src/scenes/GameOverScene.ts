@@ -37,7 +37,7 @@ export class GameOverScene extends Phaser.Scene {
     this.add.rectangle(0, 0, width, height, PALETTE.black, 0.5).setOrigin(0).setDepth(2);
 
     // o símbolo Sankofa apagado à direita: o caminho continua, é só voltar e buscar
-    const heart = this.add.image(790, 270, 'sankofa').setScale(10).setTint(0x8a8a8a).setAlpha(0.55).setDepth(3);
+    const heart = this.add.image(790, 270, 'sankofa-big').setScale(5).setTint(0x8a8a8a).setAlpha(0.55).setDepth(3);
     this.tweens.add({ targets: heart, y: 262, duration: 2200, ease: 'Sine.easeInOut', yoyo: true, repeat: -1 });
 
     this.add

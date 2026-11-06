@@ -92,7 +92,7 @@ export class CardScene extends Phaser.Scene {
 
     // progresso da jornada: um coração por fase, dourado até a fase que acabou de terminar
     LEVELS.forEach((_level, i) => {
-      const heart = this.add.image(CARD.x + CARD.w - 40 - (LEVELS.length - 1 - i) * 34, CARD.y + 56, 'sankofa').setScale(1.4);
+      const heart = this.add.image(CARD.x + CARD.w - 40 - (LEVELS.length - 1 - i) * 34, CARD.y + 56, 'sankofa').setScale(1);
       if (i > this.levelIndex) heart.setTint(0x8a8a8a).setAlpha(0.45);
       card.add(heart);
     });

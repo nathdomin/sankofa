@@ -1,62 +1,123 @@
-import { PALETTE } from '../config/palette';
-import { createGrid, outline, paintGrid, rect, setPixel, type ColorMap, type PixelGrid } from './pixel';
+import { EMPTY, createGrid, outline, paintGrid, rect, setPixel, stamp, type ColorMap, type PixelGrid } from './pixel';
 import type { Draw } from './tileArt';
 
 /*
- * Coletáveis em pixel art: Sankofa (símbolo Adinkra do coração com espirais), carta de alforria
+ * Coletáveis em pixel art: Sankofa (o pássaro Adinkra que olha para trás), carta de alforria
  * (pergaminho com lacre) e folha de papel (página de caderno com letra de mão), mais as
  * texturas de brilho usadas ao redor deles (halo, faísca e cintilho).
  */
 
 const COLORS: ColorMap = {
   o: 0x3a2410, // contorno marrom escuro
-  g: PALETTE.gold, G: 0xb07d00, l: 0xffe58a, w: 0xfff6d0,
+  g: 0xe8a30c, w: 0xfff6d0, // ovo dourado, olho e listras do Sankofa
   p: 0xf0dfb0, P: 0xcdb27a, q: 0x9c7a46, // pergaminho: claro, sombra e tinta
   r: 0xc0392b, R: 0x8a2418, k: 0xe9776a, // lacre de cera
   n: 0xffffff, N: 0xdcdcdc, M: 0xb0b0b0, // papel
   b: 0x6f8fc4, e: 0xd96a5f, i: 0x45506b, // pauta azul, margem vermelha e tinta
+  B: 0x1b1714, c: 0xa8263f, u: 0xf5e6c8, // pássaro Sankofa: corpo, asa e contorno creme
 };
 
-export const SANKOFA_SIZE = { w: 26, h: 24 } as const;
+/** Textura grande (menu, histórias, Game Over): o desenho de 46×46 mais o contorno de 1 px */
+export const SANKOFA_SIZE = { w: 48, h: 48 } as const;
+/** Ícone pequeno (coletável, HUD, carta, vitória): o mesmo desenho reduzido com suavização */
+export const SANKOFA_ICON_SIZE = 32;
 
-/** Coração Sankofa: ouro com relevo e uma espiral gravada em cada lóbulo */
+/*
+ * Pássaro Sankofa (Adinkra): o corpo avança e a cabeça olha para trás, com o ovo no bico
+ * ("voltar e buscar o que ficou para trás"). Desenhado a partir da referência do grupo.
+ * B = corpo preto, c = asa carmim, w = olho e listras, g = ovo dourado. O contorno creme ('u')
+ * é posto em volta, para o pássaro preto aparecer também sobre fundos escuros.
+ */
+const SANKOFA_ART: readonly string[] = [
+  '............BBBBBB............................',
+  '.........BBBBBBBBBB...........................',
+  '........BBBBBBBBBBBB..........................',
+  '.......BBBBBBBBBwwwBB.........................',
+  '......BBBBBBBBBwwwwwBB...............B........',
+  '.....BBBBBBBBBBwwwwwBB..............BB........',
+  '....BBBBBB..BBBwwwwBBB.............BBB........',
+  '...BBBBB......BBwwBBBB............BBBB........',
+  '..BBBBB........BBBBBBB............BBB..BB.....',
+  '..BBBB..........BBBBBBB..........BBBB..BB.....',
+  '..BBBB..........BBBBBB...........BBB..BBB.....',
+  '.BBBBB...........BBBBB..........BBB...BB......',
+  '.BBBBB...........BBBBB..........BB...BB.......',
+  '.BBBBBB...........B..B.........BBB..BB....BBB.',
+  'BBBBBBB...........B............BBB.BB..BBBBB..',
+  'BBwwBBBB...........ggg........BBBBBBBBBBBB....',
+  'BBwBBBBBB.........gggg.......BBBBBBBBBBB......',
+  'BBBBBwwBBBB.......gggg......BBBwwBBBBBBBBBBBB.',
+  'BBBBwwwwBBBBB.......g......BBBwwwBBwBBBBBBBBBB',
+  'BBBwwBBBBBBBBBBB........BBBBBBwwBBBwwBBB......',
+  'BBBwBBBwwBBBBBBBBBBBBBBBBBBBBBwwwBBBBBB.......',
+  'BBwwBBwwBBwwwBBBcccccBBBBBBBBBBBwBBBBBBB......',
+  '.BBBBwwBBwwwBBBBccccccccccccccBBBBBBB.........',
+  '.BBBBwBBwwwBBBBBBBBccccccccccccccBBBBB........',
+  '..BBBwBBwwBBBBcccccBBBBccccccccccBBBBB........',
+  '..BBBwBwwBBBBBBcccccccBBBBBBcccccBBB..........',
+  '...BBBBwwBBBBcBBcccccccccBBBBBBccBBB..........',
+  '....BBBwwBBBccccBBccccccccccBBccBBBBB.........',
+  '....BBBwBBBBBcccccBBBBcccccccccBBB............',
+  '.....BBBBBBBBBBccccccBBBBBBccccBBBB...........',
+  '......BBBBBBcccBBBccccccBBBcccBBBBB...........',
+  '......BBBBBBcccccBBBBccccccccBBB..............',
+  '.......BBBBBBcccccBBBBBcccccBBBB..............',
+  '.........BBBBBBcccccBBcccccBBBBB..............',
+  '..........BBBBBBcccccccccBBBBBBB..............',
+  '............BBBBBBBccccBBBBB..................',
+  '..............BBBBBBBBBBBBBB..................',
+  '.................BBBBBBBBBBB..................',
+  '...................BBB...BBB..................',
+  '....................BB...BBB..................',
+  '....................BB...BBB..................',
+  '....................BB...BBB..................',
+  '....................BB...BBB..................',
+  '....................BB...BBB..................',
+  '...................BBBBBBBBBBBBB..............',
+  '.................BBBBBBBBBBBBBBBBBB...........',
+];
+
 function sankofaGrid(): PixelGrid {
-  const { w, h } = SANKOFA_SIZE;
-  const grid = createGrid(w, h);
-  const iw = w - 2;
-  const ih = h - 2;
-  // curva do coração: (x²+y²-1)³ - x²y³ <= 0
-  const inside = (px: number, py: number): boolean => {
-    const x = ((px + 0.5 - iw / 2) / (iw / 2)) * 1.18;
-    const y = 1.28 - ((py + 0.5) / ih) * 2.3;
-    return Math.pow(x * x + y * y - 1, 3) - x * x * y * y * y <= 0;
-  };
-  for (let py = 0; py < ih; py++) {
-    for (let px = 0; px < iw; px++) {
-      if (!inside(px, py)) continue;
-      // luz vinda de cima à esquerda: borda clara em cima, sombra embaixo e à direita
-      const lit = !inside(px - 1, py - 1) || !inside(px, py - 1);
-      const shade = !inside(px + 1, py + 1) || !inside(px, py + 1);
-      const mirrored = px >= iw / 2;
-      setPixel(grid, px + 1, py + 1, shade ? 'G' : lit && !mirrored ? 'l' : 'g');
-    }
-  }
-  // espiral gravada no lóbulo esquerdo: parte do lado do centro, contorna o lóbulo e se enrola para dentro
-  const cx = 7.5;
-  const cy = 8;
-  for (let t = 0; t <= 1; t += 0.008) {
-    const ang = -0.35 + t * Math.PI * 3;
-    const r = 5.2 - 3.9 * t;
-    const sx = Math.round(cx + r * Math.cos(ang));
-    const sy = Math.round(cy - r * Math.sin(ang));
-    setPixel(grid, sx, sy, 'G');
-    setPixel(grid, w - 1 - sx, sy, 'G'); // o lóbulo direito é o espelho
-  }
-  // brilho num pixel do lóbulo
-  setPixel(grid, 4, 4, 'w');
-  setPixel(grid, 3, 5, 'w');
-  outline(grid, 'o');
+  const grid = createGrid(SANKOFA_SIZE.w, SANKOFA_SIZE.h);
+  stamp(grid, SANKOFA_ART, 1, 1);
+  outline(grid, 'u');
   return grid;
+}
+
+/** O mesmo pássaro todo numa cor só: marca d'água sobre fundos escuros */
+function sankofaSilhouetteGrid(): PixelGrid {
+  return sankofaGrid().map((row) => row.map((ch) => (ch === EMPTY ? EMPTY : 'u')));
+}
+
+/** Reduz a grade para `size` px fazendo a média das cores de cada bloco (o que sobra de vazio vira transparência) */
+function paintSmoothed(draw: Draw, key: string, grid: PixelGrid, size: number): void {
+  const ratio = grid.length / size;
+  draw(key, size, size, (g) => {
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        let r = 0;
+        let gr = 0;
+        let b = 0;
+        let filled = 0;
+        let total = 0;
+        for (let sy = Math.floor(y * ratio); sy < Math.min(grid.length, Math.ceil((y + 1) * ratio)); sy++) {
+          for (let sx = Math.floor(x * ratio); sx < Math.min(grid[0].length, Math.ceil((x + 1) * ratio)); sx++) {
+            total++;
+            const ch = grid[sy][sx];
+            if (ch === EMPTY) continue;
+            const c = COLORS[ch];
+            r += (c >> 16) & 255;
+            gr += (c >> 8) & 255;
+            b += c & 255;
+            filled++;
+          }
+        }
+        if (filled === 0) continue;
+        const color = (Math.round(r / filled) << 16) | (Math.round(gr / filled) << 8) | Math.round(b / filled);
+        g.fillStyle(color, filled / total).fillRect(x, y, 1, 1);
+      }
+    }
+  });
 }
 
 export const ALFORRIA_SIZE = { w: 20, h: 24 } as const;
@@ -140,7 +201,9 @@ export function makeCollectibleTextures(draw: Draw): void {
   const paint = (key: string, grid: PixelGrid): void => {
     draw(key, grid[0].length, grid.length, (g) => paintGrid(g, grid, COLORS));
   };
-  paint('sankofa', sankofaGrid());
+  paintSmoothed(draw, 'sankofa', sankofaGrid(), SANKOFA_ICON_SIZE);
+  paint('sankofa-big', sankofaGrid());
+  paint('sankofa-silhouette', sankofaSilhouetteGrid());
   paint('alforria', alforriaGrid());
   paint('papel', papelGrid());
 

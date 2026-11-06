@@ -65,7 +65,7 @@ export class VictoryScene extends Phaser.Scene {
     // linha dourada ligando os retratos, com um Sankofa entre cada par
     const centers = LEVELS.map((_l, i) => width / 2 + (i - (LEVELS.length - 1) / 2) * 250);
     items.push(this.add.rectangle(width / 2, 166, centers[centers.length - 1] - centers[0], 4, PALETTE.gold, 0.8));
-    for (let i = 0; i < centers.length - 1; i++) items.push(this.add.image((centers[i] + centers[i + 1]) / 2, 166, 'sankofa').setScale(1.6));
+    for (let i = 0; i < centers.length - 1; i++) items.push(this.add.image((centers[i] + centers[i + 1]) / 2, 166, 'sankofa').setScale(1.5));
     LEVELS.forEach((level, i) => {
       const cx = centers[i];
       const accent = MENTOR_ACCENT[level.mentorId];
