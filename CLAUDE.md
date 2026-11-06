@@ -117,7 +117,7 @@ O jogador atravessa 3 fases, cada uma ligada a uma personalidade negra brasileir
 | Pausar | Esc ou P |
 | Mutar som | M |
 
-**No celular** (detectado por `(pointer: coarse)`; `?touch` na URL força os controles no PC e `?notouch` desliga): botões na tela durante o jogo: ◀ ▶ e ▼ (esquiva) à esquerda, pulo/aú e meia-lua à direita, pausa e alto-falante no canto de cima. Nos menus e nas falas, basta tocar. Os avisos trocam "Enter/Esc" por "Toque..." (`TOUCH_TEXTS`) e as teclas entre parênteses, como "(J)", somem das falas.
+**No celular** (detectado por `(pointer: coarse)`; `?touch` na URL força os controles no PC e `?notouch` desliga): botões na tela durante o jogo: ◀ ▶ à esquerda; pulo/aú, meia-lua e ▼ (esquiva) à direita, pausa e alto-falante no canto de cima. Nos menus e nas falas, basta tocar. Os avisos trocam "Enter/Esc" por "Toque..." (`TOUCH_TEXTS`) e as teclas entre parênteses, como "(J)", somem das falas.
 
 ---
 
@@ -431,7 +431,7 @@ Ordem sugerida (cada passo deixa o jogo jogável):
 - [x] Pausa (Esc/P): `PauseScene` por cima da GameScene parada, com "Continuar" e "Menu"
 - [x] **Jogar no celular** (pedido do usuário depois da revisão geral; feito, aguardando aprovação): o jogo roda no navegador do celular, deitado, com toque. **O usuário testa e aprova antes do commit.**
   - **Entrada unificada:** `touchInput` (`systems/TouchInput.ts`) guarda os comandos de toque (`left`, `right`, `jump`, `down`, `attack`) e o `Player` lê teclado **ou** toque (`cmdDown`/`cmdJustDown`/`cmdJustUp`). Física, estados e mapas não mudaram (o `reachability` continua valendo).
-  - **Botões na tela** (`TouchControlsScene`, lançada pela GameScene só no celular): ◀ ▶ grandes (dá para deslizar o dedo de um para o outro) e ▼ à esquerda; pulo/aú (grande) e meia-lua à direita; pausa no canto de cima. Multitoque (4 dedos) para correr e pular ao mesmo tempo. A cena lê todos os dedos a cada frame, então um botão nunca fica "grudado"; com o jogo pausado os botões somem e nada fica guardado. Posições em `config/touch.ts`.
+  - **Botões na tela** (`TouchControlsScene`, lançada pela GameScene só no celular): ◀ ▶ grandes à esquerda (dá para deslizar o dedo de um para o outro); pulo/aú (grande), meia-lua e ▼ (esquiva) agrupados à direita, perto do polegar; pausa no canto de cima. Multitoque (4 dedos) para correr e pular ao mesmo tempo. A cena lê todos os dedos a cada frame, então um botão nunca fica "grudado"; com o jogo pausado os botões somem e nada fica guardado. Posições em `config/touch.ts`.
   - **Telas:** Card e Victory avançam com toque (menus, falas, ajuda e inimigos já aceitavam); o alto-falante virou botão (sobe para o canto de cima no celular); a ajuda mostra os botões de toque no lugar das teclas; o seletor de fases esconde o atalho Shift.
   - **Navegador:** sem zoom nem rolagem por toque (`index.html`); a cada toque fora da tela cheia, tenta entrar nela e travar a tela deitada (Android; no iPhone a página roda com as barras do Safari); com o celular em pé aparece "Gire o celular para jogar" e o jogo pausa sozinho. O áudio também é liberado no `touchend` (exigência do iPhone).
   - **Testado** por emulação de celular (Edge, 844×390 com toque): correr, pular, aú, meia-lua, esquiva, deslizar ◀→▶, correr + pular juntos, pausa, som, aviso de tela em pé, carta por toque, sem erros no console. No PC (fluxo completo do menu aos créditos) nada muda e não aparecem botões.

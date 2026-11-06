@@ -12,7 +12,7 @@ export const TOUCH = {
   buttons: [
     { command: 'left', x: 78, y: 462, r: 46 },
     { command: 'right', x: 192, y: 462, r: 46 },
-    { command: 'down', x: 300, y: 478, r: 36 },
+    { command: 'down', x: 744, y: 366, r: 38 },
     { command: 'attack', x: 760, y: 474, r: 42 },
     { command: 'jump', x: 872, y: 440, r: 54 },
   ] satisfies TouchButtonSpec[],
