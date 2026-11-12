@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { forInput, touchInput } from '../systems/TouchInput';
 import { drawTouchButton } from '../art/touchIcons';
+import { fitText } from '../systems/fitText';
 import { audio } from '../systems/audio/AudioManager';
 import { PALETTE, toCss } from '../config/palette';
 import { CAMERA } from '../config/physics';
@@ -34,12 +35,18 @@ export class HelpScene extends Phaser.Scene {
     if (touchInput.enabled) this.touchRows();
     else this.keyRows();
 
-    HELP_TEXTS.tips.forEach((tip, i) => {
-      this.add
-        .text(LEFT, 424 + i * 24, tip, { fontFamily: 'monospace', fontSize: '15px', color: toCss(PALETTE.gold), stroke: toCss(PALETTE.black), strokeThickness: 4, wordWrap: { width: 800 } })
-        .setOrigin(0, 0.5)
-        .setDepth(2);
-    });
+    // as dicas ficam no mesmo tamanho: o da que precisou encolher mais
+    const tips = HELP_TEXTS.tips.map((tip, i) =>
+      fitText(
+        this.add
+          .text(LEFT, 424 + i * 24, tip, { fontFamily: 'monospace', fontSize: '15px', color: toCss(PALETTE.gold), stroke: toCss(PALETTE.black), strokeThickness: 4 })
+          .setOrigin(0, 0.5)
+          .setDepth(2),
+        { maxWidth: 800 },
+      ),
+    );
+    const tipSize = Math.min(...tips.map((t) => parseFloat(String(t.style.fontSize))));
+    tips.forEach((t) => t.setFontSize(tipSize));
 
     const hint = this.add
       .text(LEFT, height - 44, forInput(HELP_TEXTS.back, TOUCH_TEXTS.back), { fontFamily: 'monospace', fontSize: '16px', color: toCss(PALETTE.cream), stroke: toCss(PALETTE.black), strokeThickness: 4 })
@@ -59,10 +66,14 @@ export class HelpScene extends Phaser.Scene {
   }
 
   private label(y: number, text: string): void {
-    this.add
-      .text(LEFT, y, text, { fontFamily: 'monospace', fontSize: '20px', color: toCss(PALETTE.cream), stroke: toCss(PALETTE.black), strokeThickness: 4 })
-      .setOrigin(0, 0.5)
-      .setDepth(2);
+    // não pode invadir a coluna das teclas (LEFT + 392)
+    fitText(
+      this.add
+        .text(LEFT, y, text, { fontFamily: 'monospace', fontSize: '20px', color: toCss(PALETTE.cream), stroke: toCss(PALETTE.black), strokeThickness: 4 })
+        .setOrigin(0, 0.5)
+        .setDepth(2),
+      { maxWidth: 380 },
+    );
   }
 
   /** Celular: cada ação com o botão de toque que aparece no jogo */

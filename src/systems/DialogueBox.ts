@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { PALETTE, toCss } from '../config/palette';
 import { audio } from './audio/AudioManager';
+import { fitText } from './fitText';
 import { CONFIRM_KEYS, onKeys } from './sceneInput';
 
 export interface DialogueLine {
@@ -29,6 +30,8 @@ export class DialogueBox {
   private readonly name: Phaser.GameObjects.Text;
   private readonly speech: Phaser.GameObjects.Text;
   private readonly counter: Phaser.GameObjects.Text;
+  private readonly speechMaxH: number;
+  private readonly speechSize = 24;
 
   constructor(
     private readonly scene: Phaser.Scene,
@@ -55,6 +58,8 @@ export class DialogueBox {
       })
       .setOrigin(0)
       .setDepth(depth + 1);
+    // a fala vai até perto do contador "1/4" no canto de baixo
+    this.speechMaxH = panel.y + panel.h - 34 - (panel.y + 66);
     this.counter = scene.add
       .text(panel.x + panel.w - 20, panel.y + panel.h - 16, '', { fontFamily: 'monospace', fontSize: '16px', color: toCss(PALETTE.cream) })
       .setOrigin(1, 1)
@@ -84,6 +89,9 @@ export class DialogueBox {
     this.onLine?.(line, this.index);
     this.name.setText(line.speaker);
     this.counter.setText(`${this.index + 1}/${this.lines.length}`);
+    // mede a fala inteira antes de digitar: se não couber, a fonte diminui (a do celular é maior)
+    this.speech.setFontSize(this.speechSize).setText(line.text);
+    fitText(this.speech, { maxHeight: this.speechMaxH, minSize: 14 });
     this.speech.setText('');
     this.onTyping?.(true);
     let shown = 0;

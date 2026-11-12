@@ -8,6 +8,7 @@ import { LEVELS, type LevelConfig } from '../data/levels';
 import { CARDS, CARD_TEXTS, LINK_STORY, type HistoricalCard, TOUCH_TEXTS } from '../data/texts';
 import { gameState } from '../systems/GameState';
 import { Portrait } from '../systems/Portrait';
+import { fitText } from '../systems/fitText';
 import { CONFIRM_KEYS, onKeys } from '../systems/sceneInput';
 import { goToScene } from '../systems/transitions';
 import type { StorySceneData } from './StoryScene';
@@ -55,42 +56,49 @@ export class CardScene extends Phaser.Scene {
     const match = /^(.*?)\s*\((.*)\)$/.exec(this.card.title);
     const name = match ? match[1] : this.card.title;
     const dates = match ? match[2] : this.config.era;
+    const textW = CARD.x + CARD.w - 40 - TEXT_X;
+    // o nome divide a linha com os três ícones de progresso (à direita)
     card.add(
-      this.add
-        .text(TEXT_X, CARD.y + 56, name, { fontFamily: 'monospace', fontSize: '34px', fontStyle: 'bold', color: toCss(PALETTE.black), wordWrap: { width: CARD.x + CARD.w - 40 - TEXT_X } })
-        .setOrigin(0, 0.5),
+      fitText(this.add.text(TEXT_X, CARD.y + 56, name, { fontFamily: 'monospace', fontSize: '34px', fontStyle: 'bold', color: toCss(PALETTE.black) }).setOrigin(0, 0.5), { maxWidth: textW - 120 }),
     );
     card.add(this.add.text(TEXT_X, CARD.y + 90, dates, { fontFamily: 'monospace', fontSize: '18px', color: toCss(darken(PALETTE.earth, 20)) }).setOrigin(0, 0.5));
     card.add(this.add.rectangle(TEXT_X, CARD.y + 112, 120, 4, PALETTE.gold).setOrigin(0, 0.5));
+    // placar da fase embaixo; a legenda (se houver) fica logo acima dele e o texto ocupa o que sobra
+    const statsY = CARD.y + CARD.h - 80;
+    let textBottom = statsY - 10;
+    if (this.card.note) {
+      const note = fitText(
+        this.add.text(TEXT_X, textBottom, this.card.note, { fontFamily: 'monospace', fontSize: '14px', fontStyle: 'italic', color: toCss(darken(PALETTE.earth, 5)), wordWrap: { width: textW } }).setOrigin(0, 1),
+        { maxHeight: 36, minSize: 10 },
+      );
+      card.add(note);
+      textBottom = note.y - note.height - 8;
+    }
+    const bodyTop = CARD.y + 128;
     card.add(
-      this.add
-        .text(TEXT_X, CARD.y + 128, this.card.body, {
+      fitText(
+        this.add.text(TEXT_X, bodyTop, this.card.body, {
           fontFamily: 'monospace',
           fontSize: '19px',
           color: toCss(darken(PALETTE.earth, 40)),
-          wordWrap: { width: CARD.x + CARD.w - 40 - TEXT_X },
+          wordWrap: { width: textW },
           lineSpacing: 6,
-        })
-        .setOrigin(0),
+        }),
+        { maxHeight: textBottom - bodyTop, minSize: 12 },
+      ),
     );
-
-    if (this.card.note) {
-      card.add(
-        this.add
-          .text(TEXT_X, CARD.y + CARD.h - 112, this.card.note, { fontFamily: 'monospace', fontSize: '14px', fontStyle: 'italic', color: toCss(darken(PALETTE.earth, 5)), wordWrap: { width: CARD.x + CARD.w - 40 - TEXT_X } })
-          .setOrigin(0, 0.5),
-      );
-    }
 
     // placar da fase: coletáveis e pontos
     const total = this.config.map.join('').split('C').length - 1;
-    const statsY = CARD.y + CARD.h - 80;
     card.add(this.add.rectangle(TEXT_X, statsY, CARD.x + CARD.w - 40 - TEXT_X, 2, darken(PALETTE.cream, 25)).setOrigin(0, 0.5));
     card.add(this.add.image(TEXT_X + 14, statsY + 26, this.config.collectible.texture));
     card.add(
-      this.add
-        .text(TEXT_X + 38, statsY + 26, `${gameState.collected} de ${total} ${this.config.collectible.namePlural}`, { fontFamily: 'monospace', fontSize: '20px', fontStyle: 'bold', color: toCss(darken(PALETTE.earth, 40)) })
-        .setOrigin(0, 0.5),
+      fitText(
+        this.add
+          .text(TEXT_X + 38, statsY + 26, `${gameState.collected} de ${total} ${this.config.collectible.namePlural}`, { fontFamily: 'monospace', fontSize: '20px', fontStyle: 'bold', color: toCss(darken(PALETTE.earth, 40)) })
+          .setOrigin(0, 0.5),
+        { maxWidth: 300 },
+      ),
     );
     card.add(
       this.add

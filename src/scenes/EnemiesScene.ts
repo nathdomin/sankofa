@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { forInput, withoutKeys } from '../systems/TouchInput';
+import { fitText } from '../systems/fitText';
 import { BAND_H } from '../art/hudArt';
 import { ENEMY_ACCENT, ENEMY_SIZES, enemyTextureKey, type EnemyArtKind } from '../art/enemyArt';
 import { PALETTE, toCss } from '../config/palette';
@@ -46,10 +47,13 @@ export class EnemiesScene extends Phaser.Scene {
       .text(width / 2, 64, ENEMIES_TEXTS.title, { fontFamily: 'monospace', fontSize: '44px', fontStyle: 'bold', color: toCss(PALETTE.gold), stroke: toCss(PALETTE.black), strokeThickness: 8 })
       .setOrigin(0.5)
       .setDepth(3);
-    this.add
-      .text(width / 2, 108, ENEMIES_TEXTS.subtitle, { fontFamily: 'monospace', fontSize: '17px', color: toCss(PALETTE.cream), stroke: toCss(PALETTE.black), strokeThickness: 4 })
-      .setOrigin(0.5)
-      .setDepth(3);
+    fitText(
+      this.add
+        .text(width / 2, 108, ENEMIES_TEXTS.subtitle, { fontFamily: 'monospace', fontSize: '17px', color: toCss(PALETTE.cream), stroke: toCss(PALETTE.black), strokeThickness: 4 })
+        .setOrigin(0.5)
+        .setDepth(3),
+      { maxWidth: width - 60 },
+    );
 
     const x0 = (width - (CARD.w * 2 + CARD.gap)) / 2;
     this.card('desinformacao', x0);
@@ -91,24 +95,33 @@ export class EnemiesScene extends Phaser.Scene {
     sprite.play(`enemy-${kind}-walk`);
     this.tweens.add({ targets: sprite, y: sprite.y - 5, duration: 700, ease: 'Sine.easeInOut', yoyo: true, repeat: -1 });
 
-    this.add
-      .text(x + 168, y + 54, text.name, { fontFamily: 'monospace', fontSize: '28px', fontStyle: 'bold', color: toCss(PALETTE.cream), stroke: toCss(PALETTE.black), strokeThickness: 5 })
-      .setOrigin(0, 0.5)
-      .setDepth(3);
-    this.add
-      .text(x + 168, y + 88, text.tag, { fontFamily: 'monospace', fontSize: '16px', color: toCss(accent), stroke: toCss(PALETTE.black), strokeThickness: 3, wordWrap: { width: 220 } })
-      .setOrigin(0, 0.5)
-      .setDepth(3);
+    const right = CARD.w - 168 - 16;
+    fitText(
+      this.add
+        .text(x + 168, y + 54, text.name, { fontFamily: 'monospace', fontSize: '28px', fontStyle: 'bold', color: toCss(PALETTE.cream), stroke: toCss(PALETTE.black), strokeThickness: 5 })
+        .setOrigin(0, 0.5)
+        .setDepth(3),
+      { maxWidth: right },
+    );
+    fitText(
+      this.add
+        .text(x + 168, y + 88, text.tag, { fontFamily: 'monospace', fontSize: '16px', color: toCss(accent), stroke: toCss(PALETTE.black), strokeThickness: 3 })
+        .setOrigin(0, 0.5)
+        .setDepth(3),
+      { maxWidth: right },
+    );
 
     this.add.rectangle(x + 24, y + 150, CARD.w - 48, 2, accent, 0.6).setOrigin(0).setDepth(3);
-    this.add
-      .text(x + 24, y + 164, text.what, { fontFamily: 'monospace', fontSize: '15px', color: toCss(PALETTE.cream), wordWrap: { width: CARD.w - 48 }, lineSpacing: 4 })
-      .setDepth(3);
+    fitText(
+      this.add.text(x + 24, y + 164, text.what, { fontFamily: 'monospace', fontSize: '15px', color: toCss(PALETTE.cream), wordWrap: { width: CARD.w - 48 }, lineSpacing: 4 }).setDepth(3),
+      { maxHeight: CARD.h - 72 - 10 - 164 },
+    );
     this.add
       .text(x + 24, y + CARD.h - 72, ENEMIES_TEXTS.howTitle, { fontFamily: 'monospace', fontSize: '15px', fontStyle: 'bold', color: toCss(PALETTE.gold) })
       .setDepth(3);
-    this.add
-      .text(x + 24, y + CARD.h - 50, withoutKeys(text.how), { fontFamily: 'monospace', fontSize: '15px', color: toCss(PALETTE.gold), wordWrap: { width: CARD.w - 48 } })
-      .setDepth(3);
+    fitText(
+      this.add.text(x + 24, y + CARD.h - 50, withoutKeys(text.how), { fontFamily: 'monospace', fontSize: '15px', color: toCss(PALETTE.gold), wordWrap: { width: CARD.w - 48 } }).setDepth(3),
+      { maxHeight: 42 },
+    );
   }
 }

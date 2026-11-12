@@ -7,6 +7,7 @@ import { CAMERA } from '../config/physics';
 import { MENTOR_ACCENT, PORTRAIT, mentorTextureKey } from '../art/mentorArt';
 import { LEVELS } from '../data/levels';
 import { MENTORS, VICTORY_TEXTS, TOUCH_TEXTS } from '../data/texts';
+import { fitText } from '../systems/fitText';
 import { gameState } from '../systems/GameState';
 import { CONFIRM_KEYS, onKeys } from '../systems/sceneInput';
 import { goToScene } from '../systems/transitions';
@@ -76,12 +77,13 @@ export class VictoryScene extends Phaser.Scene {
       items.push(this.add.rectangle(cx, top + h / 2, w, h, darken(accent, 65)));
       items.push(this.add.image(cx, top + h, mentorTextureKey(level.mentorId)).setOrigin(0.5, 1).setScale(0.5));
       items.push(
-        this.add.text(cx, top + h + 24, MENTORS[level.mentorId].name, { fontFamily: 'monospace', fontSize: '16px', fontStyle: 'bold', color: toCss(PALETTE.gold), align: 'center', wordWrap: { width: 230 } }).setOrigin(0.5),
+        // numa linha só: se quebrasse, cobriria a época logo abaixo
+        fitText(this.add.text(cx, top + h + 24, MENTORS[level.mentorId].name, { fontFamily: 'monospace', fontSize: '16px', fontStyle: 'bold', color: toCss(PALETTE.gold) }).setOrigin(0.5), { maxWidth: 236, minSize: 10 }),
       );
       items.push(this.add.text(cx, top + h + 44, level.era, { fontFamily: 'monospace', fontSize: '14px', color: toCss(PALETTE.cream) }).setOrigin(0.5));
     });
 
-    items.push(this.add.text(width / 2, 372, VICTORY_TEXTS.message.join('\n\n'), { ...cream, fontSize: '22px', lineSpacing: 8 }).setOrigin(0.5));
+    items.push(fitText(this.add.text(width / 2, 372, VICTORY_TEXTS.message.join('\n\n'), { ...cream, fontSize: '22px', lineSpacing: 8 }).setOrigin(0.5), { maxHeight: 116, minSize: 14 }));
     items.push(
       this.add.text(width / 2, 452, `${VICTORY_TEXTS.score}: ${gameState.score}`, { ...cream, fontSize: '30px', color: toCss(PALETTE.gold) }).setOrigin(0.5),
     );

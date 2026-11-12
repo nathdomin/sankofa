@@ -25,6 +25,7 @@ O jogador atravessa 3 fases, cada uma ligada a uma personalidade negra brasileir
 - Uma classe por entidade (`Player`, `Enemy`, `Collectible`, `Npc`).
 - Comentários em português, curtos, só onde o código não é óbvio.
 - Ao final de cada marco: rodar `npm run build` e garantir **zero erros de TypeScript**.
+- **Texto em caixa (cartas, falas, cartões, ajuda, créditos): sempre passar por `fitText`** (`systems/fitText.ts`). A fonte `monospace` muda de aparelho para aparelho (no Android é mais larga e mais alta), então tamanho e posição fixos estouram no celular. Para testar sem celular, dá para trocar no navegador a `monospace` por "Courier New" 12% maior (foi assim que as telas foram conferidas em 12/11/2026).
 
 ### Ferramentas de desenvolvimento
 - `?debug` na URL (ex.: `http://localhost:5173/?debug`) liga o debug do Arcade e mostra as hitboxes.
@@ -96,6 +97,7 @@ O jogador atravessa 3 fases, cada uma ligada a uma personalidade negra brasileir
       ├─ OptionList.ts        # lista de opções (GameOver, Pausa)
       ├─ audio/               # AudioManager (singleton `audio`), MusicPlayer, synth, percussion e sfx (Web Audio, sem arquivos)
       ├─ DialogueBox.ts       # caixa de fala com texto digitado (Intro e Story)
+      ├─ fitText.ts           # diminui a fonte até o texto caber na caixa (a monospace do celular é maior)
       ├─ Portrait.ts          # retrato animado de quem fala (respira, pisca, mexe a boca)
       ├─ MenuBackdrop.ts      # fundo comum do menu, do seletor de fases e da ajuda
       ├─ Scenery.ts           # parallax, landmarks e vegetação a partir do tema da fase
