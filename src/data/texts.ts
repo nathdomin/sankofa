@@ -238,6 +238,7 @@ export const AUDIO_TEXTS = {
 // Celular: avisos que trocam "Enter/Esc" por toque, e a ajuda com os botões da tela
 export const TOUCH_TEXTS = {
   rotate: 'Gire o celular para jogar',
+  iosTip: 'Tela cheia no iPhone: toque em Compartilhar e depois em “Adicionar à Tela de Início”. Abra o jogo pelo ícone. (Toque aqui para fechar)',
   continue: 'Toque para continuar',
   back: 'Toque para voltar',
   menu: 'Toque para voltar ao menu',

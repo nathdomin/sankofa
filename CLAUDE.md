@@ -35,6 +35,8 @@ O jogador atravessa 3 fases, cada uma ligada a uma personalidade negra brasileir
 ```
 /
 ├─ index.html
+├─ public/
+│  └─ manifest.webmanifest   # abrir pela Tela de Início como app, deitado e sem barras
 ├─ package.json
 ├─ tsconfig.json
 ├─ tools/
@@ -93,7 +95,7 @@ O jogador atravessa 3 fases, cada uma ligada a uma personalidade negra brasileir
       ├─ transitions.ts       # goToScene: troca de cena com fade
       ├─ sceneInput.ts        # teclas de confirmar/navegar nos menus
       ├─ TouchInput.ts        # estado dos botões de toque (lido pelo Player junto com o teclado) e detecção do celular
-      ├─ mobile.ts            # celular: tela cheia, trava deitada e aviso "gire o celular"
+      ├─ mobile.ts            # celular: tela cheia (Android), aviso da Tela de Início (iPhone), trava deitada e aviso "gire o celular"
       ├─ OptionList.ts        # lista de opções (GameOver, Pausa)
       ├─ audio/               # AudioManager (singleton `audio`), MusicPlayer, synth, percussion e sfx (Web Audio, sem arquivos)
       ├─ DialogueBox.ts       # caixa de fala com texto digitado (Intro e Story)
@@ -434,6 +436,7 @@ Ordem sugerida (cada passo deixa o jogo jogável):
   - **Entrada unificada:** `touchInput` (`systems/TouchInput.ts`) guarda os comandos de toque (`left`, `right`, `jump`, `down`, `attack`) e o `Player` lê teclado **ou** toque (`cmdDown`/`cmdJustDown`/`cmdJustUp`). Física, estados e mapas não mudaram (o `reachability` continua valendo).
   - **Botões na tela** (`TouchControlsScene`, lançada pela GameScene só no celular): ◀ ▶ grandes à esquerda (dá para deslizar o dedo de um para o outro); pulo/aú (grande), meia-lua e ▼ (esquiva) agrupados à direita, perto do polegar; pausa no canto de cima. Multitoque (4 dedos) para correr e pular ao mesmo tempo. A cena lê todos os dedos a cada frame, então um botão nunca fica "grudado"; com o jogo pausado os botões somem e nada fica guardado. Posições em `config/touch.ts`.
   - **Telas:** Card e Victory avançam com toque (menus, falas, ajuda e inimigos já aceitavam); o alto-falante virou botão (sobe para o canto de cima no celular); a ajuda mostra os botões de toque no lugar das teclas; o seletor de fases esconde o atalho Shift.
+  - **iPhone (12/11/2026):** o Safari do iPhone não deixa páginas entrarem em tela cheia (só vídeos), e tentar gerava erro; agora o jogo não tenta no iOS. No lugar, uma faixa no alto (`#ios-tip`, texto `TOUCH_TEXTS.iosTip`; some ao tocar e fica lembrada) ensina "Compartilhar → Adicionar à Tela de Início": aberto pelo ícone, o jogo roda sem as barras do Safari (`public/manifest.webmanifest` com `display: fullscreen` e `orientation: landscape`, mais o `apple-mobile-web-app-capable`). O ícone da Tela de Início é o pássaro Sankofa, desenhado na hora a partir da textura `sankofa-big`. A faixa não aparece quando o jogo está embutido num iframe (itch.io), nem quando já foi aberto pela Tela de Início. No Android a tentativa de tela cheia continua, e para de repetir se falhar.
   - **Navegador:** sem zoom nem rolagem por toque (`index.html`); a cada toque fora da tela cheia, tenta entrar nela e travar a tela deitada (Android; no iPhone a página roda com as barras do Safari); com o celular em pé aparece "Gire o celular para jogar" e o jogo pausa sozinho. O áudio também é liberado no `touchend` (exigência do iPhone).
   - **Testado** por emulação de celular (Edge, 844×390 com toque): correr, pular, aú, meia-lua, esquiva, deslizar ◀→▶, correr + pular juntos, pausa, som, aviso de tela em pé, carta por toque, sem erros no console. No PC (fluxo completo do menu aos créditos) nada muda e não aparecem botões.
   - **Para testar no celular de verdade:** `npx vite --host` e abrir no celular o endereço "Network" que aparece (mesma rede Wi-Fi). Falta conferir num aparelho real o tamanho e a posição dos botões.
@@ -452,7 +455,7 @@ Ordem sugerida (cada passo deixa o jogo jogável):
 ### Marco 4: Som e entrega (meta: até 17/11, **congelamento**)
 - [ ] (movido para o passo "Sons do jogo" do Marco 3) Efeitos sonoros e mute
 - [x] `npm run build` sem erros, testar o `dist/` servido localmente (feito em 06/11/2026: `vite preview` e também o zip extraído numa subpasta, que prova que o `base: './'` funciona em qualquer caminho; sem erros no console)
-- [ ] Deploy (itch.io: zip do `dist/` como projeto HTML; ou Netlify). **Zip pronto:** `release/sankofa-itch.zip` (não vai para o git; `index.html` na raiz do zip, 1,6 MB). Para refazer: `npm run build` e `tar -a -c -f release/sankofa-itch.zip -C dist index.html assets`. **No itch.io:** criar o projeto com *Kind of project: HTML*, enviar o zip e marcar "This file will be played in the browser"; em *Embed options* usar 960×540 (ou "click to launch in fullscreen", melhor para celular) e ligar "Mobile friendly" e o botão de tela cheia. Falta só o envio, que precisa da conta do grupo
+- [ ] Deploy (itch.io: zip do `dist/` como projeto HTML; ou Netlify). **Zip pronto:** `release/sankofa-itch.zip` (não vai para o git; `index.html` na raiz do zip, 1,6 MB). Para refazer: `npm run build` e `tar -a -c -f release/sankofa-itch.zip -C dist index.html assets manifest.webmanifest`. **No itch.io:** criar o projeto com *Kind of project: HTML*, enviar o zip e marcar "This file will be played in the browser"; em *Embed options* usar 960×540 (ou "click to launch in fullscreen", melhor para celular) e ligar "Mobile friendly" e o botão de tela cheia. Falta só o envio, que precisa da conta do grupo
   - **Link de teste (GitHub Pages):** https://nathdomin.github.io/sankofa/ (publicado em 06/11/2026). O Pages serve o branch `gh-pages`, que guarda só o conteúdo do `dist/`. **Para republicar:** `npm run build`; dentro de `dist/`, criar `.nojekyll`, `git init -b gh-pages`, commitar tudo e `git push -f https://github.com/nathdomin/sankofa.git gh-pages`; apagar o `dist/.git`. (Um deploy automático por GitHub Actions foi recusado porque o login do `gh` não tem a permissão `workflow`; dá para ativar com `gh auth refresh -s workflow`.) A versão final da apresentação continua indo para o itch.io.
 - [x] Testar no Chrome e no Firefox, em telas 1366×768 e 1920×1080 (feito em 06/11/2026 sobre o `dist/` por script: Edge, que usa o mesmo motor do Chrome, e Firefox 159, ambos em 1366×768 e 1920×1080. Em todos: WebGL ativo, canvas 16:9 sem cortes, menu → prólogo → inimigos → Intro → jogo, correr e pular, pausa e mudo funcionam, **sem nenhum erro no console**. O Chrome em si não está instalado nesta máquina; vale o grupo abrir uma vez nele)
 - [x] Testar no celular, deitado, pelo link do deploy (feito pelo usuário em 06/11/2026 pelo link do GitHub Pages: funciona perfeitamente; aparelho não informado)

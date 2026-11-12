@@ -1,0 +1,12 @@
+{
+  "name": "Sankofa: Caminhos da Resistência",
+  "short_name": "Sankofa",
+  "description": "Jogo de plataforma para o Dia da Consciência Negra.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#1a1a1a",
+  "theme_color": "#1a1a1a",
+  "lang": "pt-BR"
+}
