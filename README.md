@@ -2,11 +2,13 @@
 
 **Jogo de plataforma 2D no navegador** sobre a história da resistência negra no Brasil, feito para o Novembro Negro / Dia da Consciência Negra.
 
-**[▶ Jogar agora](https://nathdomin.github.io/sankofa/)** (PC ou celular deitado, sem instalar nada)
+**[▶ Jogar no itch.io](https://nathdomin.itch.io/sankofa)** (PC ou celular deitado, sem instalar nada)
+
+> **iPhone:** o Safari não deixa sites entrarem em tela cheia. Para jogar em tela cheia, abra a [versão do GitHub Pages](https://nathdomin.github.io/sankofa/), toque em *Compartilhar → Adicionar à Tela de Início* e abra o jogo pelo ícone.
 
 ![Gameplay da fase 1: corrida, meia-lua de compasso e aú](docs/sankofa.gif)
 
-> 🇬🇧 *A 2D browser platformer about Black resistance in Brazilian history. A young capoeirista travels through three eras, learning from Zumbi dos Palmares, Luiz Gama and Carolina Maria de Jesus. Built with Phaser 3 + strict TypeScript; every sprite, background and song is generated in code, with no image or audio files. [Play it here](https://nathdomin.github.io/sankofa/).*
+> 🇬🇧 *A 2D browser platformer about Black resistance in Brazilian history. A young capoeirista travels through three eras, learning from Zumbi dos Palmares, Luiz Gama and Carolina Maria de Jesus. Built with Phaser 3 + strict TypeScript; every sprite, background and song is generated in code, with no image or audio files. [Play it on itch.io](https://nathdomin.itch.io/sankofa).*
 
 ## A história
 
@@ -44,8 +46,13 @@ Os inimigos são **ideias, não pessoas**: a *Desinformação* e o *Esquecimento
 - **Game feel de plataforma:** pulo variável, *coyote time*, *jump buffer*, *hit-stop*, *squash & stretch*, câmera que olha à frente.
 - **Movimentos de capoeira** numa máquina de estados (ginga, aú, meia-lua, esquiva) com hitbox separada do sprite.
 - **Fases em mapas ASCII** e uma ferramenta própria ([tools/reachability.mjs](tools/reachability.mjs)) que simula os pulos e avisa se algum coletável ou o portal ficou inalcançável.
-- **Controles de toque** com multitoque, tela cheia e trava de orientação no celular.
+- **Roda no celular:** botões de toque com multitoque, tela cheia e trava de orientação no Android, e no iPhone um aviso para abrir pela Tela de Início (manifest e ícone gerados do próprio pássaro Sankofa). Os textos se ajustam ao espaço com `fitText`, porque a fonte `monospace` muda de aparelho para aparelho.
 - Conteúdo (textos, cartas históricas, mapas, músicas) separado da lógica em [src/data/](src/data/).
+
+## Onde jogar
+
+- **[itch.io](https://nathdomin.itch.io/sankofa):** versão de publicação.
+- **[GitHub Pages](https://nathdomin.github.io/sankofa/):** mesma versão, útil para o iPhone (Tela de Início).
 
 ## Rodar localmente
 
