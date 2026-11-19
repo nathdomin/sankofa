@@ -4,6 +4,8 @@
 
 **[▶ Jogar no itch.io](https://nathdomin.itch.io/sankofa)** (PC ou celular deitado, sem instalar nada)
 
+**[Ver a apresentação do jogo](https://nathdomin.github.io/sankofa/apresentacao/)** (página em parallax: role ou use as setas do teclado)
+
 > **iPhone:** o Safari não deixa sites entrarem em tela cheia. Para jogar em tela cheia, abra a [versão do GitHub Pages](https://nathdomin.github.io/sankofa/), toque em *Compartilhar → Adicionar à Tela de Início* e abra o jogo pelo ícone.
 
 ![Gameplay da fase 1: corrida, meia-lua de compasso e aú](docs/sankofa.gif)
@@ -53,6 +55,7 @@ Os inimigos são **ideias, não pessoas**: a *Desinformação* e o *Esquecimento
 
 - **[itch.io](https://nathdomin.itch.io/sankofa):** versão de publicação.
 - **[GitHub Pages](https://nathdomin.github.io/sankofa/):** mesma versão, útil para o iPhone (Tela de Início).
+- **[Apresentação](https://nathdomin.github.io/sankofa/apresentacao/):** página que conta a história do jogo, feita para projetar (código em `apresentacao/`).
 
 ## Rodar localmente
 
