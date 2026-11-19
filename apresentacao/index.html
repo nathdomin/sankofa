@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sankofa · Caminhos da Resistência</title>
+  <meta name="description" content="Apresentação do jogo Sankofa: Caminhos da Resistência, um jogo de plataforma sobre a resistência negra no Brasil.">
+  <link rel="icon" href="img/sankofa-simbolo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap">
+  <link rel="stylesheet" href="style.css">
+  <script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+  <a class="skip" href="#fim">Pular para o final</a>
+  <div class="faixa faixa--top" aria-hidden="true"></div>
+  <div class="faixa faixa--bottom" aria-hidden="true"></div>
+
+  <nav class="dots" aria-label="Capítulos"></nav>
+
+  <main>
+    <!-- 0 · Abertura -->
+    <section class="chapter c-open" id="abertura" data-title="Abertura">
+      <div class="sky"></div>
+      <div class="layer sun" data-depth=".75" aria-hidden="true"></div>
+      <div class="layer clouds" data-depth=".6" data-art="clouds" aria-hidden="true"></div>
+      <div class="layer" data-depth=".45" data-art="hills" data-color="#4a2238" data-height=".42" data-seed="3" aria-hidden="true"></div>
+      <div class="layer" data-depth=".25" data-art="palms" data-color="#2a1a22" data-height=".38" data-seed="7" aria-hidden="true"></div>
+      <div class="layer" data-depth=".1" data-art="bushes" data-color="#14130f" data-height=".2" data-seed="11" aria-hidden="true"></div>
+      <div class="content content--open">
+        <div class="open-text">
+          <h1 class="title title--xl reveal">SANKOFA</h1>
+          <div class="mini-faixa reveal" aria-hidden="true"></div>
+          <p class="subtitle reveal">Caminhos da Resistência</p>
+          <p class="names reveal">Zumbi · Luiz Gama · Carolina Maria de Jesus</p>
+          <p class="date reveal">Dia da Consciência Negra · 20 de novembro</p>
+        </div>
+        <img class="bird bird--float reveal" src="img/sankofa-simbolo.png" width="960" height="960"
+             alt="O pássaro Sankofa em pixel art: corpo preto, asa carmim e o ovo dourado no bico, olhando para trás.">
+      </div>
+      <p class="hint" aria-hidden="true">role ou use ↓</p>
+    </section>
+
+    <!-- 1 · O símbolo -->
+    <section class="chapter c-symbol" id="simbolo" data-title="O símbolo">
+      <div class="sky"></div>
+      <div class="layer stars" data-depth=".7" data-art="stars" aria-hidden="true"></div>
+      <div class="layer ghost ghost--l" data-depth=".5" aria-hidden="true"></div>
+      <div class="layer ghost ghost--r" data-depth=".5" aria-hidden="true"></div>
+      <div class="layer" data-depth=".3" data-art="hills" data-color="#202a1e" data-height=".22" data-seed="21" aria-hidden="true"></div>
+      <div class="layer" data-depth=".1" data-art="hills" data-color="#151a12" data-height=".15" data-seed="5" aria-hidden="true"></div>
+      <div class="content content--center">
+        <img class="bird bird--turn reveal" src="img/sankofa-simbolo.png" width="960" height="960" alt="">
+        <p class="kicker reveal">Símbolo Adinkra · povos akan, África Ocidental</p>
+        <h2 class="title reveal">Um pássaro que olha para trás</h2>
+        <p class="quote reveal">“Voltar e buscar o que ficou para trás.”</p>
+        <p class="lead reveal">Conhecer o passado para construir o futuro.</p>
+      </div>
+    </section>
+
+    <!-- 2 · Aiyê -->
+    <section class="chapter c-aiye" id="aiye" data-title="A história">
+      <div class="sky"></div>
+      <div class="layer dust" data-depth=".6" data-art="dust" aria-hidden="true"></div>
+      <div class="layer" data-depth=".4" data-art="hills" data-color="#3b1f3a" data-height=".35" data-seed="33" aria-hidden="true"></div>
+      <div class="layer" data-depth=".2" data-art="houses" data-color="#1f1520" data-height=".3" data-seed="4" aria-hidden="true"></div>
+      <div class="content content--split">
+        <div class="panel">
+          <p class="kicker reveal">Véspera do 20 de novembro</p>
+          <h2 class="title reveal">Aiyê não sabe por onde começar</h2>
+          <ul class="beats">
+            <li class="reveal">Estudante e capoeirista, precisa apresentar um trabalho sobre a história negra do Brasil.</li>
+            <li class="reveal">Depois da roda, encontra no chão um símbolo brilhando: um Sankofa.</li>
+            <li class="reveal">Ao tocar nele, o mundo gira e Aiyê volta no tempo.</li>
+          </ul>
+        </div>
+        <figure class="shot reveal">
+          <img src="img/1_menu.png" width="960" height="540" loading="lazy"
+               alt="Menu do jogo: título SANKOFA, opções Jogar, Escolher fase e Como jogar, e o pássaro Sankofa diante de um pôr do sol.">
+        </figure>
+      </div>
+    </section>
+
+    <!-- 3 · Linha do tempo -->
+    <section class="chapter c-time" id="linha" data-title="Linha do tempo">
+      <div class="sky"></div>
+      <div class="layer dust" data-depth=".7" data-art="dust" aria-hidden="true"></div>
+      <div class="layer" data-depth=".3" data-art="hills" data-color="#2b1c2c" data-height=".2" data-seed="9" aria-hidden="true"></div>
+      <div class="content content--center">
+        <p class="kicker reveal">Três épocas, três mentores</p>
+        <h2 class="title reveal">Uma linha do tempo da resistência</h2>
+        <ol class="timeline">
+          <li style="--i:0"><span class="era">Séc. XVII</span><img src="img/sankofa-simbolo.png" alt="" width="88" height="88"><strong>Zumbi dos Palmares</strong><span>Serra da Barriga</span></li>
+          <li style="--i:1"><span class="era">Séc. XIX</span><img src="img/sankofa-simbolo.png" alt="" width="88" height="88"><strong>Luiz Gama</strong><span>São Paulo</span></li>
+          <li style="--i:2"><span class="era">Séc. XX</span><img src="img/sankofa-simbolo.png" alt="" width="88" height="88"><strong>Carolina Maria de Jesus</strong><span>Canindé → cidade</span></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- 4 · Fase 1 -->
+    <section class="chapter c-f1" id="fase1" data-title="Fase 1 · Zumbi">
+      <div class="sky"></div>
+      <div class="layer sun sun--low" data-depth=".75" aria-hidden="true"></div>
+      <div class="layer clouds" data-depth=".6" data-art="clouds" aria-hidden="true"></div>
+      <div class="layer" data-depth=".45" data-art="hills" data-color="#6a3040" data-height=".4" data-seed="14" aria-hidden="true"></div>
+      <div class="layer" data-depth=".25" data-art="palisade" data-color="#3a2216" data-height=".3" data-seed="2" aria-hidden="true"></div>
+      <div class="layer" data-depth=".1" data-art="bushes" data-color="#1b2a14" data-height=".18" data-seed="8" aria-hidden="true"></div>
+      <div class="content content--split">
+        <div class="panel">
+          <p class="kicker reveal">Fase 1 · Século XVII</p>
+          <h2 class="title reveal">Serra da Barriga</h2>
+          <p class="mentor reveal">Mentor: <strong>Zumbi dos Palmares</strong></p>
+          <ul class="beats">
+            <li class="reveal">Mata, morros e paliçadas do Quilombo dos Palmares, que resistiu por mais de um século.</li>
+            <li class="reveal">Ensina a ginga, o aú (pulo duplo) e a meia-lua.</li>
+            <li class="reveal">Coletável: o próprio Sankofa.</li>
+          </ul>
+          <p class="note reveal">Falas inspiradas, não citações. Retrato imaginado: não existe imagem de Zumbi feita em vida.</p>
+        </div>
+        <figure class="shot reveal">
+          <img src="img/2_fase1.png" width="960" height="540" loading="lazy"
+               alt="Fase 1: Aiyê diante de uma cabana de palha na Serra da Barriga ao pôr do sol, com Sankofas brilhando no ar e inimigos roxos no chão.">
+          <figcaption>“Subir esta serra exige coragem. Use a ginga.”</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- 5 · Fase 2 -->
+    <section class="chapter c-f2" id="fase2" data-title="Fase 2 · Luiz Gama">
+      <div class="sky"></div>
+      <div class="layer clouds" data-depth=".6" data-art="clouds" data-tone="light" aria-hidden="true"></div>
+      <div class="layer" data-depth=".45" data-art="houses" data-color="#8d8a95" data-height=".42" data-seed="17" aria-hidden="true"></div>
+      <div class="layer" data-depth=".25" data-art="houses" data-color="#5b5763" data-height=".32" data-seed="23" aria-hidden="true"></div>
+      <div class="layer" data-depth=".1" data-art="fence" data-color="#22232a" data-height=".14" aria-hidden="true"></div>
+      <div class="content content--split content--rev">
+        <div class="panel">
+          <p class="kicker reveal">Fase 2 · Século XIX</p>
+          <h2 class="title reveal">São Paulo</h2>
+          <p class="mentor reveal">Mentor: <strong>Luiz Gama</strong></p>
+          <ul class="beats">
+            <li class="reveal">Vendido como escravizado aos 10 anos, conquistou a liberdade pelo estudo e libertou centenas de pessoas nos tribunais.</li>
+            <li class="reveal">Junte 5 cartas de alforria: cada uma liberta uma pessoa da fase.</li>
+            <li class="reveal">Ensina a esquiva, para passar pelas passagens baixas.</li>
+          </ul>
+        </div>
+        <div class="shots">
+          <figure class="shot reveal">
+            <img src="img/5_intro_luizgama.png" width="960" height="540" loading="lazy"
+                 alt="Introdução da fase 2: retrato em pixel art de Luiz Gama ao lado da fala ‘Me tiraram a liberdade quando eu era criança. Com estudo, eu a recuperei.’">
+          </figure>
+          <figure class="shot shot--small reveal">
+            <img src="img/3_fase2.png" width="960" height="540" loading="lazy"
+                 alt="Fase 2: Aiyê sobre os sobrados de São Paulo, com cartas de alforria brilhando e pessoas a libertar.">
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6 · Fase 3 -->
+    <section class="chapter c-f3" id="fase3" data-title="Fase 3 · Carolina">
+      <div class="sky"></div>
+      <div class="layer sun sun--day" data-depth=".75" aria-hidden="true"></div>
+      <div class="layer clouds" data-depth=".6" data-art="clouds" data-tone="white" aria-hidden="true"></div>
+      <div class="layer" data-depth=".45" data-art="city" data-color="#a9b8c8" data-height=".5" data-seed="31" aria-hidden="true"></div>
+      <div class="layer" data-depth=".25" data-art="favela" data-height=".3" data-seed="12" aria-hidden="true"></div>
+      <div class="content content--split">
+        <div class="panel">
+          <p class="kicker reveal">Fase 3 · Século XX</p>
+          <h2 class="title reveal">Canindé → cidade moderna</h2>
+          <p class="mentor reveal">Mentora: <strong>Carolina Maria de Jesus</strong></p>
+          <ul class="beats">
+            <li class="reveal">Catadora de papel, escrevia diários que viraram o livro <cite>Quarto de Despejo</cite> (1960).</li>
+            <li class="reveal">Recolha 8 páginas do diário e leve-as até a biblioteca.</li>
+            <li class="reveal">A fase junta tudo: aú, meia-lua e esquiva.</li>
+          </ul>
+        </div>
+        <div class="shots">
+          <figure class="shot reveal">
+            <img src="img/4_fase3.png" width="960" height="540" loading="lazy"
+                 alt="Fase 3: Aiyê numa cidade moderna de prédios, com páginas do diário flutuando e o contador ‘Diário: 0/8 páginas’.">
+          </figure>
+          <figure class="shot shot--small reveal">
+            <img src="img/7_carta_carolina.png" width="960" height="540" loading="lazy"
+                 alt="Carta histórica de Carolina Maria de Jesus (1914–1977) com retrato em pixel art, lenço vermelho e caderno.">
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7 · Capoeira -->
+    <section class="chapter c-capo" id="capoeira" data-title="Capoeira">
+      <div class="sky"></div>
+      <div class="layer stars" data-depth=".7" data-art="stars" aria-hidden="true"></div>
+      <div class="layer" data-depth=".4" data-art="hills" data-color="#1f3a24" data-height=".3" data-seed="41" aria-hidden="true"></div>
+      <div class="layer" data-depth=".15" data-art="palms" data-color="#0f1a10" data-height=".42" data-seed="19" aria-hidden="true"></div>
+      <div class="content content--center">
+        <p class="kicker reveal">Jogabilidade</p>
+        <h2 class="title reveal">Cada movimento é capoeira</h2>
+        <ul class="cards">
+          <li class="card reveal" style="--i:0"><span class="key">auto</span><h3>Ginga</h3><p>O personagem nunca fica parado.</p></li>
+          <li class="card reveal" style="--i:1"><span class="key">Espaço ×2</span><h3>Aú</h3><p>O pulo duplo, com uma estrela no ar.</p></li>
+          <li class="card reveal" style="--i:2"><span class="key">J</span><h3>Meia-lua de compasso</h3><p>O golpe que vence os dois inimigos.</p></li>
+          <li class="card reveal" style="--i:3"><span class="key">↓</span><h3>Cocorinha</h3><p>A esquiva para passar por lugares baixos.</p></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 8 · Inimigos -->
+    <section class="chapter c-enemy" id="inimigos" data-title="Inimigos">
+      <div class="sky"></div>
+      <div class="layer dust dust--cold" data-depth=".6" data-art="dust" aria-hidden="true"></div>
+      <div class="layer" data-depth=".3" data-art="hills" data-color="#2a1830" data-height=".24" data-seed="27" aria-hidden="true"></div>
+      <div class="content content--split content--rev">
+        <div class="panel">
+          <p class="kicker reveal">Quem atravessa o caminho</p>
+          <h2 class="title reveal">Ideias, não pessoas</h2>
+          <p class="lead reveal">Os inimigos são ideias que querem apagar a nossa história.</p>
+          <div class="foes">
+            <div class="foe foe--pink reveal"><h3>Desinformação</h3><p>Boatos e mentiras. Cai com um pulo em cima ou com a meia-lua.</p></div>
+            <div class="foe foe--cyan reveal"><h3>Esquecimento</h3><p>Histórias que se apagam. Mais rápido, só cai com a meia-lua.</p></div>
+          </div>
+        </div>
+        <figure class="shot reveal">
+          <img src="img/6_inimigos.png" width="960" height="540" loading="lazy"
+               alt="Tela ‘Quem atravessa o caminho’ com os cartões dos inimigos Desinformação e Esquecimento.">
+        </figure>
+      </div>
+    </section>
+
+    <!-- 9 · Bastidores -->
+    <section class="chapter c-tech" id="bastidores" data-title="Bastidores">
+      <div class="sky"></div>
+      <div class="layer grid-bg" data-depth=".6" aria-hidden="true"></div>
+      <div class="layer" data-depth=".2" data-art="city" data-color="#211c26" data-height=".28" data-seed="6" aria-hidden="true"></div>
+      <div class="content content--center">
+        <p class="kicker reveal">Bastidores</p>
+        <h2 class="title reveal">Tudo feito em código</h2>
+        <ul class="stats">
+          <li class="reveal"><b data-count="0">0</b><span>arquivos de imagem ou som: a arte e a música são geradas no código</span></li>
+          <li class="reveal"><b data-count="5">0</b><span>trilhas originais no espírito da capoeira e do samba</span></li>
+          <li class="reveal"><b data-count="3">0</b><span>fases, de 1 a 2 minutos cada</span></li>
+          <li class="reveal"><b data-count="960">0</b><span>× 540 de resolução, no teclado ou no celular</span></li>
+        </ul>
+        <p class="stack reveal"><span>Phaser 3</span><span>TypeScript</span><span>Vite</span><span>Web Audio</span></p>
+      </div>
+    </section>
+
+    <!-- 10 · Fim -->
+    <section class="chapter c-end" id="fim" data-title="Jogar">
+      <div class="sky"></div>
+      <div class="layer sun sun--dawn" data-depth=".75" aria-hidden="true"></div>
+      <div class="layer" data-depth=".45" data-art="hills" data-color="#5a2440" data-height=".3" data-seed="44" aria-hidden="true"></div>
+      <div class="layer" data-depth=".25" data-art="palms" data-color="#2a1424" data-height=".26" data-seed="3" aria-hidden="true"></div>
+      <div class="layer" data-depth=".1" data-art="bushes" data-color="#140f12" data-height=".16" data-seed="13" aria-hidden="true"></div>
+      <div class="content content--center">
+        <img class="bird bird--end reveal" src="img/sankofa-simbolo.png" width="960" height="960" alt="">
+        <h2 class="title reveal">Voltar, buscar e levar adiante</h2>
+        <p class="lead reveal">Zumbi ensina a resistir. Luiz Gama, a usar o conhecimento. Carolina, a ter voz.</p>
+        <div class="ctas reveal">
+          <a class="btn btn--primary" href="https://nathdomin.itch.io/sankofa" target="_blank" rel="noopener">Jogar no itch.io</a>
+          <a class="btn" href="https://nathdomin.github.io/sankofa/" target="_blank" rel="noopener">GitHub Pages</a>
+        </div>
+        <p class="credits reveal">Feito por Nathan Domingues para o Novembro Negro</p>
+      </div>
+    </section>
+  </main>
+
+  <script src="main.js"></script>
+</body>
+</html>
